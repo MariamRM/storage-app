@@ -6,6 +6,7 @@ const path = require("path");
 const app = express();
 const PORT = process.env.PORT || 4000;
 const DATA_FILE = path.join(__dirname, "data.json");
+const MAIN_STORAGE_BRANCH_ID = "B001"; // Main Storage branch (change if needed)
 
 app.use(cors());
 app.use(express.json());
@@ -112,7 +113,7 @@ app.post("/api/users", async (req, res) => {
   }
 });
 
-// ---------- ITEMS (admin & manager) ----------
+// ---------- ITEMS (admin & manager create item types) ----------
 app.post("/api/items", async (req, res) => {
   try {
     const {
@@ -138,7 +139,9 @@ app.post("/api/items", async (req, res) => {
     }
 
     if (data.items.find((x) => x.id === id && x.branchId === branchId)) {
-      return res.status(400).json({ error: "Item ID already exists in branch" });
+      return res
+        .status(400)
+        .json({ error: "Item ID already exists in this branch" });
     }
 
     const newItem = {
@@ -159,7 +162,7 @@ app.post("/api/items", async (req, res) => {
   }
 });
 
-// ---------- MOVEMENTS ----------
+// ---------- MOVEMENTS (admin & manager only, also adjust stock) ----------
 app.post("/api/movements", async (req, res) => {
   try {
     const { itemId, type, qty, userId, note } = req.body;
@@ -172,6 +175,11 @@ app.post("/api/movements", async (req, res) => {
     const data = await loadData();
     const user = findUserById(data, userId);
     if (!user) return res.status(400).json({ error: "User not found" });
+    if (user.role !== "admin" && user.role !== "manager") {
+      return res
+        .status(403)
+        .json({ error: "Only admin/manager can record movements" });
+    }
 
     const item = data.items.find((it) => it.id === itemId);
     if (!item) return res.status(400).json({ error: "Item not found" });
@@ -187,6 +195,13 @@ app.post("/api/movements", async (req, res) => {
       createdAt: new Date().toISOString()
     };
 
+    // adjust stock
+    if (movement.type === "IN") {
+      item.baseQty += movement.qty;
+    } else if (movement.type === "OUT") {
+      item.baseQty = Math.max(0, item.baseQty - movement.qty);
+    }
+
     data.movements.push(movement);
     await saveData(data);
     res.status(201).json(movement);
@@ -196,14 +211,14 @@ app.post("/api/movements", async (req, res) => {
   }
 });
 
-// ---------- REQUESTS (non-driver, from user.branch → toBranchId) ----------
+// ---------- REQUESTS (staff/manager/admin; from Main Storage → user branch) ----------
 app.post("/api/requests", async (req, res) => {
   try {
-    const { itemId, qty, userId, toBranchId, note } = req.body;
-    if (!itemId || !qty || !userId || !toBranchId) {
+    const { itemId, qty, userId, note } = req.body;
+    if (!itemId || !qty || !userId) {
       return res
         .status(400)
-        .json({ error: "itemId, qty, userId, toBranchId required" });
+        .json({ error: "itemId, qty, userId are required" });
     }
 
     const data = await loadData();
@@ -213,22 +228,26 @@ app.post("/api/requests", async (req, res) => {
       return res.status(403).json({ error: "Drivers cannot create requests" });
     }
     if (!user.branchId) {
-      return res.status(400).json({ error: "User is not assigned to a branch" });
+      return res
+        .status(400)
+        .json({ error: "User is not assigned to a branch" });
     }
 
-    const item = data.items.find(
-      (it) => it.id === itemId && it.branchId === toBranchId
+    const storageItem = data.items.find(
+      (it) => it.id === itemId && it.branchId === MAIN_STORAGE_BRANCH_ID
     );
-    if (!item) {
-      return res.status(400).json({ error: "Item not found in supply branch" });
+    if (!storageItem) {
+      return res
+        .status(400)
+        .json({ error: "Item not found in Main Storage" });
     }
 
     const request = {
       id: "REQ-" + Date.now(),
       itemId,
       qty: Number(qty),
-      fromBranchId: user.branchId,
-      toBranchId,
+      fromBranchId: MAIN_STORAGE_BRANCH_ID, // storage
+      toBranchId: user.branchId,            // consuming branch
       createdByUserId: userId,
       note: note || "",
       status: "pending",
@@ -245,7 +264,7 @@ app.post("/api/requests", async (req, res) => {
   }
 });
 
-// ---------- DRIVER DELIVER (OUT from supply branch = toBranchId) ----------
+// ---------- DRIVER DELIVER (OUT from storage, IN to branch, move stock) ----------
 app.post("/api/requests/:id/deliver", async (req, res) => {
   try {
     const { id } = req.params;
@@ -266,33 +285,70 @@ app.post("/api/requests/:id/deliver", async (req, res) => {
       return res.status(400).json({ error: "Request already delivered" });
     }
 
-    const item = data.items.find(
-      (it) => it.id === request.itemId && it.branchId === request.toBranchId
+    const storageItem = data.items.find(
+      (it) => it.id === request.itemId && it.branchId === request.fromBranchId
     );
-    if (!item) {
+    if (!storageItem) {
       return res
         .status(400)
-        .json({ error: "Item not found in supply branch" });
+        .json({ error: "Item not found in storage branch" });
     }
 
-    const movement = {
+    const qty = Number(request.qty);
+    if (storageItem.baseQty < qty) {
+      return res
+        .status(400)
+        .json({ error: "Not enough stock in storage to deliver" });
+    }
+
+    // OUT movement from storage
+    const outMovement = {
       id: "MOV-" + Date.now(),
       itemId: request.itemId,
       type: "OUT",
-      qty: Number(request.qty),
+      qty,
       userId: driverUserId,
-      branchId: request.toBranchId, // stock leaves supply branch
-      note: `Delivery for request ${request.id} to ${request.fromBranchId}`,
+      branchId: request.fromBranchId,
+      note: `Delivery OUT for request ${request.id}`,
+      createdAt: new Date().toISOString()
+    };
+    storageItem.baseQty -= qty;
+
+    // IN movement to destination branch
+    let destItem = data.items.find(
+      (it) => it.id === request.itemId && it.branchId === request.toBranchId
+    );
+    if (!destItem) {
+      destItem = {
+        id: storageItem.id,
+        name: storageItem.name,
+        branchId: request.toBranchId,
+        minQty: 0,
+        baseQty: 0,
+        unitCost: storageItem.unitCost
+      };
+      data.items.push(destItem);
+    }
+    destItem.baseQty += qty;
+
+    const inMovement = {
+      id: "MOV-" + (Date.now() + 1),
+      itemId: request.itemId,
+      type: "IN",
+      qty,
+      userId: driverUserId,
+      branchId: request.toBranchId,
+      note: `Delivery IN for request ${request.id}`,
       createdAt: new Date().toISOString()
     };
 
-    data.movements.push(movement);
+    data.movements.push(outMovement, inMovement);
     request.status = "delivered";
     request.driverUserId = driverUserId;
 
     await saveData(data);
 
-    res.status(201).json({ request, movement });
+    res.status(201).json({ request, movements: [outMovement, inMovement] });
   } catch (err) {
     console.error("Deliver error", err);
     res.status(500).json({ error: "Failed to deliver request" });
