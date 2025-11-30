@@ -1,0 +1,95 @@
+{
+  "branches": [
+    {
+      "id": "B001",
+      "name": "Main Branch"
+    },
+    {
+      "id": "B002",
+      "name": "Salmiya Branch"
+    },
+    {
+      "id": "B003",
+      "name": "Shuwaikh Branch"
+    }
+  ],
+  "users": [
+    {
+      "id": "u_admin",
+      "name": "Admin",
+      "role": "admin",
+      "password": "admin123"
+    },
+    {
+      "id": "u_manager",
+      "name": "Manager1",
+      "role": "manager",
+      "password": "manager123"
+    },
+    {
+      "id": "u_staff",
+      "name": "Staff1",
+      "role": "staff",
+      "password": "staff123"
+    },
+    {
+      "id": "u_driver",
+      "name": "Driver1",
+      "role": "driver",
+      "password": "driver123"
+    }
+  ],
+  "items": [
+    {
+      "id": "ITEM-001",
+      "name": "Hair Gel 93 – 250ml",
+      "branchId": "B001",
+      "minQty": 5,
+      "baseQty": 20,
+      "unitCost": 1.5
+    },
+    {
+      "id": "ITEM-002",
+      "name": "Mascara 93 – Black",
+      "branchId": "B001",
+      "minQty": 10,
+      "baseQty": 50,
+      "unitCost": 2
+    },
+    {
+      "id": "ITEM-003",
+      "name": "pIS",
+      "branchId": "B001",
+      "minQty": 7,
+      "baseQty": 10,
+      "unitCost": 2
+    }
+  ],
+  "movements": [
+    {
+      "id": "MOV-1764518504362",
+      "itemId": "ITEM-003",
+      "type": "OUT",
+      "qty": 1,
+      "userId": "u_driver",
+      "branchId": "B001",
+      "note": "Delivery for request REQ-1764518467224",
+      "createdAt": "2025-11-30T16:01:44.362Z"
+    }
+  ],
+  "budgets": [],
+  "requests": [
+    {
+      "id": "REQ-1764518467224",
+      "itemId": "ITEM-003",
+      "qty": 1,
+      "branchId": "B001",
+      "createdByUserId": "u_admin",
+      "note": "",
+      "status": "delivered",
+      "driverUserId": "u_driver",
+      "createdAt": "2025-11-30T16:01:07.224Z"
+    }
+  ],
+  "trips": []
+}
