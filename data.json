@@ -1,95 +1,319 @@
 {
   "branches": [
-    {
-      "id": "B001",
-      "name": "Main Branch"
-    },
-    {
-      "id": "B002",
-      "name": "Salmiya Branch"
-    },
-    {
-      "id": "B003",
-      "name": "Shuwaikh Branch"
-    }
+    { "id": "B001", "name": "Main Storage" },
+    { "id": "B002", "name": "Yarmouk" },
+    { "id": "B003", "name": "Avenues" },
+    { "id": "B004", "name": "Mishref" },
+    { "id": "B005", "name": "Qurtuba" },
+    { "id": "B006", "name": "Promenade" },
+    { "id": "B007", "name": "Al Hamra" },
+    { "id": "B008", "name": "Zahra" }
   ],
   "users": [
     {
       "id": "u_admin",
       "name": "Admin",
       "role": "admin",
-      "password": "admin123"
+      "password": "admin123",
+      "branchId": "B001"
     },
     {
       "id": "u_manager",
       "name": "Manager1",
       "role": "manager",
-      "password": "manager123"
+      "password": "manager123",
+      "branchId": "B001"
     },
     {
-      "id": "u_staff",
-      "name": "Staff1",
+      "id": "u_staff_yarmouk",
+      "name": "StaffYarmouk",
       "role": "staff",
-      "password": "staff123"
+      "password": "staff123",
+      "branchId": "B002"
+    },
+    {
+      "id": "u_staff_zahra",
+      "name": "StaffZahra",
+      "role": "staff",
+      "password": "staff123",
+      "branchId": "B008"
     },
     {
       "id": "u_driver",
       "name": "Driver1",
       "role": "driver",
-      "password": "driver123"
+      "password": "driver123",
+      "branchId": null
     }
   ],
   "items": [
     {
       "id": "ITEM-001",
-      "name": "Hair Gel 93 – 250ml",
+      "name": "DUBU BOX PIN",
       "branchId": "B001",
-      "minQty": 5,
-      "baseQty": 20,
-      "unitCost": 1.5
+      "minQty": 0,
+      "baseQty": 72,
+      "unitCost": 2.5
     },
     {
       "id": "ITEM-002",
-      "name": "Mascara 93 – Black",
+      "name": "OPNER",
       "branchId": "B001",
-      "minQty": 10,
-      "baseQty": 50,
-      "unitCost": 2
+      "minQty": 0,
+      "baseQty": 52,
+      "unitCost": 7.5
     },
     {
       "id": "ITEM-003",
-      "name": "pIS",
+      "name": "NEEDLE 7 HAND",
       "branchId": "B001",
-      "minQty": 7,
-      "baseQty": 10,
+      "minQty": 0,
+      "baseQty": 24,
       "unitCost": 2
-    }
-  ],
-  "movements": [
+    },
     {
-      "id": "MOV-1764518504362",
-      "itemId": "ITEM-003",
-      "type": "OUT",
-      "qty": 1,
-      "userId": "u_driver",
+      "id": "ITEM-004",
+      "name": "CUTTER",
       "branchId": "B001",
-      "note": "Delivery for request REQ-1764518467224",
-      "createdAt": "2025-11-30T16:01:44.362Z"
+      "minQty": 0,
+      "baseQty": 20,
+      "unitCost": 2
+    },
+    {
+      "id": "ITEM-005",
+      "name": "METTER 2",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 12,
+      "unitCost": 2
+    },
+    {
+      "id": "ITEM-006",
+      "name": "METTER 1.5",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 18,
+      "unitCost": 2
+    },
+    {
+      "id": "ITEM-007",
+      "name": "OIL",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 4,
+      "unitCost": 1
+    },
+    {
+      "id": "ITEM-008",
+      "name": "BUST CUP BLACK LARGE",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 24,
+      "unitCost": 3
+    },
+    {
+      "id": "ITEM-009",
+      "name": "BUST CUP WHITE LARGE",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 17,
+      "unitCost": 3
+    },
+    {
+      "id": "ITEM-010",
+      "name": "BUST CUP BLACK MEDIUM",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 15,
+      "unitCost": 3
+    },
+    {
+      "id": "ITEM-011",
+      "name": "BUST CUP WHITE MEDIUM",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 3,
+      "unitCost": 3
+    },
+    {
+      "id": "ITEM-012",
+      "name": "BUST CUP BLACK SMALL",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 6,
+      "unitCost": 3
+    },
+    {
+      "id": "ITEM-013",
+      "name": "BUST CUP WHITE SMALL",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 13,
+      "unitCost": 3
+    },
+    {
+      "id": "ITEM-014",
+      "name": "BUST CUP BLACK XL",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 5,
+      "unitCost": 3
+    },
+    {
+      "id": "ITEM-015",
+      "name": "BUST CUP WHITE XL",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 5,
+      "unitCost": 3
+    },
+    {
+      "id": "ITEM-016",
+      "name": "DOUBLE FACE 0.55''",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 26,
+      "unitCost": 2.5
+    },
+    {
+      "id": "ITEM-017",
+      "name": "TRANSPARENT BRA STREP",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 31,
+      "unitCost": 2
+    },
+    {
+      "id": "ITEM-018",
+      "name": "MARKER",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 24,
+      "unitCost": 2
+    },
+    {
+      "id": "ITEM-019",
+      "name": "NEEDLE DB 11",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 35,
+      "unitCost": 4.5
+    },
+    {
+      "id": "ITEM-020",
+      "name": "NEEDLE DB 14",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 29,
+      "unitCost": 4.5
+    },
+    {
+      "id": "ITEM-021",
+      "name": "NEEDLE DB 16",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 100,
+      "unitCost": 4.5
+    },
+    {
+      "id": "ITEM-022",
+      "name": "NEEDLE DB 18",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 49,
+      "unitCost": 4.5
+    },
+    {
+      "id": "ITEM-023",
+      "name": "NEEDLE DC 11",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 6,
+      "unitCost": 3
+    },
+    {
+      "id": "ITEM-024",
+      "name": "NEEDLE DC 14",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 4,
+      "unitCost": 3
+    },
+    {
+      "id": "ITEM-025",
+      "name": "NEEDLE DC 16",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 12,
+      "unitCost": 3
+    },
+    {
+      "id": "ITEM-026",
+      "name": "NEEDLE DC 18",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 11,
+      "unitCost": 3
+    },
+    {
+      "id": "ITEM-027",
+      "name": "ZIPPER MAKFI LONG YKK",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 727,
+      "unitCost": 10
+    },
+    {
+      "id": "ITEM-028",
+      "name": "ZIPPER MAKFI SMALL",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 170,
+      "unitCost": 1
+    },
+    {
+      "id": "ITEM-029",
+      "name": "ZIPPER PANT",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 272,
+      "unitCost": 0.5
+    },
+    {
+      "id": "ITEM-030",
+      "name": "ZIPPERT JEANS",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 31,
+      "unitCost": 1.25
+    },
+    {
+      "id": "ITEM-031",
+      "name": "ZIPPER ADI LONG",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 72,
+      "unitCost": 0.5
+    },
+    {
+      "id": "ITEM-032",
+      "name": "ZIPPER jacket metal",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 43,
+      "unitCost": 0.133
+    },
+    {
+      "id": "ITEM-033",
+      "name": "zipper plastic jacket",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 71,
+      "unitCost": 2.5
     }
   ],
+  "movements": [],
   "budgets": [],
-  "requests": [
-    {
-      "id": "REQ-1764518467224",
-      "itemId": "ITEM-003",
-      "qty": 1,
-      "branchId": "B001",
-      "createdByUserId": "u_admin",
-      "note": "",
-      "status": "delivered",
-      "driverUserId": "u_driver",
-      "createdAt": "2025-11-30T16:01:07.224Z"
-    }
-  ],
+  "requests": [],
   "trips": []
 }

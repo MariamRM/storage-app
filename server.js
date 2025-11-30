@@ -4,14 +4,12 @@ const fs = require("fs").promises;
 const path = require("path");
 
 const app = express();
-const PORT = process.env.PORT || 4000; // Render will set PORT env var
+const PORT = process.env.PORT || 4000;
 const DATA_FILE = path.join(__dirname, "data.json");
 
 app.use(cors());
 app.use(express.json());
-
-// Serve frontend from /public
-app.use(express.static(path.join(__dirname, "public")));
+app.use(express.static(path.join(__dirname, "public"))); // serve frontend
 
 // ---------- Helpers ----------
 async function loadData() {
@@ -45,7 +43,12 @@ app.post("/api/login", async (req, res) => {
     if (!user || user.password !== password) {
       return res.status(401).json({ error: "Invalid credentials" });
     }
-    res.json({ id: user.id, name: user.name, role: user.role });
+    res.json({
+      id: user.id,
+      name: user.name,
+      role: user.role,
+      branchId: user.branchId || null
+    });
   } catch (err) {
     console.error("Login error", err);
     res.status(500).json({ error: "Login failed" });
@@ -71,10 +74,10 @@ app.get("/api/state", async (req, res) => {
   }
 });
 
-// ---------- USERS (admin only create) ----------
+// ---------- USERS (admin create, with branch) ----------
 app.post("/api/users", async (req, res) => {
   try {
-    const { name, role, password, adminUserId } = req.body;
+    const { name, role, password, adminUserId, branchId } = req.body;
     if (!name || !role || !password) {
       return res
         .status(400)
@@ -95,7 +98,8 @@ app.post("/api/users", async (req, res) => {
       id: "u_" + Date.now(),
       name,
       role,
-      password
+      password,
+      branchId: branchId || null
     };
     data.users.push(newUser);
     await saveData(data);
@@ -108,7 +112,7 @@ app.post("/api/users", async (req, res) => {
   }
 });
 
-// ---------- ITEMS (admin & manager create item types) ----------
+// ---------- ITEMS (admin & manager) ----------
 app.post("/api/items", async (req, res) => {
   try {
     const {
@@ -133,8 +137,8 @@ app.post("/api/items", async (req, res) => {
         .json({ error: "Only manager or admin can create items" });
     }
 
-    if (data.items.find((x) => x.id === id)) {
-      return res.status(400).json({ error: "Item ID already exists" });
+    if (data.items.find((x) => x.id === id && x.branchId === branchId)) {
+      return res.status(400).json({ error: "Item ID already exists in branch" });
     }
 
     const newItem = {
@@ -192,14 +196,14 @@ app.post("/api/movements", async (req, res) => {
   }
 });
 
-// ---------- REQUESTS (all EXCEPT drivers can create) ----------
+// ---------- REQUESTS (non-driver, from user.branch → toBranchId) ----------
 app.post("/api/requests", async (req, res) => {
   try {
-    const { itemId, qty, userId, branchId, note } = req.body;
-    if (!itemId || !qty || !userId || !branchId) {
+    const { itemId, qty, userId, toBranchId, note } = req.body;
+    if (!itemId || !qty || !userId || !toBranchId) {
       return res
         .status(400)
-        .json({ error: "itemId, qty, userId, branchId required" });
+        .json({ error: "itemId, qty, userId, toBranchId required" });
     }
 
     const data = await loadData();
@@ -208,19 +212,23 @@ app.post("/api/requests", async (req, res) => {
     if (user.role === "driver") {
       return res.status(403).json({ error: "Drivers cannot create requests" });
     }
+    if (!user.branchId) {
+      return res.status(400).json({ error: "User is not assigned to a branch" });
+    }
 
     const item = data.items.find(
-      (it) => it.id === itemId && it.branchId === branchId
+      (it) => it.id === itemId && it.branchId === toBranchId
     );
     if (!item) {
-      return res.status(400).json({ error: "Item not found in branch" });
+      return res.status(400).json({ error: "Item not found in supply branch" });
     }
 
     const request = {
       id: "REQ-" + Date.now(),
       itemId,
       qty: Number(qty),
-      branchId,
+      fromBranchId: user.branchId,
+      toBranchId,
       createdByUserId: userId,
       note: note || "",
       status: "pending",
@@ -237,7 +245,7 @@ app.post("/api/requests", async (req, res) => {
   }
 });
 
-// ---------- DRIVER DELIVER ----------
+// ---------- DRIVER DELIVER (OUT from supply branch = toBranchId) ----------
 app.post("/api/requests/:id/deliver", async (req, res) => {
   try {
     const { id } = req.params;
@@ -259,12 +267,12 @@ app.post("/api/requests/:id/deliver", async (req, res) => {
     }
 
     const item = data.items.find(
-      (it) => it.id === request.itemId && it.branchId === request.branchId
+      (it) => it.id === request.itemId && it.branchId === request.toBranchId
     );
     if (!item) {
       return res
         .status(400)
-        .json({ error: "Item not found for this request" });
+        .json({ error: "Item not found in supply branch" });
     }
 
     const movement = {
@@ -273,8 +281,8 @@ app.post("/api/requests/:id/deliver", async (req, res) => {
       type: "OUT",
       qty: Number(request.qty),
       userId: driverUserId,
-      branchId: request.branchId,
-      note: `Delivery for request ${request.id}`,
+      branchId: request.toBranchId, // stock leaves supply branch
+      note: `Delivery for request ${request.id} to ${request.fromBranchId}`,
       createdAt: new Date().toISOString()
     };
 
