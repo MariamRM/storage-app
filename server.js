@@ -4,11 +4,14 @@ const fs = require("fs").promises;
 const path = require("path");
 
 const app = express();
-const PORT = 4000; // server will run on port 4000
+const PORT = process.env.PORT || 4000; // server will run on port 4000
 const DATA_FILE = path.join(__dirname, "data.json");
 
 app.use(cors());
 app.use(express.json());
+
+// 🔹 Serve frontend from /public
+app.use(express.static(path.join(__dirname, "public")));
 
 // ---------- Helpers ----------
 async function loadData() {
@@ -324,6 +327,11 @@ app.post("/api/budgets", async (req, res) => {
     console.error("Budget error", err);
     res.status(500).json({ error: "Failed to save budget" });
   }
+});
+
+// 🔹 Fallback: send index.html for any non-API route
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
 // ---------- START ----------
