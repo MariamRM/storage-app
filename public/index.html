@@ -62,8 +62,8 @@
       justify-content: center;
       border-radius: 999px;
       border: none;
-      padding: 0.45rem 1.1rem; /* bigger */
-      font-size: 0.85rem;       /* slightly bigger */
+      padding: 0.45rem 1.1rem;
+      font-size: 0.85rem;
       cursor: pointer;
       transition: background 0.15s, transform 0.1s;
     }
@@ -283,6 +283,32 @@
       color: #b91c1c;
     }
 
+    .summary-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      margin-top: 0.5rem;
+    }
+
+    .summary-card {
+      flex: 1 1 140px;
+      background: #f9fafb;
+      border-radius: 0.7rem;
+      padding: 0.5rem 0.7rem;
+      font-size: 0.8rem;
+    }
+
+    .summary-label {
+      font-size: 0.72rem;
+      color: #6b7280;
+    }
+
+    .summary-value {
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-top: 0.2rem;
+    }
+
     @media (max-width: 768px) {
       header {
         flex-direction: column;
@@ -318,7 +344,7 @@
 <header>
   <div>
     <h1>Storage Manage Method</h1>
-    <small>Branch → Storage orders, drivers & budgets</small>
+    <small>Branch → Storage orders, drivers & analytics</small>
   </div>
   <div class="header-right">
     <span id="headerUserName" class="badge" style="display:none;"></span>
@@ -356,13 +382,13 @@
 <!-- APP VIEW -->
 <main id="appView" style="display:none;">
 
-  <!-- Inventory panel -->
+  <!-- Inventory panel (Admin & Manager) -->
   <section id="inventoryPanel" class="panel">
     <div class="panel-header">
       <div>
         <div class="panel-title">Inventory (by branch)</div>
         <div class="panel-subtitle">
-          Admin & Manager can add items. Staff can view.
+          Admin & Manager can add items and see stock by branch.
         </div>
       </div>
     </div>
@@ -424,7 +450,7 @@
       <div>
         <div class="panel-title">Users & branches</div>
         <div class="panel-subtitle">
-          Admin can create users and assign them to a branch. Drivers see all requests.
+          Admin can create, edit and delete users and assign them to branches.
         </div>
       </div>
     </div>
@@ -473,6 +499,47 @@
         <tbody id="usersTableBody"></tbody>
       </table>
     </div>
+
+    <div class="panel-section-title mt-md">Edit / delete user</div>
+    <div class="grid mt-xs">
+      <div>
+        <label>Select user</label>
+        <select id="editUserSelect"></select>
+      </div>
+    </div>
+    <div class="grid mt-xs">
+      <div>
+        <label>Name</label>
+        <input id="editUserName" />
+      </div>
+      <div>
+        <label>Password (leave empty to keep)</label>
+        <input id="editUserPassword" placeholder="••••••••" />
+      </div>
+      <div>
+        <label>Role</label>
+        <select id="editUserRole">
+          <option value="staff">Staff</option>
+          <option value="manager">Manager</option>
+          <option value="driver">Driver</option>
+          <option value="admin">Admin</option>
+        </select>
+      </div>
+    </div>
+    <div class="grid mt-xs">
+      <div>
+        <label>Branch</label>
+        <select id="editUserBranchSelect"></select>
+      </div>
+      <div style="display:flex;align-items:flex-end;gap:0.4rem;">
+        <button id="saveUserChangesBtn" class="btn btn-primary" style="flex:1;">
+          Save changes
+        </button>
+        <button id="deleteUserBtn" class="btn btn-secondary" style="flex:1;">
+          Delete user
+        </button>
+      </div>
+    </div>
   </section>
 
   <!-- Requests (staff/manager/admin) -->
@@ -518,7 +585,7 @@
       </div>
     </div>
 
-    <div class="panel-section-title mt-md">Requests from my branch</div>
+    <div class="panel-section-title mt-md">Requests for my branch</div>
     <div class="table-wrapper">
       <table>
         <thead>
@@ -568,7 +635,7 @@
     </div>
   </section>
 
-  <!-- Movements -->
+  <!-- Movements (Admin & Manager) -->
   <section id="movementsPanel" class="panel">
     <div class="panel-header">
       <div>
@@ -627,13 +694,14 @@
     </div>
   </section>
 
-  <!-- Budgets (Admin) -->
-  <section id="budgetPanel" class="panel" style="display:none;">
+  <!-- Analytics (budget/usage, Admin & Manager) -->
+  <section id="analyticsPanel" class="panel" style="display:none;">
     <div class="panel-header">
       <div>
-        <div class="panel-title">Branch budgets</div>
+        <div class="panel-title">Budget & usage dashboard</div>
         <div class="panel-subtitle">
-          Admin can record monthly planned budgets by branch.
+          Automatic spend calculation from delivered requests (qty × item price),
+          filter by date and branch.
         </div>
       </div>
     </div>
@@ -641,32 +709,51 @@
     <div class="grid mt-xs">
       <div>
         <label>Branch</label>
-        <select id="budgetBranchSelect"></select>
+        <select id="analyticsBranchSelect">
+          <option value="ALL">All branches</option>
+        </select>
       </div>
       <div>
-        <label>Month (YYYY-MM)</label>
-        <input id="budgetMonthInput" placeholder="2025-01" />
+        <label>From date</label>
+        <input id="analyticsFromDate" type="date" />
       </div>
       <div>
-        <label>Planned budget</label>
-        <input id="budgetPlannedInput" type="number" min="0" step="0.01" />
+        <label>To date</label>
+        <input id="analyticsToDate" type="date" />
       </div>
     </div>
-    <button id="saveBudgetBtn" class="btn btn-primary mt-sm">
-      Save budget
+    <button id="analyticsApplyBtn" class="btn btn-primary mt-sm">
+      Apply filters
     </button>
 
-    <div class="panel-section-title mt-md">Budgets</div>
+    <div class="summary-row mt-sm">
+      <div class="summary-card">
+        <div class="summary-label">Total spent (KWD)</div>
+        <div id="analyticsTotalCost" class="summary-value">0</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label">Delivered requests</div>
+        <div id="analyticsTotalRequests" class="summary-value">0</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label">Total quantity</div>
+        <div id="analyticsTotalQty" class="summary-value">0</div>
+      </div>
+    </div>
+
+    <div class="panel-section-title mt-md">
+      Most ordered items (by cost)
+    </div>
     <div class="table-wrapper">
       <table>
         <thead>
         <tr>
-          <th>Branch</th>
-          <th>Month</th>
-          <th>Planned</th>
+          <th>Item</th>
+          <th>Total qty</th>
+          <th>Total cost</th>
         </tr>
         </thead>
-        <tbody id="budgetsTableBody"></tbody>
+        <tbody id="analyticsItemsTableBody"></tbody>
       </table>
     </div>
   </section>
@@ -752,6 +839,31 @@
     return body;
   }
 
+  async function apiUpdateUser(userId, updates) {
+    const res = await fetch(`${API_BASE}/users/${userId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        adminUserId: state.user.id,
+        ...updates
+      })
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(body.error || "Update user failed");
+    return body;
+  }
+
+  async function apiDeleteUser(userId) {
+    const res = await fetch(`${API_BASE}/users/${userId}`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ adminUserId: state.user.id })
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(body.error || "Delete user failed");
+    return body;
+  }
+
   async function apiCreateItem(data) {
     const res = await fetch(`${API_BASE}/items`, {
       method: "POST",
@@ -804,7 +916,7 @@
     });
     const body = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(body.error || "Deliver failed");
-    return body; // { request, movements: [...] }
+    return body;
   }
 
   async function apiSaveBudget(branchId, month, planned) {
@@ -851,8 +963,8 @@
   function renderBranchSelects() {
     const selects = [
       document.getElementById("itemBranchSelect"),
-      document.getElementById("budgetBranchSelect"),
-      document.getElementById("newUserBranchSelect")
+      document.getElementById("newUserBranchSelect"),
+      document.getElementById("editUserBranchSelect")
     ];
 
     selects.forEach((sel) => {
@@ -875,6 +987,22 @@
     }
     if (toLabel && state.user && state.user.branchId) {
       toLabel.textContent = getBranchName(state.user.branchId);
+    }
+
+    // Analytics branch select
+    const analyticsBranchSelect = document.getElementById("analyticsBranchSelect");
+    if (analyticsBranchSelect) {
+      analyticsBranchSelect.innerHTML = "";
+      const allOpt = document.createElement("option");
+      allOpt.value = "ALL";
+      allOpt.textContent = "All branches";
+      analyticsBranchSelect.appendChild(allOpt);
+      state.branches.forEach((b) => {
+        const opt = document.createElement("option");
+        opt.value = b.id;
+        opt.textContent = b.name;
+        analyticsBranchSelect.appendChild(opt);
+      });
     }
   }
 
@@ -905,7 +1033,7 @@
       tbody.appendChild(tr);
     });
 
-    // fill movement item select (any branch)
+    // movement item select
     const moveSelect = document.getElementById("movementItemSelect");
     if (moveSelect) {
       moveSelect.innerHTML = "";
@@ -949,6 +1077,23 @@
       `;
       tbody.appendChild(tr);
     });
+
+    // fill editUserSelect
+    const editSel = document.getElementById("editUserSelect");
+    if (editSel) {
+      editSel.innerHTML = "";
+      const placeholder = document.createElement("option");
+      placeholder.value = "";
+      placeholder.textContent = "Select user";
+      editSel.appendChild(placeholder);
+
+      users.forEach((u) => {
+        const opt = document.createElement("option");
+        opt.value = u.id;
+        opt.textContent = `${u.name} (${u.role})`;
+        editSel.appendChild(opt);
+      });
+    }
   }
 
   function renderRequestsTable() {
@@ -1048,25 +1193,100 @@
     });
   }
 
-  function renderBudgetsTable() {
-    const tbody = document.getElementById("budgetsTableBody");
-    tbody.innerHTML = "";
-    const budgets = [...state.budgets].sort((a, b) =>
-      (a.month || "").localeCompare(b.month || "")
+  // ----- Analytics: compute from delivered requests -----
+  function computeAnalytics() {
+    const branchSel = document.getElementById("analyticsBranchSelect");
+    const fromInput = document.getElementById("analyticsFromDate");
+    const toInput = document.getElementById("analyticsToDate");
+
+    const branchId = branchSel ? branchSel.value : "ALL";
+    const fromDate = fromInput && fromInput.value
+      ? new Date(fromInput.value + "T00:00:00")
+      : null;
+    const toDate = toInput && toInput.value
+      ? new Date(toInput.value + "T23:59:59")
+      : null;
+
+    const storageId = getMainStorageId();
+
+    const delivered = state.requests.filter((r) => {
+      if (r.status !== "delivered") return false;
+      if (branchId !== "ALL" && r.toBranchId !== branchId) return false;
+      if (!r.createdAt) return false;
+      const d = new Date(r.createdAt);
+      if (fromDate && d < fromDate) return false;
+      if (toDate && d > toDate) return false;
+      return true;
+    });
+
+    let totalCost = 0;
+    let totalQty = 0;
+    const itemStats = new Map(); // itemId -> { name, qty, cost }
+
+    delivered.forEach((r) => {
+      const storageItem = state.items.find(
+        (it) => it.id === r.itemId && it.branchId === storageId
+      );
+      const unitCost = storageItem ? Number(storageItem.unitCost || 0) : 0;
+      const qty = Number(r.qty || 0);
+      const cost = unitCost * qty;
+      totalCost += cost;
+      totalQty += qty;
+
+      const key = r.itemId;
+      let stat = itemStats.get(key);
+      if (!stat) {
+        stat = {
+          name: storageItem ? storageItem.name : r.itemId,
+          qty: 0,
+          cost: 0
+        };
+        itemStats.set(key, stat);
+      }
+      stat.qty += qty;
+      stat.cost += cost;
+    });
+
+    const itemsArray = Array.from(itemStats.values()).sort(
+      (a, b) => b.cost - a.cost
     );
-    if (!budgets.length) {
+
+    return {
+      totalCost,
+      totalQty,
+      totalRequests: delivered.length,
+      items: itemsArray
+    };
+  }
+
+  function renderAnalytics() {
+    const { totalCost, totalQty, totalRequests, items } = computeAnalytics();
+
+    const totalCostEl = document.getElementById("analyticsTotalCost");
+    const totalQtyEl = document.getElementById("analyticsTotalQty");
+    const totalReqEl = document.getElementById("analyticsTotalRequests");
+    const tbody = document.getElementById("analyticsItemsTableBody");
+
+    if (totalCostEl) totalCostEl.textContent = totalCost.toFixed(3);
+    if (totalQtyEl) totalQtyEl.textContent = totalQty;
+    if (totalReqEl) totalReqEl.textContent = totalRequests;
+
+    if (!tbody) return;
+    tbody.innerHTML = "";
+    if (!items.length) {
       const tr = document.createElement("tr");
       tr.innerHTML =
-        '<td colspan="3" class="text-muted">No budgets recorded.</td>';
+        '<td colspan="3" class="text-muted">No delivered requests in this period.</td>';
       tbody.appendChild(tr);
       return;
     }
-    budgets.forEach((b) => {
+
+    items.forEach((it) => {
       const tr = document.createElement("tr");
       tr.innerHTML = `
-        <td>${getBranchName(b.branchId)}</td>
-        <td>${b.month}</td>
-        <td>${b.planned}</td>
+        <td>${it.name}</td>
+        <td>${it.qty}</td>
+        <td>${it.cost.toFixed(3)}</td>
       `;
       tbody.appendChild(tr);
     });
@@ -1080,24 +1300,25 @@
     const isAdmin = state.user.role === "admin";
     const isManager = state.user.role === "manager";
     const isDriver = state.user.role === "driver";
+    const isStaff = state.user.role === "staff";
 
     document.getElementById("usersPanel").style.display = isAdmin
       ? "block"
       : "none";
-    document.getElementById("budgetPanel").style.display = isAdmin
-      ? "block"
-      : "none";
+
     document.getElementById("driverPanel").style.display = isDriver
       ? "block"
       : "none";
 
+    // staff only sees Requests (no inventory, no movements, no analytics)
     document.getElementById("requestsPanel").style.display = isDriver
       ? "none"
       : "block";
-    document.getElementById("inventoryPanel").style.display = isDriver
-      ? "none"
-      : "block";
+    document.getElementById("inventoryPanel").style.display =
+      isAdmin || isManager ? "block" : "none";
     document.getElementById("movementsPanel").style.display =
+      isAdmin || isManager ? "block" : "none";
+    document.getElementById("analyticsPanel").style.display =
       isAdmin || isManager ? "block" : "none";
   }
 
@@ -1152,7 +1373,7 @@
       renderRequestsTable();
       renderDriverRequestsTable();
       renderMovementsTable();
-      renderBudgetsTable();
+      renderAnalytics();
       showApp();
     } catch (e) {
       errorEl.textContent = e.message;
@@ -1189,6 +1410,76 @@
       alert(e.message);
     }
   });
+
+  // edit user select -> fill form
+  document
+    .getElementById("editUserSelect")
+    .addEventListener("change", () => {
+      const id = document.getElementById("editUserSelect").value;
+      const user = state.users.find((u) => u.id === id);
+      if (!user) {
+        document.getElementById("editUserName").value = "";
+        document.getElementById("editUserPassword").value = "";
+        return;
+      }
+      document.getElementById("editUserName").value = user.name;
+      document.getElementById("editUserPassword").value = "";
+      document.getElementById("editUserRole").value = user.role;
+      document.getElementById("editUserBranchSelect").value =
+        user.branchId || "";
+    });
+
+  // save user changes
+  document
+    .getElementById("saveUserChangesBtn")
+    .addEventListener("click", async () => {
+      const id = document.getElementById("editUserSelect").value;
+      if (!id) {
+        alert("Select a user first.");
+        return;
+      }
+      const name = document.getElementById("editUserName").value.trim();
+      const password = document
+        .getElementById("editUserPassword")
+        .value.trim();
+      const role = document.getElementById("editUserRole").value;
+      const branchId = document.getElementById("editUserBranchSelect").value;
+
+      const updates = { name, role, branchId };
+      if (password) updates.password = password;
+
+      try {
+        const updated = await apiUpdateUser(id, updates);
+        const idx = state.users.findIndex((u) => u.id === id);
+        if (idx >= 0) state.users[idx] = updated;
+        renderUsersTable();
+        alert("User updated.");
+      } catch (e) {
+        alert(e.message);
+      }
+    });
+
+  // delete user
+  document
+    .getElementById("deleteUserBtn")
+    .addEventListener("click", async () => {
+      const id = document.getElementById("editUserSelect").value;
+      if (!id) {
+        alert("Select a user first.");
+        return;
+      }
+      if (!confirm("Delete this user?")) return;
+      try {
+        await apiDeleteUser(id);
+        state.users = state.users.filter((u) => u.id !== id);
+        renderUsersTable();
+        document.getElementById("editUserName").value = "";
+        document.getElementById("editUserPassword").value = "";
+        alert("User deleted.");
+      } catch (e) {
+        alert(e.message);
+      }
+    });
 
   // create item
   document.getElementById("addItemBtn").addEventListener("click", async () => {
@@ -1269,6 +1560,7 @@
         renderItemsTable();
         fillRequestItemsFromStorage();
         renderMovementsTable();
+        renderAnalytics();
         document.getElementById("movementQtyInput").value = "1";
         document.getElementById("movementNoteInput").value = "";
       } catch (e) {
@@ -1307,6 +1599,7 @@
         state.requests.push(req);
         renderRequestsTable();
         renderDriverRequestsTable();
+        renderAnalytics();
         document.getElementById("requestQtyInput").value = "1";
         document.getElementById("requestNoteInput").value = "";
       } catch (e) {
@@ -1334,37 +1627,17 @@
         renderDriverRequestsTable();
         renderRequestsTable();
         renderMovementsTable();
+        renderAnalytics();
       } catch (err) {
         alert(err.message);
       }
     });
 
-  // save budget
+  // analytics filters
   document
-    .getElementById("saveBudgetBtn")
-    .addEventListener("click", async () => {
-      const branchId = document.getElementById("budgetBranchSelect").value;
-      const month = document.getElementById("budgetMonthInput").value.trim();
-      const planned = Number(
-        document.getElementById("budgetPlannedInput").value || "0"
-      );
-      if (!month) {
-        alert("Month required (e.g. 2025-01).");
-        return;
-      }
-      try {
-        const b = await apiSaveBudget(branchId, month, planned);
-        const existingIndex = state.budgets.findIndex(
-          (x) =>
-            x.id === b.id ||
-            (x.branchId === b.branchId && x.month === b.month)
-        );
-        if (existingIndex >= 0) state.budgets[existingIndex] = b;
-        else state.budgets.push(b);
-        renderBudgetsTable();
-      } catch (e) {
-        alert(e.message);
-      }
+    .getElementById("analyticsApplyBtn")
+    .addEventListener("click", () => {
+      renderAnalytics();
     });
 </script>
 </body>

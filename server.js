@@ -75,7 +75,7 @@ app.get("/api/state", async (req, res) => {
   }
 });
 
-// ---------- USERS (admin create, with branch) ----------
+// ---------- USERS (Admin create) ----------
 app.post("/api/users", async (req, res) => {
   try {
     const { name, role, password, adminUserId, branchId } = req.body;
@@ -113,7 +113,70 @@ app.post("/api/users", async (req, res) => {
   }
 });
 
-// ---------- ITEMS (admin & manager create item types) ----------
+// ---------- USERS (Admin edit/update) ----------
+app.patch("/api/users/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { adminUserId, name, role, password, branchId } = req.body;
+
+    const data = await loadData();
+    const admin = findUserById(data, adminUserId);
+    if (!admin || admin.role !== "admin") {
+      return res.status(403).json({ error: "Only admin can edit users" });
+    }
+
+    const user = data.users.find((u) => u.id === id);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    if (name) user.name = name;
+    if (role) user.role = role;
+    if (typeof branchId !== "undefined") user.branchId = branchId;
+    if (password) user.password = password;
+
+    await saveData(data);
+    const { password: pw, ...safeUser } = user;
+    res.json(safeUser);
+  } catch (err) {
+    console.error("Update user error", err);
+    res.status(500).json({ error: "Failed to update user" });
+  }
+});
+
+// ---------- USERS (Admin delete) ----------
+app.delete("/api/users/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { adminUserId } = req.body;
+
+    const data = await loadData();
+    const admin = findUserById(data, adminUserId);
+    if (!admin || admin.role !== "admin") {
+      return res.status(403).json({ error: "Only admin can delete users" });
+    }
+
+    if (admin.id === id) {
+      return res
+        .status(400)
+        .json({ error: "Admin cannot delete their own account" });
+    }
+
+    const idx = data.users.findIndex((u) => u.id === id);
+    if (idx === -1) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    data.users.splice(idx, 1);
+    await saveData(data);
+    res.json({ ok: true });
+  } catch (err) {
+    console.error("Delete user error", err);
+    res.status(500).json({ error: "Failed to delete user" });
+  }
+});
+
+// ---------- ITEMS (Admin & Manager create item types) ----------
 app.post("/api/items", async (req, res) => {
   try {
     const {
@@ -162,7 +225,7 @@ app.post("/api/items", async (req, res) => {
   }
 });
 
-// ---------- MOVEMENTS (admin & manager only, also adjust stock) ----------
+// ---------- MOVEMENTS (Admin & Manager only, adjust stock) ----------
 app.post("/api/movements", async (req, res) => {
   try {
     const { itemId, type, qty, userId, note } = req.body;
@@ -211,7 +274,7 @@ app.post("/api/movements", async (req, res) => {
   }
 });
 
-// ---------- REQUESTS (staff/manager/admin; from Main Storage → user branch) ----------
+// ---------- REQUESTS (staff/manager/admin; Main Storage → user branch) ----------
 app.post("/api/requests", async (req, res) => {
   try {
     const { itemId, qty, userId, note } = req.body;
@@ -264,7 +327,7 @@ app.post("/api/requests", async (req, res) => {
   }
 });
 
-// ---------- DRIVER DELIVER (OUT from storage, IN to branch, move stock) ----------
+// ---------- DRIVER DELIVER (OUT storage, IN branch, move stock) ----------
 app.post("/api/requests/:id/deliver", async (req, res) => {
   try {
     const { id } = req.params;
@@ -355,7 +418,7 @@ app.post("/api/requests/:id/deliver", async (req, res) => {
   }
 });
 
-// ---------- BUDGET (admin only) ----------
+// ---------- BUDGET (manual endpoint, optional) ----------
 app.post("/api/budgets", async (req, res) => {
   try {
     const { branchId, month, planned, adminUserId } = req.body;
