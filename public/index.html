@@ -396,8 +396,8 @@
     <div class="panel-section-title">Add / update items (Admin & Manager)</div>
     <div class="grid mt-xs">
       <div>
-        <label>Item ID</label>
-        <input id="itemIdInput" placeholder="ITEM-100" />
+        <label>Item ID (auto)</label>
+        <input id="itemIdInput" placeholder="ITM-001" readonly />
       </div>
       <div>
         <label>Name</label>
@@ -437,9 +437,32 @@
           <th>Base qty</th>
           <th>Min</th>
           <th>Unit cost</th>
+          <th>Value</th>
         </tr>
         </thead>
         <tbody id="itemsTableBody"></tbody>
+      </table>
+    </div>
+
+    <div class="summary-row mt-sm">
+      <div class="summary-card">
+        <div class="summary-label">Main storage inventory value (KWD)</div>
+        <div id="storageTotalValue" class="summary-value">0</div>
+      </div>
+    </div>
+
+    <div class="panel-section-title mt-md">Restock alerts (Main Storage)</div>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+        <tr>
+          <th>Item</th>
+          <th>Branch</th>
+          <th>Qty</th>
+          <th>Min</th>
+        </tr>
+        </thead>
+        <tbody id="alertsTableBody"></tbody>
       </table>
     </div>
   </section>
@@ -803,6 +826,20 @@
     return state.branches[0] ? state.branches[0].id : null;
   }
 
+  // توليد ID جديد في الفرونت (ITM-001, ITM-002 ...)
+  function getNextItemIdClient() {
+    let max = 0;
+    for (const it of state.items || []) {
+      const m = /^ITM-(\d+)$/.exec(it.id || "");
+      if (m) {
+        const num = parseInt(m[1], 10);
+        if (!isNaN(num) && num > max) max = num;
+      }
+    }
+    const next = max + 1;
+    return "ITM-" + String(next).padStart(3, "0");
+  }
+
   // ----- API calls -----
   async function apiLogin(name, password) {
     const res = await fetch(`${API_BASE}/login`, {
@@ -1008,18 +1045,47 @@
 
   function renderItemsTable() {
     const tbody = document.getElementById("itemsTableBody");
+    const alertsBody = document.getElementById("alertsTableBody");
+    const storageTotalEl = document.getElementById("storageTotalValue");
+
     tbody.innerHTML = "";
+    if (alertsBody) alertsBody.innerHTML = "";
+    if (storageTotalEl) storageTotalEl.textContent = "0";
+
     const items = [...state.items].sort((a, b) =>
       a.name.localeCompare(b.name)
     );
+    const mainId = getMainStorageId();
+    let storageTotal = 0;
+    const lowItems = [];
+
     if (!items.length) {
       const tr = document.createElement("tr");
       tr.innerHTML =
-        '<td colspan="6" class="text-muted">No items defined.</td>';
+        '<td colspan="7" class="text-muted">No items defined.</td>';
       tbody.appendChild(tr);
+
+      if (alertsBody) {
+        const trA = document.createElement("tr");
+        trA.innerHTML =
+          '<td colspan="4" class="text-muted">No low stock alerts in Main Storage.</td>';
+        alertsBody.appendChild(trA);
+      }
+      if (storageTotalEl) storageTotalEl.textContent = "0";
       return;
     }
+
     items.forEach((it) => {
+      const value =
+        (Number(it.baseQty) || 0) * (Number(it.unitCost) || 0);
+
+      if (it.branchId === mainId) {
+        storageTotal += value;
+        if (it.minQty > 0 && it.baseQty <= it.minQty) {
+          lowItems.push(it);
+        }
+      }
+
       const tr = document.createElement("tr");
       const low = it.baseQty <= it.minQty && it.minQty > 0;
       tr.innerHTML = `
@@ -1029,9 +1095,34 @@
         <td${low ? ' class="danger"' : ""}>${it.baseQty}</td>
         <td>${it.minQty}</td>
         <td>${it.unitCost}</td>
+        <td>${value.toFixed(3)}</td>
       `;
       tbody.appendChild(tr);
     });
+
+    if (storageTotalEl) {
+      storageTotalEl.textContent = storageTotal.toFixed(3);
+    }
+
+    if (alertsBody) {
+      if (!lowItems.length) {
+        const trA = document.createElement("tr");
+        trA.innerHTML =
+          '<td colspan="4" class="text-muted">No low stock alerts in Main Storage.</td>';
+        alertsBody.appendChild(trA);
+      } else {
+        lowItems.forEach((it) => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${it.name}</td>
+            <td>${getBranchName(it.branchId)}</td>
+            <td class="danger">${it.baseQty}</td>
+            <td>${it.minQty}</td>
+          `;
+          alertsBody.appendChild(tr);
+        });
+      }
+    }
 
     // movement item select
     const moveSelect = document.getElementById("movementItemSelect");
@@ -1221,7 +1312,7 @@
 
     let totalCost = 0;
     let totalQty = 0;
-    const itemStats = new Map(); // itemId -> { name, qty, cost }
+    const itemStats = new Map();
 
     delivered.forEach((r) => {
       const storageItem = state.items.find(
@@ -1310,7 +1401,6 @@
       ? "block"
       : "none";
 
-    // staff only sees Requests (no inventory, no movements, no analytics)
     document.getElementById("requestsPanel").style.display = isDriver
       ? "none"
       : "block";
@@ -1374,6 +1464,12 @@
       renderDriverRequestsTable();
       renderMovementsTable();
       renderAnalytics();
+
+      const idInput = document.getElementById("itemIdInput");
+      if (idInput) {
+        idInput.value = getNextItemIdClient();
+      }
+
       showApp();
     } catch (e) {
       errorEl.textContent = e.message;
@@ -1503,8 +1599,8 @@
       document.getElementById("itemUnitCostInput").value || "0"
     );
 
-    if (!id || !name) {
-      alert("Item ID and name required.");
+    if (!name) {
+      alert("Item name required.");
       return;
     }
 
@@ -1521,8 +1617,11 @@
       state.items.push(newItem);
       renderItemsTable();
       fillRequestItemsFromStorage();
-      document.getElementById("itemIdInput").value = "";
       document.getElementById("itemNameInput").value = "";
+      document.getElementById("itemBaseQtyInput").value = "0";
+      document.getElementById("itemMinQtyInput").value = "0";
+      document.getElementById("itemUnitCostInput").value = "0";
+      document.getElementById("itemIdInput").value = getNextItemIdClient();
     } catch (e) {
       alert(e.message);
     }
