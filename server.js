@@ -6,7 +6,9 @@ const path = require("path");
 const app = express();
 const PORT = process.env.PORT || 4000;
 const DATA_FILE = path.join(__dirname, "data.json");
-const MAIN_STORAGE_BRANCH_ID = "B001"; // Main Storage branch (change if needed)
+
+// IMPORTANT: set this to your MAIN STORAGE branch id in data.json
+const MAIN_STORAGE_BRANCH_ID = "B001";
 
 app.use(cors());
 app.use(express.json());
@@ -23,11 +25,11 @@ async function saveData(data) {
 }
 
 function findUserById(data, userId) {
-  return data.users.find((u) => u.id === userId);
+  return (data.users || []).find((u) => u.id === userId);
 }
 
 function findUserByName(data, name) {
-  return data.users.find(
+  return (data.users || []).find(
     (u) => u.name.toLowerCase() === String(name).toLowerCase()
   );
 }
@@ -125,10 +127,8 @@ app.patch("/api/users/:id", async (req, res) => {
       return res.status(403).json({ error: "Only admin can edit users" });
     }
 
-    const user = data.users.find((u) => u.id === id);
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
-    }
+    const user = (data.users || []).find((u) => u.id === id);
+    if (!user) return res.status(404).json({ error: "User not found" });
 
     if (name) user.name = name;
     if (role) user.role = role;
@@ -162,10 +162,8 @@ app.delete("/api/users/:id", async (req, res) => {
         .json({ error: "Admin cannot delete their own account" });
     }
 
-    const idx = data.users.findIndex((u) => u.id === id);
-    if (idx === -1) {
-      return res.status(404).json({ error: "User not found" });
-    }
+    const idx = (data.users || []).findIndex((u) => u.id === id);
+    if (idx === -1) return res.status(404).json({ error: "User not found" });
 
     data.users.splice(idx, 1);
     await saveData(data);
@@ -201,7 +199,7 @@ app.post("/api/items", async (req, res) => {
         .json({ error: "Only manager or admin can create items" });
     }
 
-    if (data.items.find((x) => x.id === id && x.branchId === branchId)) {
+    if ((data.items || []).find((x) => x.id === id && x.branchId === branchId)) {
       return res
         .status(400)
         .json({ error: "Item ID already exists in this branch" });
@@ -244,7 +242,7 @@ app.post("/api/movements", async (req, res) => {
         .json({ error: "Only admin/manager can record movements" });
     }
 
-    const item = data.items.find((it) => it.id === itemId);
+    const item = (data.items || []).find((it) => it.id === itemId);
     if (!item) return res.status(400).json({ error: "Item not found" });
 
     const movement = {
@@ -296,7 +294,7 @@ app.post("/api/requests", async (req, res) => {
         .json({ error: "User is not assigned to a branch" });
     }
 
-    const storageItem = data.items.find(
+    const storageItem = (data.items || []).find(
       (it) => it.id === itemId && it.branchId === MAIN_STORAGE_BRANCH_ID
     );
     if (!storageItem) {
@@ -309,8 +307,8 @@ app.post("/api/requests", async (req, res) => {
       id: "REQ-" + Date.now(),
       itemId,
       qty: Number(qty),
-      fromBranchId: MAIN_STORAGE_BRANCH_ID, // storage
-      toBranchId: user.branchId,            // consuming branch
+      fromBranchId: MAIN_STORAGE_BRANCH_ID,
+      toBranchId: user.branchId,
       createdByUserId: userId,
       note: note || "",
       status: "pending",
@@ -342,13 +340,13 @@ app.post("/api/requests/:id/deliver", async (req, res) => {
       return res.status(403).json({ error: "Only drivers can deliver" });
     }
 
-    const request = data.requests.find((r) => r.id === id);
+    const request = (data.requests || []).find((r) => r.id === id);
     if (!request) return res.status(404).json({ error: "Request not found" });
     if (request.status === "delivered") {
       return res.status(400).json({ error: "Request already delivered" });
     }
 
-    const storageItem = data.items.find(
+    const storageItem = (data.items || []).find(
       (it) => it.id === request.itemId && it.branchId === request.fromBranchId
     );
     if (!storageItem) {
@@ -378,7 +376,7 @@ app.post("/api/requests/:id/deliver", async (req, res) => {
     storageItem.baseQty -= qty;
 
     // IN movement to destination branch
-    let destItem = data.items.find(
+    let destItem = (data.items || []).find(
       (it) => it.id === request.itemId && it.branchId === request.toBranchId
     );
     if (!destItem) {
@@ -433,7 +431,7 @@ app.post("/api/budgets", async (req, res) => {
       return res.status(403).json({ error: "Only admin can set budgets" });
     }
 
-    let budget = data.budgets.find(
+    let budget = (data.budgets || []).find(
       (b) => b.branchId === branchId && b.month === month
     );
     if (!budget) {
