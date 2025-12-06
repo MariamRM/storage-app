@@ -6,11 +6,8 @@ const path = require("path");
 const app = express();
 const PORT = process.env.PORT || 4000;
 
-// ✅ NEW (minimal): where to store data.json
-// On Render: set Disk Mount Path = /var/data and set env DATA_DIR=/var/data
-// Locally: it falls back to __dirname (project folder)
-const DATA_DIR = process.env.DATA_DIR || __dirname;
-const DATA_FILE = path.join(DATA_DIR, "data.json");
+// ✅ CHANGE: allow Render persistent disk path via env var
+const DATA_FILE = process.env.DATA_FILE || path.join(__dirname, "data.json");
 
 const MAIN_STORAGE_BRANCH_ID = process.env.MAIN_STORAGE_BRANCH_ID || "B001"; // change if needed
 
@@ -55,8 +52,6 @@ async function loadData() {
 }
 
 async function saveData(data) {
-  // ✅ NEW (minimal): ensure folder exists (needed for Render disk)
-  await fs.mkdir(path.dirname(DATA_FILE), { recursive: true });
   await fs.writeFile(DATA_FILE, JSON.stringify(data, null, 2), "utf-8");
 }
 
@@ -498,6 +493,7 @@ app.post("/api/budgets", async (req, res) => {
    Mark Done: admin/manager/driver
 ========================= */
 
+// Vehicles list (read)
 app.get("/api/vehicles", async (req, res) => {
   try {
     const data = await loadData();
@@ -507,6 +503,7 @@ app.get("/api/vehicles", async (req, res) => {
   }
 });
 
+// Create vehicle (admin/manager)
 app.post("/api/vehicles", async (req, res) => {
   try {
     const { userId, name, plate } = req.body;
@@ -530,6 +527,7 @@ app.post("/api/vehicles", async (req, res) => {
   }
 });
 
+// Reminders list (read)
 app.get("/api/vehicle-reminders", async (req, res) => {
   try {
     const data = await loadData();
@@ -539,6 +537,7 @@ app.get("/api/vehicle-reminders", async (req, res) => {
   }
 });
 
+// Create reminder (admin/manager)
 app.post("/api/vehicle-reminders", async (req, res) => {
   try {
     const { userId, vehicleId, type, dueDate, dueOdometer, note } = req.body;
@@ -554,11 +553,11 @@ app.post("/api/vehicle-reminders", async (req, res) => {
     const r = {
       id: "REM-" + Date.now(),
       vehicleId,
-      type,
-      dueDate: dueDate || null,
+      type, // "OIL_CHANGE" | "METER" | "YEARLY_RENEW" | "OTHER"
+      dueDate: dueDate || null, // YYYY-MM-DD
       dueOdometer: typeof dueOdometer === "undefined" ? null : Number(dueOdometer),
       note: note || "",
-      status: "open",
+      status: "open", // open | done
       createdAt: new Date().toISOString(),
       doneAt: null
     };
@@ -572,6 +571,7 @@ app.post("/api/vehicle-reminders", async (req, res) => {
   }
 });
 
+// Update reminder (status / edit)
 app.patch("/api/vehicle-reminders/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -586,6 +586,7 @@ app.patch("/api/vehicle-reminders/:id", async (req, res) => {
     const r = data.vehicleReminders.find((x) => x.id === id);
     if (!r) return res.status(404).json({ error: "Reminder not found" });
 
+    // Driver: allowed only to mark done/open
     const isEditor = requireRole(user, ["admin", "manager"]);
     if (!isEditor) {
       if (typeof status === "undefined") {
@@ -597,7 +598,9 @@ app.patch("/api/vehicle-reminders/:id", async (req, res) => {
       if (typeof vehicleId !== "undefined") r.vehicleId = vehicleId;
       if (typeof type !== "undefined") r.type = type;
       if (typeof dueDate !== "undefined") r.dueDate = dueDate || null;
-      if (typeof dueOdometer !== "undefined") r.dueOdometer = dueOdometer === null ? null : Number(dueOdometer);
+      if (typeof dueOdometer !== "undefined") {
+        r.dueOdometer = dueOdometer === null ? null : Number(dueOdometer);
+      }
       if (typeof note !== "undefined") r.note = note || "";
     }
 
@@ -613,6 +616,7 @@ app.patch("/api/vehicle-reminders/:id", async (req, res) => {
   }
 });
 
+// Delete reminder (admin/manager)
 app.delete("/api/vehicle-reminders/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -644,5 +648,5 @@ app.get("*", (req, res) => {
 app.listen(PORT, () => {
   console.log(`Storage backend running on http://localhost:${PORT}`);
   console.log(`Main Storage Branch ID = ${MAIN_STORAGE_BRANCH_ID}`);
-  console.log(`Data file = ${DATA_FILE}`);
+  console.log(`DATA_FILE = ${DATA_FILE}`);
 });

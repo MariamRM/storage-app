@@ -506,8 +506,8 @@
           </select>
         </div>
         <div>
-          <label>Due date</label>
-          <input id="remDueDateInput" type="date" />
+          <label>Due date</label
+          ><input id="remDueDateInput" type="date" />
         </div>
       </div>
       <div class="grid mt-xs">
@@ -579,11 +579,38 @@
     vehicleReminders: []
   };
 
+  // ===== Arabic labels next to English (same UI, no toggle) =====
+  const AR = {
+    branches: {
+      B001: "المخزن الرئيسي",
+      // ضيفي باقي الفروع هنا حسب IDs عندك
+      // مثال:
+      // B002: "اليرموك",
+      // B003: "الأفنيوز",
+    },
+    ui: {
+      mainStorage: "Main Storage - المخزن الرئيسي",
+      allBranches: "All branches - كل الفروع",
+      allVehicles: "All vehicles - كل السيارات",
+      selectUser: "Select user - اختر مستخدم"
+    }
+  };
+
+  function withAr(en, ar) {
+    if (!en && !ar) return "";
+    if (!ar) return en || "";
+    if (!en) return ar || "";
+    return `${en} - ${ar}`;
+  }
+
   // ----- Helpers -----
   function getBranchName(id) {
     const b = state.branches.find((x) => x.id === id);
-    return b ? b.name : id || "";
+    const en = b ? b.name : (id || "");
+    const ar = AR.branches[id] || "";
+    return withAr(en, ar);
   }
+
   function getUserName(id) {
     const u = state.users.find((x) => x.id === id);
     return u ? u.name : id || "";
@@ -802,7 +829,7 @@
       state.branches.forEach((b, idx) => {
         const opt = document.createElement("option");
         opt.value = b.id;
-        opt.textContent = b.name;
+        opt.textContent = getBranchName(b.id);
         if (idx === 0) opt.selected = true;
         sel.appendChild(opt);
       });
@@ -816,7 +843,7 @@
       state.branches.forEach((b) => {
         const opt = document.createElement("option");
         opt.value = b.id;
-        opt.textContent = b.id === mainId ? `${b.name} (Main Storage)` : b.name;
+        opt.textContent = b.id === mainId ? `${getBranchName(b.id)} (${AR.ui.mainStorage})` : getBranchName(b.id);
         invSel.appendChild(opt);
       });
       // default view = main storage
@@ -834,12 +861,12 @@
       analyticsBranchSelect.innerHTML = "";
       const allOpt = document.createElement("option");
       allOpt.value = "ALL";
-      allOpt.textContent = "All branches";
+      allOpt.textContent = AR.ui.allBranches;
       analyticsBranchSelect.appendChild(allOpt);
       state.branches.forEach((b) => {
         const opt = document.createElement("option");
         opt.value = b.id;
-        opt.textContent = b.name;
+        opt.textContent = getBranchName(b.id);
         analyticsBranchSelect.appendChild(opt);
       });
     }
@@ -939,7 +966,7 @@
     items.forEach((it, idx) => {
       const opt = document.createElement("option");
       opt.value = it.id;
-      opt.textContent = `${it.name} (Main Storage)`;
+      opt.textContent = `${it.name} (${AR.ui.mainStorage})`;
       if (idx === 0) opt.selected = true;
       itemSel.appendChild(opt);
     });
@@ -960,7 +987,7 @@
       editSel.innerHTML = "";
       const placeholder = document.createElement("option");
       placeholder.value = "";
-      placeholder.textContent = "Select user";
+      placeholder.textContent = AR.ui.selectUser;
       editSel.appendChild(placeholder);
 
       users.forEach((u) => {
@@ -1161,7 +1188,7 @@
       if (addAll) {
         const all = document.createElement("option");
         all.value = "ALL";
-        all.textContent = "All vehicles";
+        all.textContent = AR.ui.allVehicles;
         sel.appendChild(all);
       }
       (state.vehicles || []).forEach((v) => {
