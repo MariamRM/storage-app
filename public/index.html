@@ -76,33 +76,35 @@
 <body>
 <header>
   <div>
-    <h1>Storage Manage Method</h1>
-    <small>Branch → Storage orders, drivers & analytics</small>
+    <h1 data-i18n="app_title">Storage Manage Method</h1>
+    <small data-i18n="app_subtitle">Branch → Storage orders, drivers & analytics</small>
   </div>
   <div class="header-right">
     <span id="headerUserName" class="badge" style="display:none;"></span>
     <span id="headerRole" class="badge" style="display:none;"></span>
-    <button id="logoutBtn" class="btn btn-secondary btn-sm" style="display:none;">Logout</button>
+
+    <button id="langBtn" class="btn btn-secondary btn-sm">AR</button>
+    <button id="logoutBtn" class="btn btn-secondary btn-sm" style="display:none;" data-i18n="logout">Logout</button>
   </div>
 </header>
 
 <!-- LOGIN VIEW -->
 <section id="loginView">
   <div class="card">
-    <h2>Sign in</h2>
+    <h2 data-i18n="signin_title">Sign in</h2>
 
     <div class="mt-md grid-2">
       <div>
-        <label>Username</label>
+        <label data-i18n="username">Username</label>
         <input id="loginNameInput" />
       </div>
       <div>
-        <label>Password</label>
+        <label data-i18n="password">Password</label>
         <input id="loginPasswordInput" type="password" />
       </div>
     </div>
 
-    <button id="loginBtn" class="btn btn-primary mt-md" style="width: 100%;">Sign in</button>
+    <button id="loginBtn" class="btn btn-primary mt-md" style="width: 100%;" data-i18n="signin_btn">Sign in</button>
     <div id="loginError" class="error-text" style="display:none;"></div>
   </div>
 </section>
@@ -114,20 +116,20 @@
   <section id="inventoryPanel" class="panel">
     <div class="panel-header">
       <div>
-        <div class="panel-title">Inventory</div>
-        <div class="panel-subtitle">Admin & Manager can add items and manage inventory. Viewer lets you choose any branch list.</div>
+        <div class="panel-title" data-i18n="inventory_title">Inventory</div>
+        <div class="panel-subtitle" data-i18n="inventory_subtitle">Admin & Manager can add items and manage inventory. Viewer lets you choose any branch list.</div>
       </div>
     </div>
 
     <!-- Viewer branch select -->
-    <div class="panel-section-title">View inventory list</div>
+    <div class="panel-section-title" data-i18n="view_inventory_list">View inventory list</div>
     <div class="toolbar">
       <div>
-        <label>Select list</label>
+        <label data-i18n="select_list">Select list</label>
         <select id="inventoryViewBranchSelect"></select>
       </div>
       <div>
-        <button id="inventoryRefreshBtn" class="btn btn-secondary">Refresh</button>
+        <button id="inventoryRefreshBtn" class="btn btn-secondary" data-i18n="refresh">Refresh</button>
       </div>
     </div>
 
@@ -135,13 +137,13 @@
       <table>
         <thead>
         <tr>
-          <th>ID</th>
-          <th>Name</th>
-          <th>Branch</th>
-          <th>Qty</th>
-          <th>Min</th>
-          <th>Unit cost</th>
-          <th>Value</th>
+          <th data-i18n="th_id">ID</th>
+          <th data-i18n="th_name">Name</th>
+          <th data-i18n="th_branch">Branch</th>
+          <th data-i18n="th_qty">Qty</th>
+          <th data-i18n="th_min">Min</th>
+          <th data-i18n="th_unit_cost">Unit cost</th>
+          <th data-i18n="th_value">Value</th>
         </tr>
         </thead>
         <tbody id="itemsTableBody"></tbody>
@@ -150,23 +152,23 @@
 
     <div class="summary-row mt-sm">
       <div class="summary-card">
-        <div class="summary-label">Selected list value (KWD)</div>
+        <div class="summary-label" data-i18n="selected_list_value">Selected list value (KWD)</div>
         <div id="selectedListValue" class="summary-value">0</div>
       </div>
       <div class="summary-card">
-        <div class="summary-label">Main Storage value (KWD)</div>
+        <div class="summary-label" data-i18n="main_storage_value">Main Storage value (KWD)</div>
         <div id="storageTotalValue" class="summary-value">0</div>
       </div>
     </div>
 
-    <div class="panel-section-title mt-md">Restock alerts (Main Storage)</div>
+    <div class="panel-section-title mt-md" data-i18n="restock_alerts">Restock alerts (Main Storage)</div>
     <div class="table-wrapper">
       <table>
         <thead>
         <tr>
-          <th>Item</th>
-          <th>Qty</th>
-          <th>Min</th>
+          <th data-i18n="th_item">Item</th>
+          <th data-i18n="th_qty">Qty</th>
+          <th data-i18n="th_min">Min</th>
         </tr>
         </thead>
         <tbody id="alertsTableBody"></tbody>
@@ -174,59 +176,59 @@
     </div>
 
     <!-- Add/update items -->
-    <div class="panel-section-title mt-md">Add / update items (Admin & Manager)</div>
+    <div class="panel-section-title mt-md" data-i18n="add_update_items">Add / update items (Admin & Manager)</div>
     <div class="grid mt-xs">
       <div>
-        <label>Item ID (auto)</label>
+        <label data-i18n="item_id_auto">Item ID (auto)</label>
         <input id="itemIdInput" placeholder="ITM-001" readonly />
       </div>
       <div>
-        <label>Name</label>
+        <label data-i18n="th_name">Name</label>
         <input id="itemNameInput" />
       </div>
       <div>
-        <label>Branch (where item lives)</label>
+        <label data-i18n="item_branch_where">Branch (where item lives)</label>
         <select id="itemBranchSelect"></select>
       </div>
     </div>
     <div class="grid mt-xs">
       <div>
-        <label>Base quantity</label>
+        <label data-i18n="base_quantity">Base quantity</label>
         <input id="itemBaseQtyInput" type="number" min="0" value="0" />
       </div>
       <div>
-        <label>Minimum quantity (alert)</label>
+        <label data-i18n="minimum_quantity">Minimum quantity (alert)</label>
         <input id="itemMinQtyInput" type="number" min="0" value="0" />
       </div>
       <div>
-        <label>Unit cost</label>
+        <label data-i18n="th_unit_cost">Unit cost</label>
         <input id="itemUnitCostInput" type="number" min="0" step="0.001" value="0" />
       </div>
     </div>
-    <button id="addItemBtn" class="btn btn-primary mt-sm">Save item</button>
+    <button id="addItemBtn" class="btn btn-primary mt-sm" data-i18n="save_item">Save item</button>
   </section>
 
   <!-- Users (Admin) -->
   <section id="usersPanel" class="panel" style="display:none;">
     <div class="panel-header">
       <div>
-        <div class="panel-title">Users & branches</div>
-        <div class="panel-subtitle">Admin can create, edit and delete users and assign them to branches.</div>
+        <div class="panel-title" data-i18n="users_branches">Users & branches</div>
+        <div class="panel-subtitle" data-i18n="users_subtitle">Admin can create, edit and delete users and assign them to branches.</div>
       </div>
     </div>
 
-    <div class="panel-section-title">Create user</div>
+    <div class="panel-section-title" data-i18n="create_user">Create user</div>
     <div class="grid mt-xs">
       <div>
-        <label>Username</label>
+        <label data-i18n="username">Username</label>
         <input id="newUserName" />
       </div>
       <div>
-        <label>Password</label>
+        <label data-i18n="password">Password</label>
         <input id="newUserPassword" />
       </div>
       <div>
-        <label>Role</label>
+        <label data-i18n="role">Role</label>
         <select id="newUserRole">
           <option value="staff">Staff</option>
           <option value="manager">Manager</option>
@@ -237,43 +239,43 @@
     </div>
     <div class="grid mt-xs">
       <div>
-        <label>Branch</label>
+        <label data-i18n="th_branch">Branch</label>
         <select id="newUserBranchSelect"></select>
       </div>
       <div></div>
       <div style="display:flex;align-items:flex-end;">
-        <button id="addUserBtn" class="btn btn-primary" style="width:100%;">Create user</button>
+        <button id="addUserBtn" class="btn btn-primary" style="width:100%;" data-i18n="create_user_btn">Create user</button>
       </div>
     </div>
 
-    <div class="panel-section-title mt-md">Users list</div>
+    <div class="panel-section-title mt-md" data-i18n="users_list">Users list</div>
     <div class="table-wrapper">
       <table>
         <thead>
-        <tr><th>Name</th><th>Role</th><th>Branch</th></tr>
+        <tr><th data-i18n="th_name">Name</th><th data-i18n="role">Role</th><th data-i18n="th_branch">Branch</th></tr>
         </thead>
         <tbody id="usersTableBody"></tbody>
       </table>
     </div>
 
-    <div class="panel-section-title mt-md">Edit / delete user</div>
+    <div class="panel-section-title mt-md" data-i18n="edit_delete_user">Edit / delete user</div>
     <div class="grid mt-xs">
       <div>
-        <label>Select user</label>
+        <label data-i18n="select_user">Select user</label>
         <select id="editUserSelect"></select>
       </div>
     </div>
     <div class="grid mt-xs">
       <div>
-        <label>Name</label>
+        <label data-i18n="th_name">Name</label>
         <input id="editUserName" />
       </div>
       <div>
-        <label>Password (leave empty to keep)</label>
+        <label data-i18n="password_keep">Password (leave empty to keep)</label>
         <input id="editUserPassword" type="password" />
       </div>
       <div>
-        <label>Role</label>
+        <label data-i18n="role">Role</label>
         <select id="editUserRole">
           <option value="staff">Staff</option>
           <option value="manager">Manager</option>
@@ -284,12 +286,12 @@
     </div>
     <div class="grid mt-xs">
       <div>
-        <label>Branch</label>
+        <label data-i18n="th_branch">Branch</label>
         <select id="editUserBranchSelect"></select>
       </div>
       <div style="display:flex;align-items:flex-end;gap:0.4rem;">
-        <button id="saveUserChangesBtn" class="btn btn-primary" style="flex:1;">Save changes</button>
-        <button id="deleteUserBtn" class="btn btn-secondary" style="flex:1;">Delete user</button>
+        <button id="saveUserChangesBtn" class="btn btn-primary" style="flex:1;" data-i18n="save_changes">Save changes</button>
+        <button id="deleteUserBtn" class="btn btn-secondary" style="flex:1;" data-i18n="delete_user">Delete user</button>
       </div>
     </div>
   </section>
@@ -298,47 +300,54 @@
   <section id="requestsPanel" class="panel">
     <div class="panel-header">
       <div>
-        <div class="panel-title">Branch requests</div>
-        <div class="panel-subtitle">Staff / Manager / Admin request items from Main Storage to their own branch.</div>
+        <div class="panel-title" data-i18n="branch_requests">Branch requests</div>
+        <div class="panel-subtitle" data-i18n="requests_subtitle">Staff / Manager / Admin request items from Main Storage to their own branch.</div>
       </div>
     </div>
 
-    <div class="panel-section-title">New request</div>
+    <div class="panel-section-title" data-i18n="new_request">New request</div>
     <div class="grid mt-xs">
       <div>
-        <label>From storage</label>
+        <label data-i18n="from_storage">From storage</label>
         <div id="requestFromBranchLabel" class="text-muted" style="font-size:0.85rem;"></div>
       </div>
       <div>
-        <label>To branch</label>
+        <label data-i18n="to_branch">To branch</label>
         <div id="requestToBranchLabel" class="text-muted" style="font-size:0.85rem;"></div>
       </div>
       <div>
-        <label>Item (from storage)</label>
+        <label data-i18n="item_from_storage">Item (from storage)</label>
         <select id="requestItemSelect"></select>
       </div>
     </div>
 
     <div class="grid mt-xs">
       <div>
-        <label>Quantity</label>
+        <label data-i18n="quantity">Quantity</label>
         <input id="requestQtyInput" type="number" min="1" value="1" />
       </div>
       <div>
-        <label>Note</label>
+        <label data-i18n="note">Note</label>
         <input id="requestNoteInput" />
       </div>
       <div style="display:flex;align-items:flex-end;">
-        <button id="createRequestBtn" class="btn btn-primary" style="width:100%;">Create request</button>
+        <button id="createRequestBtn" class="btn btn-primary" style="width:100%;" data-i18n="create_request">Create request</button>
       </div>
     </div>
 
-    <div class="panel-section-title mt-md">Requests for my branch</div>
+    <div class="panel-section-title mt-md" data-i18n="requests_for_my_branch">Requests for my branch</div>
     <div class="table-wrapper">
       <table>
         <thead>
         <tr>
-          <th>ID</th><th>Item</th><th>Qty</th><th>From</th><th>To</th><th>Status</th><th>By</th><th>Driver</th>
+          <th data-i18n="th_id">ID</th>
+          <th data-i18n="th_item">Item</th>
+          <th data-i18n="th_qty">Qty</th>
+          <th data-i18n="th_from">From</th>
+          <th data-i18n="th_to">To</th>
+          <th data-i18n="th_status">Status</th>
+          <th data-i18n="th_by">By</th>
+          <th data-i18n="th_driver">Driver</th>
         </tr>
         </thead>
         <tbody id="requestsTableBody"></tbody>
@@ -350,8 +359,8 @@
   <section id="driverPanel" class="panel" style="display:none;">
     <div class="panel-header">
       <div>
-        <div class="panel-title">Driver deliveries</div>
-        <div class="panel-subtitle">Drivers see all pending requests and mark them as delivered.</div>
+        <div class="panel-title" data-i18n="driver_deliveries">Driver deliveries</div>
+        <div class="panel-subtitle" data-i18n="driver_subtitle">Drivers see all pending requests and mark them as delivered.</div>
       </div>
     </div>
 
@@ -359,7 +368,14 @@
       <table>
         <thead>
         <tr>
-          <th>ID</th><th>Item</th><th>Qty</th><th>From</th><th>To</th><th>Requested by</th><th>Status</th><th>Action</th>
+          <th data-i18n="th_id">ID</th>
+          <th data-i18n="th_item">Item</th>
+          <th data-i18n="th_qty">Qty</th>
+          <th data-i18n="th_from">From</th>
+          <th data-i18n="th_to">To</th>
+          <th data-i18n="th_requested_by">Requested by</th>
+          <th data-i18n="th_status">Status</th>
+          <th data-i18n="th_action">Action</th>
         </tr>
         </thead>
         <tbody id="driverRequestsTableBody"></tbody>
@@ -371,43 +387,51 @@
   <section id="movementsPanel" class="panel">
     <div class="panel-header">
       <div>
-        <div class="panel-title">Manual stock movements</div>
-        <div class="panel-subtitle">Only Admin & Manager can record IN / OUT movements that change stock.</div>
+        <div class="panel-title" data-i18n="manual_movements">Manual stock movements</div>
+        <div class="panel-subtitle" data-i18n="movements_subtitle">Only Admin & Manager can record IN / OUT movements that change stock.</div>
       </div>
     </div>
 
     <div class="grid mt-xs">
       <div>
-        <label>Item</label>
+        <label data-i18n="th_item">Item</label>
         <select id="movementItemSelect"></select>
       </div>
       <div>
-        <label>Type</label>
+        <label data-i18n="type">Type</label>
         <select id="movementTypeSelect">
           <option value="IN">IN (add)</option>
           <option value="OUT">OUT (remove)</option>
         </select>
       </div>
       <div>
-        <label>Quantity</label>
+        <label data-i18n="quantity">Quantity</label>
         <input id="movementQtyInput" type="number" min="1" value="1" />
       </div>
     </div>
     <div class="grid mt-xs">
       <div>
-        <label>Note</label>
+        <label data-i18n="note">Note</label>
         <input id="movementNoteInput" />
       </div>
       <div style="display:flex;align-items:flex-end;">
-        <button id="addMovementBtn" class="btn btn-primary" style="width:100%;">Save movement</button>
+        <button id="addMovementBtn" class="btn btn-primary" style="width:100%;" data-i18n="save_movement">Save movement</button>
       </div>
     </div>
 
-    <div class="panel-section-title mt-md">Recent movements</div>
+    <div class="panel-section-title mt-md" data-i18n="recent_movements">Recent movements</div>
     <div class="table-wrapper">
       <table>
         <thead>
-        <tr><th>ID</th><th>Item</th><th>Type</th><th>Qty</th><th>Branch</th><th>User</th><th>Time</th></tr>
+        <tr>
+          <th data-i18n="th_id">ID</th>
+          <th data-i18n="th_item">Item</th>
+          <th data-i18n="type">Type</th>
+          <th data-i18n="th_qty">Qty</th>
+          <th data-i18n="th_branch">Branch</th>
+          <th data-i18n="th_user">User</th>
+          <th data-i18n="th_time">Time</th>
+        </tr>
         </thead>
         <tbody id="movementsTableBody"></tbody>
       </table>
@@ -418,48 +442,54 @@
   <section id="analyticsPanel" class="panel" style="display:none;">
     <div class="panel-header">
       <div>
-        <div class="panel-title">Budget & usage dashboard</div>
-        <div class="panel-subtitle">Automatic spend calculation from delivered requests (qty × item price), filter by date and branch.</div>
+        <div class="panel-title" data-i18n="analytics_title">Budget & usage dashboard</div>
+        <div class="panel-subtitle" data-i18n="analytics_subtitle">Automatic spend calculation from delivered requests (qty × item price), filter by date and branch.</div>
       </div>
     </div>
 
     <div class="grid mt-xs">
       <div>
-        <label>Branch</label>
+        <label data-i18n="th_branch">Branch</label>
         <select id="analyticsBranchSelect">
           <option value="ALL">All branches</option>
         </select>
       </div>
       <div>
-        <label>From date</label>
+        <label data-i18n="from_date">From date</label>
         <input id="analyticsFromDate" type="date" />
       </div>
       <div>
-        <label>To date</label>
+        <label data-i18n="to_date">To date</label>
         <input id="analyticsToDate" type="date" />
       </div>
     </div>
-    <button id="analyticsApplyBtn" class="btn btn-primary mt-sm">Apply filters</button>
+    <button id="analyticsApplyBtn" class="btn btn-primary mt-sm" data-i18n="apply_filters">Apply filters</button>
 
     <div class="summary-row mt-sm">
       <div class="summary-card">
-        <div class="summary-label">Total spent (KWD)</div>
+        <div class="summary-label" data-i18n="total_spent">Total spent (KWD)</div>
         <div id="analyticsTotalCost" class="summary-value">0</div>
       </div>
       <div class="summary-card">
-        <div class="summary-label">Delivered requests</div>
+        <div class="summary-label" data-i18n="delivered_requests">Delivered requests</div>
         <div id="analyticsTotalRequests" class="summary-value">0</div>
       </div>
       <div class="summary-card">
-        <div class="summary-label">Total quantity</div>
+        <div class="summary-label" data-i18n="total_quantity">Total quantity</div>
         <div id="analyticsTotalQty" class="summary-value">0</div>
       </div>
     </div>
 
-    <div class="panel-section-title mt-md">Most ordered items (by cost)</div>
+    <div class="panel-section-title mt-md" data-i18n="most_ordered">Most ordered items (by cost)</div>
     <div class="table-wrapper">
       <table>
-        <thead><tr><th>Item</th><th>Total qty</th><th>Total cost</th></tr></thead>
+        <thead>
+          <tr>
+            <th data-i18n="th_item">Item</th>
+            <th data-i18n="th_total_qty">Total qty</th>
+            <th data-i18n="th_total_cost">Total cost</th>
+          </tr>
+        </thead>
         <tbody id="analyticsItemsTableBody"></tbody>
       </table>
     </div>
@@ -469,35 +499,35 @@
   <section id="vehiclePanel" class="panel" style="display:none;">
     <div class="panel-header">
       <div>
-        <div class="panel-title">Vehicle reminders</div>
-        <div class="panel-subtitle">Oil change, meter, yearly renewal. Admin/Manager can add; Driver can mark done.</div>
+        <div class="panel-title" data-i18n="vehicle_reminders">Vehicle reminders</div>
+        <div class="panel-subtitle" data-i18n="vehicle_subtitle">Oil change, meter, yearly renewal. Admin/Manager can add; Driver can mark done.</div>
       </div>
     </div>
 
     <div id="vehicleCreateBlock" style="display:none;">
-      <div class="panel-section-title">Add vehicle (Admin/Manager)</div>
+      <div class="panel-section-title" data-i18n="add_vehicle">Add vehicle (Admin/Manager)</div>
       <div class="grid mt-xs">
         <div>
-          <label>Vehicle name</label>
+          <label data-i18n="vehicle_name">Vehicle name</label>
           <input id="vehNameInput" placeholder="Delivery Car 1" />
         </div>
         <div>
-          <label>Plate (optional)</label>
+          <label data-i18n="plate_optional">Plate (optional)</label>
           <input id="vehPlateInput" placeholder="KUWAIT-12345" />
         </div>
         <div style="display:flex;align-items:flex-end;">
-          <button id="addVehicleBtn" class="btn btn-primary" style="width:100%;">Add vehicle</button>
+          <button id="addVehicleBtn" class="btn btn-primary" style="width:100%;" data-i18n="add_vehicle_btn">Add vehicle</button>
         </div>
       </div>
 
-      <div class="panel-section-title mt-md">Add reminder (Admin/Manager)</div>
+      <div class="panel-section-title mt-md" data-i18n="add_reminder">Add reminder (Admin/Manager)</div>
       <div class="grid mt-xs">
         <div>
-          <label>Vehicle</label>
+          <label data-i18n="vehicle">Vehicle</label>
           <select id="remVehicleSelect"></select>
         </div>
         <div>
-          <label>Type</label>
+          <label data-i18n="type">Type</label>
           <select id="remTypeSelect">
             <option value="OIL_CHANGE">Oil change</option>
             <option value="METER">Meter</option>
@@ -506,29 +536,29 @@
           </select>
         </div>
         <div>
-          <label>Due date</label
-          ><input id="remDueDateInput" type="date" />
+          <label data-i18n="due_date">Due date</label>
+          <input id="remDueDateInput" type="date" />
         </div>
       </div>
       <div class="grid mt-xs">
         <div>
-          <label>Due odometer (km)</label>
+          <label data-i18n="due_odometer">Due odometer (km)</label>
           <input id="remDueOdoInput" type="number" min="0" placeholder="e.g. 50000" />
         </div>
         <div>
-          <label>Note</label>
+          <label data-i18n="note">Note</label>
           <input id="remNoteInput" placeholder="Change oil filter too..." />
         </div>
         <div style="display:flex;align-items:flex-end;">
-          <button id="addReminderBtn" class="btn btn-primary" style="width:100%;">Add reminder</button>
+          <button id="addReminderBtn" class="btn btn-primary" style="width:100%;" data-i18n="add_reminder_btn">Add reminder</button>
         </div>
       </div>
     </div>
 
-    <div class="panel-section-title mt-md">Reminders</div>
+    <div class="panel-section-title mt-md" data-i18n="reminders">Reminders</div>
     <div class="toolbar">
       <div>
-        <label>Filter</label>
+        <label data-i18n="filter">Filter</label>
         <select id="remFilterSelect">
           <option value="open">Open</option>
           <option value="all">All</option>
@@ -536,11 +566,11 @@
         </select>
       </div>
       <div>
-        <label>Vehicle</label>
+        <label data-i18n="vehicle">Vehicle</label>
         <select id="remVehicleFilterSelect"></select>
       </div>
       <div>
-        <button id="remRefreshBtn" class="btn btn-secondary">Refresh</button>
+        <button id="remRefreshBtn" class="btn btn-secondary" data-i18n="refresh">Refresh</button>
       </div>
     </div>
 
@@ -548,13 +578,13 @@
       <table>
         <thead>
         <tr>
-          <th>Status</th>
-          <th>Vehicle</th>
-          <th>Type</th>
-          <th>Due</th>
-          <th>Odometer</th>
-          <th>Note</th>
-          <th>Action</th>
+          <th data-i18n="th_status">Status</th>
+          <th data-i18n="vehicle">Vehicle</th>
+          <th data-i18n="type">Type</th>
+          <th data-i18n="due">Due</th>
+          <th data-i18n="odometer">Odometer</th>
+          <th data-i18n="note">Note</th>
+          <th data-i18n="th_action">Action</th>
         </tr>
         </thead>
         <tbody id="remindersTableBody"></tbody>
@@ -566,6 +596,375 @@
 
 <script>
   const API_BASE = "/api";
+
+  // ---------- i18n ----------
+  const i18n = {
+    en: {
+      app_title: "Storage Manage Method",
+      app_subtitle: "Branch → Storage orders, drivers & analytics",
+      logout: "Logout",
+      signin_title: "Sign in",
+      signin_btn: "Sign in",
+      username: "Username",
+      password: "Password",
+
+      inventory_title: "Inventory",
+      inventory_subtitle: "Admin & Manager can add items and manage inventory. Viewer lets you choose any branch list.",
+      view_inventory_list: "View inventory list",
+      select_list: "Select list",
+      refresh: "Refresh",
+
+      th_id: "ID",
+      th_name: "Name",
+      th_branch: "Branch",
+      th_qty: "Qty",
+      th_min: "Min",
+      th_unit_cost: "Unit cost",
+      th_value: "Value",
+      th_item: "Item",
+      th_from: "From",
+      th_to: "To",
+      th_status: "Status",
+      th_by: "By",
+      th_driver: "Driver",
+      th_action: "Action",
+      th_user: "User",
+      th_time: "Time",
+      th_requested_by: "Requested by",
+      th_total_qty: "Total qty",
+      th_total_cost: "Total cost",
+
+      selected_list_value: "Selected list value (KWD)",
+      main_storage_value: "Main Storage value (KWD)",
+      restock_alerts: "Restock alerts (Main Storage)",
+      add_update_items: "Add / update items (Admin & Manager)",
+      item_id_auto: "Item ID (auto)",
+      item_branch_where: "Branch (where item lives)",
+      base_quantity: "Base quantity",
+      minimum_quantity: "Minimum quantity (alert)",
+      save_item: "Save item",
+
+      users_branches: "Users & branches",
+      users_subtitle: "Admin can create, edit and delete users and assign them to branches.",
+      create_user: "Create user",
+      role: "Role",
+      create_user_btn: "Create user",
+      users_list: "Users list",
+      edit_delete_user: "Edit / delete user",
+      select_user: "Select user",
+      password_keep: "Password (leave empty to keep)",
+      save_changes: "Save changes",
+      delete_user: "Delete user",
+
+      branch_requests: "Branch requests",
+      requests_subtitle: "Staff / Manager / Admin request items from Main Storage to their own branch.",
+      new_request: "New request",
+      from_storage: "From storage",
+      to_branch: "To branch",
+      item_from_storage: "Item (from storage)",
+      quantity: "Quantity",
+      note: "Note",
+      create_request: "Create request",
+      requests_for_my_branch: "Requests for my branch",
+
+      driver_deliveries: "Driver deliveries",
+      driver_subtitle: "Drivers see all pending requests and mark them as delivered.",
+
+      manual_movements: "Manual stock movements",
+      movements_subtitle: "Only Admin & Manager can record IN / OUT movements that change stock.",
+      type: "Type",
+      save_movement: "Save movement",
+      recent_movements: "Recent movements",
+
+      analytics_title: "Budget & usage dashboard",
+      analytics_subtitle: "Automatic spend calculation from delivered requests (qty × item price), filter by date and branch.",
+      from_date: "From date",
+      to_date: "To date",
+      apply_filters: "Apply filters",
+      total_spent: "Total spent (KWD)",
+      delivered_requests: "Delivered requests",
+      total_quantity: "Total quantity",
+      most_ordered: "Most ordered items (by cost)",
+
+      vehicle_reminders: "Vehicle reminders",
+      vehicle_subtitle: "Oil change, meter, yearly renewal. Admin/Manager can add; Driver can mark done.",
+      add_vehicle: "Add vehicle (Admin/Manager)",
+      vehicle_name: "Vehicle name",
+      plate_optional: "Plate (optional)",
+      add_vehicle_btn: "Add vehicle",
+      add_reminder: "Add reminder (Admin/Manager)",
+      vehicle: "Vehicle",
+      due_date: "Due date",
+      due_odometer: "Due odometer (km)",
+      add_reminder_btn: "Add reminder",
+      reminders: "Reminders",
+      filter: "Filter",
+      due: "Due",
+      odometer: "Odometer",
+
+      main_storage: "Main Storage",
+      no_items_in: "No items in",
+      no_low_stock: "No low stock alerts in Main Storage.",
+
+      // statuses / actions
+      pending: "pending",
+      delivered: "delivered",
+      deliver: "Deliver",
+
+      // alerts / validations (JS)
+      enter_user_pass: "Enter username and password.",
+      login_failed: "Login failed",
+      load_state_failed: "Load state failed",
+      next_item_failed: "Failed to get next item id",
+
+      only_admin_create_users: "Only admin can create users.",
+      name_password_required: "Name and password required.",
+      select_user_first: "Select a user first.",
+      delete_user_confirm: "Delete this user?",
+      user_updated: "User updated.",
+      user_deleted: "User deleted.",
+
+      only_admin_mgr_create_items: "Only admin/manager can create items.",
+      item_name_required: "Item name required.",
+
+      only_admin_mgr_movements: "Only admin/manager can record movements.",
+      item_qty_required: "Item and quantity required.",
+
+      drivers_cannot_create: "Drivers cannot create requests.",
+      user_no_branch: "Your user is not assigned to a branch. Ask admin.",
+
+      mark_delivered_confirm: "Mark this request as delivered?",
+      no_requests_yet: "No requests yet.",
+      no_pending_requests: "No pending requests.",
+
+      no_movements: "No movements recorded.",
+      no_delivered_period: "No delivered requests in this period.",
+
+      vehicle_name_required_msg: "Vehicle name required",
+      select_vehicle_msg: "Select a vehicle",
+      no_reminders: "No reminders.",
+
+      reopen: "Re-open",
+      done: "Done",
+      delete_reminder: "Delete",
+      delete_reminder_confirm: "Delete this reminder?"
+    },
+    ar: {
+      app_title: "إدارة المخزون",
+      app_subtitle: "الفروع → طلبات المخزن، السائقين والتحليلات",
+      logout: "تسجيل خروج",
+      signin_title: "تسجيل الدخول",
+      signin_btn: "دخول",
+      username: "اسم المستخدم",
+      password: "كلمة المرور",
+
+      inventory_title: "المخزون",
+      inventory_subtitle: "المدير والمشرف يمكنهم إضافة الأصناف وإدارة المخزون. العرض يسمح باختيار أي قائمة فرع.",
+      view_inventory_list: "عرض قائمة المخزون",
+      select_list: "اختر القائمة",
+      refresh: "تحديث",
+
+      th_id: "الرقم",
+      th_name: "الاسم",
+      th_branch: "الفرع",
+      th_qty: "الكمية",
+      th_min: "الحد الأدنى",
+      th_unit_cost: "سعر الوحدة",
+      th_value: "القيمة",
+      th_item: "الصنف",
+      th_from: "من",
+      th_to: "إلى",
+      th_status: "الحالة",
+      th_by: "بواسطة",
+      th_driver: "السائق",
+      th_action: "إجراء",
+      th_user: "المستخدم",
+      th_time: "الوقت",
+      th_requested_by: "طالب الطلب",
+      th_total_qty: "إجمالي الكمية",
+      th_total_cost: "إجمالي التكلفة",
+
+      selected_list_value: "قيمة القائمة المختارة (د.ك)",
+      main_storage_value: "قيمة المخزن الرئيسي (د.ك)",
+      restock_alerts: "تنبيهات إعادة التوريد (المخزن الرئيسي)",
+      add_update_items: "إضافة / تعديل الأصناف (مدير/مشرف)",
+      item_id_auto: "رقم الصنف (تلقائي)",
+      item_branch_where: "الفرع (مكان الصنف)",
+      base_quantity: "الكمية الأساسية",
+      minimum_quantity: "الحد الأدنى (تنبيه)",
+      save_item: "حفظ الصنف",
+
+      users_branches: "المستخدمون والفروع",
+      users_subtitle: "المشرف يمكنه إنشاء وتعديل وحذف المستخدمين وربطهم بالفروع.",
+      create_user: "إنشاء مستخدم",
+      role: "الدور",
+      create_user_btn: "إنشاء مستخدم",
+      users_list: "قائمة المستخدمين",
+      edit_delete_user: "تعديل / حذف مستخدم",
+      select_user: "اختر مستخدم",
+      password_keep: "كلمة المرور (اتركها فارغة للإبقاء)",
+      save_changes: "حفظ التعديل",
+      delete_user: "حذف المستخدم",
+
+      branch_requests: "طلبات الفروع",
+      requests_subtitle: "الموظف/المدير/المشرف يطلبون أصناف من المخزن الرئيسي إلى فرعهم.",
+      new_request: "طلب جديد",
+      from_storage: "من المخزن",
+      to_branch: "إلى الفرع",
+      item_from_storage: "الصنف (من المخزن)",
+      quantity: "الكمية",
+      note: "ملاحظة",
+      create_request: "إنشاء طلب",
+      requests_for_my_branch: "طلبات فرعي",
+
+      driver_deliveries: "تسليمات السائق",
+      driver_subtitle: "السائق يرى الطلبات المعلّقة ويؤكد التسليم.",
+
+      manual_movements: "حركات مخزون يدوية",
+      movements_subtitle: "فقط المشرف/المدير يمكنهم تسجيل إدخال/إخراج يؤثر على المخزون.",
+      type: "النوع",
+      save_movement: "حفظ الحركة",
+      recent_movements: "آخر الحركات",
+
+      analytics_title: "لوحة الميزانية والاستخدام",
+      analytics_subtitle: "حساب الصرف تلقائيًا من الطلبات المسلّمة (الكمية × السعر)، مع فلترة بالتاريخ والفرع.",
+      from_date: "من تاريخ",
+      to_date: "إلى تاريخ",
+      apply_filters: "تطبيق الفلاتر",
+      total_spent: "إجمالي الصرف (د.ك)",
+      delivered_requests: "الطلبات المسلّمة",
+      total_quantity: "إجمالي الكمية",
+      most_ordered: "الأكثر طلبًا (حسب التكلفة)",
+
+      vehicle_reminders: "تنبيهات المركبات",
+      vehicle_subtitle: "تغيير زيت، عداد، تجديد سنوي. المدير/المشرف يضيفون؛ السائق يعلّم منجز.",
+      add_vehicle: "إضافة مركبة (مدير/مشرف)",
+      vehicle_name: "اسم المركبة",
+      plate_optional: "اللوحة (اختياري)",
+      add_vehicle_btn: "إضافة مركبة",
+      add_reminder: "إضافة تذكير (مدير/مشرف)",
+      vehicle: "المركبة",
+      due_date: "تاريخ الاستحقاق",
+      due_odometer: "عداد الاستحقاق (كم)",
+      add_reminder_btn: "إضافة تذكير",
+      reminders: "التذكيرات",
+      filter: "فلتر",
+      due: "الاستحقاق",
+      odometer: "العداد",
+
+      main_storage: "المخزن الرئيسي",
+      no_items_in: "لا توجد أصناف في",
+      no_low_stock: "لا توجد تنبيهات نقص في المخزن الرئيسي.",
+
+      pending: "قيد الانتظار",
+      delivered: "تم التسليم",
+      deliver: "تسليم",
+
+      enter_user_pass: "اكتب اسم المستخدم وكلمة المرور.",
+      login_failed: "فشل تسجيل الدخول",
+      load_state_failed: "فشل تحميل البيانات",
+      next_item_failed: "فشل جلب رقم الصنف التالي",
+
+      only_admin_create_users: "فقط المشرف يمكنه إنشاء مستخدمين.",
+      name_password_required: "الاسم وكلمة المرور مطلوبة.",
+      select_user_first: "اختر مستخدم أولاً.",
+      delete_user_confirm: "حذف هذا المستخدم؟",
+      user_updated: "تم تحديث المستخدم.",
+      user_deleted: "تم حذف المستخدم.",
+
+      only_admin_mgr_create_items: "فقط المشرف/المدير يمكنهم إضافة أصناف.",
+      item_name_required: "اسم الصنف مطلوب.",
+
+      only_admin_mgr_movements: "فقط المشرف/المدير يمكنهم تسجيل الحركات.",
+      item_qty_required: "الصنف والكمية مطلوبة.",
+
+      drivers_cannot_create: "السائق لا يستطيع إنشاء طلب.",
+      user_no_branch: "المستخدم غير مرتبط بفرع. اطلب من المشرف.",
+
+      mark_delivered_confirm: "تأكيد تسليم هذا الطلب؟",
+      no_requests_yet: "لا توجد طلبات بعد.",
+      no_pending_requests: "لا توجد طلبات معلّقة.",
+
+      no_movements: "لا توجد حركات مسجلة.",
+      no_delivered_period: "لا توجد طلبات مسلّمة في هذه الفترة.",
+
+      vehicle_name_required_msg: "اسم المركبة مطلوب",
+      select_vehicle_msg: "اختر مركبة",
+      no_reminders: "لا توجد تذكيرات.",
+
+      reopen: "إعادة فتح",
+      done: "تم",
+      delete_reminder: "حذف",
+      delete_reminder_confirm: "حذف هذا التذكير؟"
+    }
+  };
+
+  let currentLang = localStorage.getItem("lang") || "en";
+
+  function t(key) {
+    return (i18n[currentLang] && i18n[currentLang][key]) || i18n.en[key] || key;
+  }
+
+  function applyTranslations() {
+    document.documentElement.lang = currentLang;
+    document.documentElement.dir = (currentLang === "ar") ? "rtl" : "ltr";
+
+    document.querySelectorAll("[data-i18n]").forEach(el => {
+      const key = el.getAttribute("data-i18n");
+      el.textContent = t(key);
+    });
+
+    // keep role options translated visually (optional)
+    const roleOptions = [
+      { value: "staff", en: "Staff", ar: "موظف" },
+      { value: "manager", en: "Manager", ar: "مدير" },
+      { value: "driver", en: "Driver", ar: "سائق" },
+      { value: "admin", en: "Admin", ar: "مشرف" }
+    ];
+    const roleSelects = [document.getElementById("newUserRole"), document.getElementById("editUserRole")].filter(Boolean);
+    roleSelects.forEach(sel => {
+      Array.from(sel.options).forEach(opt => {
+        const ro = roleOptions.find(r => r.value === opt.value);
+        if (ro) opt.textContent = (currentLang === "ar") ? ro.ar : ro.en;
+      });
+    });
+
+    // movement type options (optional)
+    const movementTypeSelect = document.getElementById("movementTypeSelect");
+    if (movementTypeSelect) {
+      const inOpt = movementTypeSelect.querySelector('option[value="IN"]');
+      const outOpt = movementTypeSelect.querySelector('option[value="OUT"]');
+      if (inOpt) inOpt.textContent = (currentLang === "ar") ? "إدخال (زيادة)" : "IN (add)";
+      if (outOpt) outOpt.textContent = (currentLang === "ar") ? "إخراج (نقص)" : "OUT (remove)";
+    }
+
+    // reminders filters (optional)
+    const remFilterSelect = document.getElementById("remFilterSelect");
+    if (remFilterSelect) {
+      const openOpt = remFilterSelect.querySelector('option[value="open"]');
+      const allOpt = remFilterSelect.querySelector('option[value="all"]');
+      const doneOpt = remFilterSelect.querySelector('option[value="done"]');
+      if (openOpt) openOpt.textContent = (currentLang === "ar") ? "مفتوح" : "Open";
+      if (allOpt) allOpt.textContent = (currentLang === "ar") ? "الكل" : "All";
+      if (doneOpt) doneOpt.textContent = (currentLang === "ar") ? "منجز" : "Done";
+    }
+
+    const remTypeSelect = document.getElementById("remTypeSelect");
+    if (remTypeSelect) {
+      const oil = remTypeSelect.querySelector('option[value="OIL_CHANGE"]');
+      const meter = remTypeSelect.querySelector('option[value="METER"]');
+      const yearly = remTypeSelect.querySelector('option[value="YEARLY_RENEW"]');
+      const other = remTypeSelect.querySelector('option[value="OTHER"]');
+      if (oil) oil.textContent = (currentLang === "ar") ? "تغيير زيت" : "Oil change";
+      if (meter) meter.textContent = (currentLang === "ar") ? "عداد" : "Meter";
+      if (yearly) yearly.textContent = (currentLang === "ar") ? "تجديد سنوي" : "Yearly renewal";
+      if (other) other.textContent = (currentLang === "ar") ? "أخرى" : "Other";
+    }
+
+    const langBtn = document.getElementById("langBtn");
+    if (langBtn) langBtn.textContent = (currentLang === "ar") ? "EN" : "AR";
+  }
+  // ---------- end i18n ----------
 
   const state = {
     user: null,
@@ -579,38 +978,15 @@
     vehicleReminders: []
   };
 
-  // ===== Arabic labels next to English (same UI, no toggle) =====
-  const AR = {
-    branches: {
-      B001: "المخزن الرئيسي",
-      // ضيفي باقي الفروع هنا حسب IDs عندك
-      // مثال:
-      // B002: "اليرموك",
-      // B003: "الأفنيوز",
-    },
-    ui: {
-      mainStorage: "Main Storage - المخزن الرئيسي",
-      allBranches: "All branches - كل الفروع",
-      allVehicles: "All vehicles - كل السيارات",
-      selectUser: "Select user - اختر مستخدم"
-    }
-  };
-
-  function withAr(en, ar) {
-    if (!en && !ar) return "";
-    if (!ar) return en || "";
-    if (!en) return ar || "";
-    return `${en} - ${ar}`;
+  // ----- Helpers -----
+  function escapeHtml(s) {
+    return String(s || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
   }
 
-  // ----- Helpers -----
   function getBranchName(id) {
     const b = state.branches.find((x) => x.id === id);
-    const en = b ? b.name : (id || "");
-    const ar = AR.branches[id] || "";
-    return withAr(en, ar);
+    return b ? b.name : id || "";
   }
-
   function getUserName(id) {
     const u = state.users.find((x) => x.id === id);
     return u ? u.name : id || "";
@@ -625,8 +1001,6 @@
     return d.toLocaleString();
   }
   function getMainStorageId() {
-    // server uses MAIN_STORAGE_BRANCH_ID; client assumes branches[0] is not safe.
-    // We'll find by branchId "B001" if exists else fallback: name includes "main"
     const byId = state.branches.find((b) => b.id === "B001");
     if (byId) return byId.id;
     const byName = state.branches.find((b) => (b.name || "").toLowerCase().includes("main"));
@@ -634,11 +1008,11 @@
     return state.branches[0] ? state.branches[0].id : null;
   }
 
-  function typeLabel(t) {
-    if (t === "OIL_CHANGE") return "Oil change";
-    if (t === "METER") return "Meter";
-    if (t === "YEARLY_RENEW") return "Yearly renewal";
-    return "Other";
+  function typeLabel(tKey) {
+    if (tKey === "OIL_CHANGE") return (currentLang === "ar") ? "تغيير زيت" : "Oil change";
+    if (tKey === "METER") return (currentLang === "ar") ? "عداد" : "Meter";
+    if (tKey === "YEARLY_RENEW") return (currentLang === "ar") ? "تجديد سنوي" : "Yearly renewal";
+    return (currentLang === "ar") ? "أخرى" : "Other";
   }
   function vehicleNameById(id) {
     const v = (state.vehicles || []).find(x => x.id === id);
@@ -654,21 +1028,21 @@
       body: JSON.stringify({ name, password })
     });
     const body = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(body.error || "Login failed");
+    if (!res.ok) throw new Error(body.error || t("login_failed"));
     return body;
   }
 
   async function apiLoadState() {
     const res = await fetch(`${API_BASE}/state`);
     const body = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(body.error || "Load state failed");
+    if (!res.ok) throw new Error(body.error || t("load_state_failed"));
     return body;
   }
 
   async function apiNextItemId() {
     const res = await fetch(`${API_BASE}/next-item-id`);
     const body = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(body.error || "Failed to get next item id");
+    if (!res.ok) throw new Error(body.error || t("next_item_failed"));
     return body.nextId;
   }
 
@@ -809,8 +1183,8 @@
     headerUser.textContent = state.user.name;
     headerUser.style.display = "inline-flex";
 
-    const branchText = state.user.branchId ? ` | Branch: ${getBranchName(state.user.branchId)}` : "";
-    headerRole.textContent = `Role: ${state.user.role}${branchText}`;
+    const branchText = state.user.branchId ? ` | ${currentLang === "ar" ? "الفرع" : "Branch"}: ${getBranchName(state.user.branchId)}` : "";
+    headerRole.textContent = `${currentLang === "ar" ? "الدور" : "Role"}: ${state.user.role}${branchText}`;
     headerRole.style.display = "inline-flex";
 
     logoutBtn.style.display = "inline-flex";
@@ -829,7 +1203,7 @@
       state.branches.forEach((b, idx) => {
         const opt = document.createElement("option");
         opt.value = b.id;
-        opt.textContent = getBranchName(b.id);
+        opt.textContent = b.name;
         if (idx === 0) opt.selected = true;
         sel.appendChild(opt);
       });
@@ -843,10 +1217,9 @@
       state.branches.forEach((b) => {
         const opt = document.createElement("option");
         opt.value = b.id;
-        opt.textContent = b.id === mainId ? `${getBranchName(b.id)} (${AR.ui.mainStorage})` : getBranchName(b.id);
+        opt.textContent = b.id === mainId ? `${b.name} (${t("main_storage")})` : b.name;
         invSel.appendChild(opt);
       });
-      // default view = main storage
       if (mainId) invSel.value = mainId;
     }
 
@@ -861,12 +1234,12 @@
       analyticsBranchSelect.innerHTML = "";
       const allOpt = document.createElement("option");
       allOpt.value = "ALL";
-      allOpt.textContent = AR.ui.allBranches;
+      allOpt.textContent = (currentLang === "ar") ? "كل الفروع" : "All branches";
       analyticsBranchSelect.appendChild(allOpt);
       state.branches.forEach((b) => {
         const opt = document.createElement("option");
         opt.value = b.id;
-        opt.textContent = getBranchName(b.id);
+        opt.textContent = b.name;
         analyticsBranchSelect.appendChild(opt);
       });
     }
@@ -888,18 +1261,16 @@
     const itemsSelected = (state.items || []).filter(it => it.branchId === selectedBranchId);
     const itemsMain = (state.items || []).filter(it => it.branchId === mainId);
 
-    // Totals
     const selectedTotal = itemsSelected.reduce((sum, it) => sum + (Number(it.baseQty)||0)*(Number(it.unitCost)||0), 0);
     const storageTotal = itemsMain.reduce((sum, it) => sum + (Number(it.baseQty)||0)*(Number(it.unitCost)||0), 0);
 
     if (selectedValueEl) selectedValueEl.textContent = selectedTotal.toFixed(3);
     if (storageTotalEl) storageTotalEl.textContent = storageTotal.toFixed(3);
 
-    // Render selected items table
     const sorted = [...itemsSelected].sort((a,b)=> (a.name||"").localeCompare(b.name||""));
     if (!sorted.length) {
       const tr = document.createElement("tr");
-      tr.innerHTML = `<td colspan="7" class="text-muted">No items in ${getBranchName(selectedBranchId)}.</td>`;
+      tr.innerHTML = `<td colspan="7" class="text-muted">${t("no_items_in")} ${escapeHtml(getBranchName(selectedBranchId))}.</td>`;
       tbody.appendChild(tr);
     } else {
       sorted.forEach((it) => {
@@ -907,12 +1278,12 @@
         const low = it.minQty > 0 && Number(it.baseQty||0) <= Number(it.minQty||0);
         const tr = document.createElement("tr");
         tr.innerHTML = `
-          <td>${it.id}</td>
-          <td>${it.name}</td>
-          <td>${getBranchName(it.branchId)}</td>
-          <td${low ? ' class="danger"' : ""}>${it.baseQty}</td>
-          <td>${it.minQty}</td>
-          <td>${it.unitCost}</td>
+          <td>${escapeHtml(it.id)}</td>
+          <td>${escapeHtml(it.name)}</td>
+          <td>${escapeHtml(getBranchName(it.branchId))}</td>
+          <td${low ? ' class="danger"' : ""}>${escapeHtml(it.baseQty)}</td>
+          <td>${escapeHtml(it.minQty)}</td>
+          <td>${escapeHtml(it.unitCost)}</td>
           <td>${value.toFixed(3)}</td>
         `;
         tbody.appendChild(tr);
@@ -924,7 +1295,7 @@
       const lowItems = itemsMain.filter(it => it.minQty > 0 && Number(it.baseQty||0) <= Number(it.minQty||0));
       if (!lowItems.length) {
         const trA = document.createElement("tr");
-        trA.innerHTML = `<td colspan="3" class="text-muted">No low stock alerts in Main Storage.</td>`;
+        trA.innerHTML = `<td colspan="3" class="text-muted">${t("no_low_stock")}</td>`;
         alertsBody.appendChild(trA);
       } else {
         lowItems
@@ -932,16 +1303,15 @@
           .forEach((it)=>{
             const tr = document.createElement("tr");
             tr.innerHTML = `
-              <td>${it.name}</td>
-              <td class="danger">${it.baseQty}</td>
-              <td>${it.minQty}</td>
+              <td>${escapeHtml(it.name)}</td>
+              <td class="danger">${escapeHtml(it.baseQty)}</td>
+              <td>${escapeHtml(it.minQty)}</td>
             `;
             alertsBody.appendChild(tr);
           });
       }
     }
 
-    // movement item select (only items in selected branch makes sense? keep all items)
     const moveSelect = document.getElementById("movementItemSelect");
     if (moveSelect) {
       moveSelect.innerHTML = "";
@@ -966,7 +1336,7 @@
     items.forEach((it, idx) => {
       const opt = document.createElement("option");
       opt.value = it.id;
-      opt.textContent = `${it.name} (${AR.ui.mainStorage})`;
+      opt.textContent = `${it.name} (${t("main_storage")})`;
       if (idx === 0) opt.selected = true;
       itemSel.appendChild(opt);
     });
@@ -978,7 +1348,7 @@
     const users = [...state.users].sort((a, b) => a.name.localeCompare(b.name));
     users.forEach((u) => {
       const tr = document.createElement("tr");
-      tr.innerHTML = `<td>${u.name}</td><td>${u.role}</td><td>${getBranchName(u.branchId)}</td>`;
+      tr.innerHTML = `<td>${escapeHtml(u.name)}</td><td>${escapeHtml(u.role)}</td><td>${escapeHtml(getBranchName(u.branchId))}</td>`;
       tbody.appendChild(tr);
     });
 
@@ -987,7 +1357,7 @@
       editSel.innerHTML = "";
       const placeholder = document.createElement("option");
       placeholder.value = "";
-      placeholder.textContent = AR.ui.selectUser;
+      placeholder.textContent = (currentLang === "ar") ? "اختر مستخدم" : "Select user";
       editSel.appendChild(placeholder);
 
       users.forEach((u) => {
@@ -1010,7 +1380,7 @@
 
     if (!visible.length) {
       const tr = document.createElement("tr");
-      tr.innerHTML = `<td colspan="8" class="text-muted">No requests yet.</td>`;
+      tr.innerHTML = `<td colspan="8" class="text-muted">${t("no_requests_yet")}</td>`;
       tbody.appendChild(tr);
       return;
     }
@@ -1020,14 +1390,14 @@
       const driverName = r.driverUserId ? getUserName(r.driverUserId) : "";
       const tr = document.createElement("tr");
       tr.innerHTML = `
-        <td>${r.id}</td>
-        <td>${item ? item.name : r.itemId}</td>
-        <td>${r.qty}</td>
-        <td>${getBranchName(r.fromBranchId)}</td>
-        <td>${getBranchName(r.toBranchId)}</td>
-        <td><span class="pill pill-status ${r.status}">${r.status}</span></td>
-        <td>${getUserName(r.createdByUserId)}</td>
-        <td>${driverName}</td>
+        <td>${escapeHtml(r.id)}</td>
+        <td>${escapeHtml(item ? item.name : r.itemId)}</td>
+        <td>${escapeHtml(r.qty)}</td>
+        <td>${escapeHtml(getBranchName(r.fromBranchId))}</td>
+        <td>${escapeHtml(getBranchName(r.toBranchId))}</td>
+        <td><span class="pill pill-status ${escapeHtml(r.status)}">${t(r.status)}</span></td>
+        <td>${escapeHtml(getUserName(r.createdByUserId))}</td>
+        <td>${escapeHtml(driverName)}</td>
       `;
       tbody.appendChild(tr);
     });
@@ -1039,7 +1409,7 @@
     const pending = state.requests.filter((r) => r.status === "pending");
     if (!pending.length) {
       const tr = document.createElement("tr");
-      tr.innerHTML = `<td colspan="8" class="text-muted">No pending requests.</td>`;
+      tr.innerHTML = `<td colspan="8" class="text-muted">${t("no_pending_requests")}</td>`;
       tbody.appendChild(tr);
       return;
     }
@@ -1048,14 +1418,14 @@
       const item = getItemById(r.itemId);
       const tr = document.createElement("tr");
       tr.innerHTML = `
-        <td>${r.id}</td>
-        <td>${item ? item.name : r.itemId}</td>
-        <td>${r.qty}</td>
-        <td>${getBranchName(r.fromBranchId)}</td>
-        <td>${getBranchName(r.toBranchId)}</td>
-        <td>${getUserName(r.createdByUserId)}</td>
-        <td><span class="pill pill-status ${r.status}">${r.status}</span></td>
-        <td><button class="btn btn-primary btn-sm" data-req-id="${r.id}">Deliver</button></td>
+        <td>${escapeHtml(r.id)}</td>
+        <td>${escapeHtml(item ? item.name : r.itemId)}</td>
+        <td>${escapeHtml(r.qty)}</td>
+        <td>${escapeHtml(getBranchName(r.fromBranchId))}</td>
+        <td>${escapeHtml(getBranchName(r.toBranchId))}</td>
+        <td>${escapeHtml(getUserName(r.createdByUserId))}</td>
+        <td><span class="pill pill-status ${escapeHtml(r.status)}">${t(r.status)}</span></td>
+        <td><button class="btn btn-primary btn-sm" data-req-id="${escapeHtml(r.id)}">${t("deliver")}</button></td>
       `;
       tbody.appendChild(tr);
     });
@@ -1068,7 +1438,7 @@
 
     if (!moves.length) {
       const tr = document.createElement("tr");
-      tr.innerHTML = `<td colspan="7" class="text-muted">No movements recorded.</td>`;
+      tr.innerHTML = `<td colspan="7" class="text-muted">${t("no_movements")}</td>`;
       tbody.appendChild(tr);
       return;
     }
@@ -1077,13 +1447,13 @@
       const item = getItemById(m.itemId);
       const tr = document.createElement("tr");
       tr.innerHTML = `
-        <td>${m.id}</td>
-        <td>${item ? item.name : m.itemId}</td>
-        <td>${m.type}</td>
-        <td>${m.qty}</td>
-        <td>${getBranchName(m.branchId)}</td>
-        <td>${getUserName(m.userId)}</td>
-        <td>${formatDateTime(m.createdAt)}</td>
+        <td>${escapeHtml(m.id)}</td>
+        <td>${escapeHtml(item ? item.name : m.itemId)}</td>
+        <td>${escapeHtml(m.type)}</td>
+        <td>${escapeHtml(m.qty)}</td>
+        <td>${escapeHtml(getBranchName(m.branchId))}</td>
+        <td>${escapeHtml(getUserName(m.userId))}</td>
+        <td>${escapeHtml(formatDateTime(m.createdAt))}</td>
       `;
       tbody.appendChild(tr);
     });
@@ -1154,14 +1524,14 @@
     tbody.innerHTML = "";
     if (!items.length) {
       const tr = document.createElement("tr");
-      tr.innerHTML = `<td colspan="3" class="text-muted">No delivered requests in this period.</td>`;
+      tr.innerHTML = `<td colspan="3" class="text-muted">${t("no_delivered_period")}</td>`;
       tbody.appendChild(tr);
       return;
     }
 
     items.forEach((it) => {
       const tr = document.createElement("tr");
-      tr.innerHTML = `<td>${it.name}</td><td>${it.qty}</td><td>${it.cost.toFixed(3)}</td>`;
+      tr.innerHTML = `<td>${escapeHtml(it.name)}</td><td>${escapeHtml(it.qty)}</td><td>${it.cost.toFixed(3)}</td>`;
       tbody.appendChild(tr);
     });
   }
@@ -1178,7 +1548,6 @@
     if (panel) panel.style.display = (isAdmin || isManager || isDriver) ? "block" : "none";
     if (createBlock) createBlock.style.display = (isAdmin || isManager) ? "block" : "none";
 
-    // fill vehicle selects
     const remVehSel = document.getElementById("remVehicleSelect");
     const remVehFilter = document.getElementById("remVehicleFilterSelect");
 
@@ -1188,7 +1557,7 @@
       if (addAll) {
         const all = document.createElement("option");
         all.value = "ALL";
-        all.textContent = AR.ui.allVehicles;
+        all.textContent = (currentLang === "ar") ? "كل المركبات" : "All vehicles";
         sel.appendChild(all);
       }
       (state.vehicles || []).forEach((v) => {
@@ -1220,7 +1589,6 @@
     if (filter === "done") list = list.filter(r => r.status === "done");
     if (vehFilter !== "ALL") list = list.filter(r => r.vehicleId === vehFilter);
 
-    // sort: open first, then dueDate ascending
     list.sort((a,b)=>{
       if (a.status !== b.status) return a.status === "open" ? -1 : 1;
       const ad = a.dueDate ? new Date(a.dueDate).getTime() : Infinity;
@@ -1230,7 +1598,7 @@
 
     if (!list.length) {
       const tr = document.createElement("tr");
-      tr.innerHTML = `<td colspan="7" class="text-muted">No reminders.</td>`;
+      tr.innerHTML = `<td colspan="7" class="text-muted">${t("no_reminders")}</td>`;
       tbody.appendChild(tr);
       return;
     }
@@ -1239,27 +1607,27 @@
 
     list.forEach((r) => {
       const statusPill = r.status === "done"
-        ? `<span class="pill pill-done">done</span>`
-        : `<span class="pill pill-open">open</span>`;
+        ? `<span class="pill pill-done">${t("done")}</span>`
+        : `<span class="pill pill-open">${currentLang === "ar" ? "مفتوح" : "open"}</span>`;
 
       const dueText = r.dueDate ? r.dueDate : "";
       const odoText = (r.dueOdometer === null || typeof r.dueOdometer === "undefined") ? "" : r.dueOdometer;
 
       const actionBtns = `
-        <button class="btn btn-primary btn-sm" data-rem-done="${r.id}">
-          ${r.status === "done" ? "Re-open" : "Done"}
+        <button class="btn btn-primary btn-sm" data-rem-done="${escapeHtml(r.id)}">
+          ${r.status === "done" ? t("reopen") : t("done")}
         </button>
-        ${isEditor ? `<button class="btn btn-secondary btn-sm" data-rem-del="${r.id}">Delete</button>` : ""}
+        ${isEditor ? `<button class="btn btn-secondary btn-sm" data-rem-del="${escapeHtml(r.id)}">${t("delete_reminder")}</button>` : ""}
       `;
 
       const tr = document.createElement("tr");
       tr.innerHTML = `
         <td>${statusPill}</td>
-        <td>${vehicleNameById(r.vehicleId)}</td>
-        <td>${typeLabel(r.type)}</td>
-        <td>${dueText}</td>
-        <td>${odoText}</td>
-        <td>${(r.note || "").replace(/</g,"&lt;")}</td>
+        <td>${escapeHtml(vehicleNameById(r.vehicleId))}</td>
+        <td>${escapeHtml(typeLabel(r.type))}</td>
+        <td>${escapeHtml(dueText)}</td>
+        <td>${escapeHtml(odoText)}</td>
+        <td>${escapeHtml(r.note || "")}</td>
         <td style="display:flex;gap:0.4rem;align-items:center;flex-wrap:wrap;">${actionBtns}</td>
       `;
       tbody.appendChild(tr);
@@ -1323,12 +1691,31 @@
     try {
       idInput.value = await apiNextItemId();
     } catch {
-      // fallback: client scan if endpoint failed
       idInput.value = "ITM-001";
     }
   }
 
   // ----- Events -----
+  document.getElementById("langBtn").addEventListener("click", () => {
+    currentLang = (currentLang === "ar") ? "en" : "ar";
+    localStorage.setItem("lang", currentLang);
+    applyTranslations();
+
+    // Re-render dynamic texts
+    renderBranchSelects();
+    fillRequestItemsFromStorage();
+    renderInventoryViewer();
+    if (state.user) {
+      renderUsersTable();
+      renderRequestsTable();
+      renderDriverRequestsTable();
+      renderMovementsTable();
+      renderAnalytics();
+      renderVehiclesUI();
+      renderHeader();
+    }
+  });
+
   document.getElementById("loginBtn").addEventListener("click", async () => {
     const name = document.getElementById("loginNameInput").value.trim();
     const password = document.getElementById("loginPasswordInput").value;
@@ -1337,7 +1724,7 @@
     errorEl.textContent = "";
 
     if (!name || !password) {
-      errorEl.textContent = "Enter username and password.";
+      errorEl.textContent = t("enter_user_pass");
       errorEl.style.display = "block";
       return;
     }
@@ -1348,6 +1735,7 @@
 
       await refreshAllState();
 
+      applyTranslations();
       renderHeader();
       renderBranchSelects();
       fillRequestItemsFromStorage();
@@ -1361,8 +1749,6 @@
       await updateItemIdField();
 
       showApp();
-
-      // inventory viewer render after select is populated
       renderInventoryViewer();
     } catch (e) {
       errorEl.textContent = e.message;
@@ -1392,7 +1778,7 @@
   // create user
   document.getElementById("addUserBtn").addEventListener("click", async () => {
     if (!state.user || state.user.role !== "admin") {
-      alert("Only admin can create users.");
+      alert(t("only_admin_create_users"));
       return;
     }
     const name = document.getElementById("newUserName").value.trim();
@@ -1401,7 +1787,7 @@
     const branchId = document.getElementById("newUserBranchSelect").value;
 
     if (!name || !password) {
-      alert("Name and password required.");
+      alert(t("name_password_required"));
       return;
     }
     try {
@@ -1415,7 +1801,6 @@
     }
   });
 
-  // edit user select -> fill form
   document.getElementById("editUserSelect").addEventListener("change", () => {
     const id = document.getElementById("editUserSelect").value;
     const user = state.users.find((u) => u.id === id);
@@ -1430,10 +1815,9 @@
     document.getElementById("editUserBranchSelect").value = user.branchId || "";
   });
 
-  // save user changes
   document.getElementById("saveUserChangesBtn").addEventListener("click", async () => {
     const id = document.getElementById("editUserSelect").value;
-    if (!id) { alert("Select a user first."); return; }
+    if (!id) { alert(t("select_user_first")); return; }
 
     const name = document.getElementById("editUserName").value.trim();
     const password = document.getElementById("editUserPassword").value.trim();
@@ -1448,17 +1832,16 @@
       const idx = state.users.findIndex((u) => u.id === id);
       if (idx >= 0) state.users[idx] = updated;
       renderUsersTable();
-      alert("User updated.");
+      alert(t("user_updated"));
     } catch (e) {
       alert(e.message);
     }
   });
 
-  // delete user
   document.getElementById("deleteUserBtn").addEventListener("click", async () => {
     const id = document.getElementById("editUserSelect").value;
-    if (!id) { alert("Select a user first."); return; }
-    if (!confirm("Delete this user?")) return;
+    if (!id) { alert(t("select_user_first")); return; }
+    if (!confirm(t("delete_user_confirm"))) return;
 
     try {
       await apiDeleteUser(id);
@@ -1466,27 +1849,26 @@
       renderUsersTable();
       document.getElementById("editUserName").value = "";
       document.getElementById("editUserPassword").value = "";
-      alert("User deleted.");
+      alert(t("user_deleted"));
     } catch (e) {
       alert(e.message);
     }
   });
 
-  // create item
   document.getElementById("addItemBtn").addEventListener("click", async () => {
     if (!state.user || (state.user.role !== "admin" && state.user.role !== "manager")) {
-      alert("Only admin/manager can create items.");
+      alert(t("only_admin_mgr_create_items"));
       return;
     }
 
-    const id = document.getElementById("itemIdInput").value.trim(); // server will accept auto
+    const id = document.getElementById("itemIdInput").value.trim();
     const name = document.getElementById("itemNameInput").value.trim();
     const branchId = document.getElementById("itemBranchSelect").value;
     const baseQty = Number(document.getElementById("itemBaseQtyInput").value || "0");
     const minQty = Number(document.getElementById("itemMinQtyInput").value || "0");
     const unitCost = Number(document.getElementById("itemUnitCostInput").value || "0");
 
-    if (!name) { alert("Item name required."); return; }
+    if (!name) { alert(t("item_name_required")); return; }
 
     try {
       const newItem = await apiCreateItem({
@@ -1515,10 +1897,9 @@
     }
   });
 
-  // manual movement
   document.getElementById("addMovementBtn").addEventListener("click", async () => {
     if (!state.user || (state.user.role !== "admin" && state.user.role !== "manager")) {
-      alert("Only admin/manager can record movements.");
+      alert(t("only_admin_mgr_movements"));
       return;
     }
 
@@ -1527,7 +1908,7 @@
     const qty = Number(document.getElementById("movementQtyInput").value || "1");
     const note = document.getElementById("movementNoteInput").value.trim();
 
-    if (!itemId || !qty || qty <= 0) { alert("Item and quantity required."); return; }
+    if (!itemId || !qty || qty <= 0) { alert(t("item_qty_required")); return; }
 
     try {
       await apiCreateMovement(itemId, type, qty, note);
@@ -1547,16 +1928,15 @@
     }
   });
 
-  // create request
   document.getElementById("createRequestBtn").addEventListener("click", async () => {
-    if (!state.user || state.user.role === "driver") { alert("Drivers cannot create requests."); return; }
-    if (!state.user.branchId) { alert("Your user is not assigned to a branch. Ask admin."); return; }
+    if (!state.user || state.user.role === "driver") { alert(t("drivers_cannot_create")); return; }
+    if (!state.user.branchId) { alert(t("user_no_branch")); return; }
 
     const itemId = document.getElementById("requestItemSelect").value;
     const qty = Number(document.getElementById("requestQtyInput").value || "1");
     const note = document.getElementById("requestNoteInput").value.trim();
 
-    if (!itemId || !qty || qty <= 0) { alert("Item and quantity required."); return; }
+    if (!itemId || !qty || qty <= 0) { alert(t("item_qty_required")); return; }
 
     try {
       const req = await apiCreateRequest(itemId, qty, note);
@@ -1571,13 +1951,12 @@
     }
   });
 
-  // driver deliver
   document.getElementById("driverRequestsTableBody").addEventListener("click", async (e) => {
     const btn = e.target.closest("button[data-req-id]");
     if (!btn) return;
     const id = btn.getAttribute("data-req-id");
 
-    if (!confirm("Mark this request as delivered?")) return;
+    if (!confirm(t("mark_delivered_confirm"))) return;
 
     try {
       await apiDeliverRequest(id);
@@ -1595,16 +1974,14 @@
     }
   });
 
-  // analytics filters
   document.getElementById("analyticsApplyBtn").addEventListener("click", () => {
     renderAnalytics();
   });
 
-  // Vehicle actions
   document.getElementById("addVehicleBtn").addEventListener("click", async () => {
     const name = document.getElementById("vehNameInput").value.trim();
     const plate = document.getElementById("vehPlateInput").value.trim();
-    if (!name) { alert("Vehicle name required"); return; }
+    if (!name) { alert(t("vehicle_name_required_msg")); return; }
 
     try {
       await apiCreateVehicle(name, plate);
@@ -1625,7 +2002,7 @@
     const dueOdometer = dueOdometerRaw === "" ? null : Number(dueOdometerRaw);
     const note = document.getElementById("remNoteInput").value.trim();
 
-    if (!vehicleId) { alert("Select a vehicle"); return; }
+    if (!vehicleId) { alert(t("select_vehicle_msg")); return; }
 
     try {
       await apiCreateReminder({ vehicleId, type, dueDate, dueOdometer, note });
@@ -1666,7 +2043,7 @@
 
     if (delBtn) {
       const id = delBtn.getAttribute("data-rem-del");
-      if (!confirm("Delete this reminder?")) return;
+      if (!confirm(t("delete_reminder_confirm"))) return;
       try {
         await apiDeleteReminder(id);
         await refreshAllState();
@@ -1676,6 +2053,9 @@
       }
     }
   });
+
+  // initial i18n
+  applyTranslations();
 </script>
 </body>
 </html>
