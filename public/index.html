@@ -5,310 +5,71 @@
   <title>Storage Manage Method</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    * {
-      box-sizing: border-box;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-        sans-serif;
-    }
-
-    body {
-      margin: 0;
-      background: #f3f4f6;
-      color: #111827;
-    }
-
-    header {
-      background: #111827;
-      color: white;
-      padding: 0.75rem 1.25rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 0.5rem;
-    }
-
-    header h1 {
-      font-size: 1rem;
-      margin: 0;
-      letter-spacing: 0.03em;
-    }
-
-    header small {
-      display: block;
-      font-size: 0.7rem;
-      opacity: 0.8;
-    }
-
-    .header-right {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      font-size: 0.8rem;
-    }
-
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      padding: 0.15rem 0.6rem;
-      border-radius: 999px;
-      font-size: 0.75rem;
-      background: #e5e7eb;
-      color: #111827;
-    }
-
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 999px;
-      border: none;
-      padding: 0.45rem 1.1rem;
-      font-size: 0.85rem;
-      cursor: pointer;
-      transition: background 0.15s, transform 0.1s;
-    }
-
-    .btn-primary {
-      background: #111827;
-      color: white;
-    }
-
-    .btn-primary:hover {
-      background: #020617;
-      transform: translateY(-1px);
-    }
-
-    .btn-secondary {
-      background: #e5e7eb;
-      color: #111827;
-    }
-
-    .btn-secondary:hover {
-      background: #d1d5db;
-      transform: translateY(-1px);
-    }
-
-    .btn-sm {
-      padding: 0.35rem 0.8rem;
-      font-size: 0.78rem;
-    }
-
-    main {
-      padding: 1rem;
-      max-width: 1200px;
-      margin: 0 auto 2rem;
-    }
-
-    .panel {
-      background: white;
-      border-radius: 0.9rem;
-      padding: 0.9rem 1rem;
-      margin-bottom: 0.9rem;
-      box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
-    }
-
-    .panel-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 0.75rem;
-      gap: 0.75rem;
-    }
-
-    .panel-title {
-      font-size: 0.95rem;
-      font-weight: 600;
-      color: #111827;
-    }
-
-    .panel-subtitle {
-      font-size: 0.75rem;
-      color: #6b7280;
-    }
-
-    .panel-section-title {
-      font-size: 0.85rem;
-      font-weight: 600;
-      margin: 0.5rem 0 0.3rem;
-    }
-
-    .text-muted {
-      color: #9ca3af;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 0.6rem;
-    }
-
-    .grid-2 {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 0.6rem;
-    }
-
-    label {
-      font-size: 0.78rem;
-      display: block;
-      margin-bottom: 0.15rem;
-      color: #374151;
-    }
-
-    input,
-    select,
-    textarea {
-      width: 100%;
-      padding: 0.35rem 0.55rem;
-      border-radius: 0.5rem;
-      border: 1px solid #e5e7eb;
-      font-size: 0.8rem;
-      background: #ffffff;
-    }
-
-    textarea {
-      resize: vertical;
-      min-height: 40px;
-    }
-
-    input:focus,
-    select:focus,
-    textarea:focus {
-      outline: none;
-      border-color: #111827;
-      box-shadow: 0 0 0 1px #11182711;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.8rem;
-    }
-
-    th,
-    td {
-      padding: 0.35rem 0.4rem;
-      text-align: left;
-      border-bottom: 1px solid #f3f4f6;
-      white-space: nowrap;
-    }
-
-    th {
-      font-size: 0.72rem;
-      font-weight: 600;
-      color: #6b7280;
-      background: #f9fafb;
-    }
-
-    tr:nth-child(even) td {
-      background: #f9fafb;
-    }
-
-    .pill {
-      display: inline-flex;
-      align-items: center;
-      padding: 0.05rem 0.5rem;
-      border-radius: 999px;
-      font-size: 0.7rem;
-    }
-
-    .pill-status {
-      background: #e5e7eb;
-      color: #111827;
-    }
-
-    .pill-status.pending {
-      background: #fef3c7;
-      color: #92400e;
-    }
-
-    .pill-status.delivered {
-      background: #dcfce7;
-      color: #166534;
-    }
-
-    .table-wrapper {
-      width: 100%;
-      overflow-x: auto;
-      margin-top: 0.4rem;
-    }
-
-    .danger {
-      color: #b91c1c;
-      font-weight: 600;
-    }
-
-    .success {
-      color: #166534;
-    }
-
+    * { box-sizing: border-box; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    body { margin: 0; background: #f3f4f6; color: #111827; }
+    header { background: #111827; color: white; padding: 0.75rem 1.25rem; display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+    header h1 { font-size: 1rem; margin: 0; letter-spacing: 0.03em; }
+    header small { display: block; font-size: 0.7rem; opacity: 0.8; }
+    .header-right { display: flex; align-items: center; gap: 0.75rem; font-size: 0.8rem; flex-wrap: wrap; }
+    .badge { display: inline-flex; align-items: center; padding: 0.15rem 0.6rem; border-radius: 999px; font-size: 0.75rem; background: #e5e7eb; color: #111827; }
+    .btn { display: inline-flex; align-items: center; justify-content: center; border-radius: 999px; border: none; padding: 0.55rem 1.15rem; font-size: 0.9rem; cursor: pointer; transition: background 0.15s, transform 0.1s; }
+    .btn-primary { background: #111827; color: white; }
+    .btn-primary:hover { background: #020617; transform: translateY(-1px); }
+    .btn-secondary { background: #e5e7eb; color: #111827; }
+    .btn-secondary:hover { background: #d1d5db; transform: translateY(-1px); }
+    .btn-sm { padding: 0.45rem 0.9rem; font-size: 0.82rem; }
+    main { padding: 1rem; max-width: 1200px; margin: 0 auto 2rem; }
+    .panel { background: white; border-radius: 0.9rem; padding: 0.9rem 1rem; margin-bottom: 0.9rem; box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06); }
+    .panel-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem; gap: 0.75rem; }
+    .panel-title { font-size: 0.95rem; font-weight: 600; color: #111827; }
+    .panel-subtitle { font-size: 0.75rem; color: #6b7280; }
+    .panel-section-title { font-size: 0.85rem; font-weight: 700; margin: 0.8rem 0 0.35rem; }
+    .text-muted { color: #9ca3af; }
+    .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.6rem; }
+    .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.6rem; }
+    label { font-size: 0.78rem; display: block; margin-bottom: 0.15rem; color: #374151; }
+    input, select, textarea { width: 100%; padding: 0.45rem 0.6rem; border-radius: 0.55rem; border: 1px solid #e5e7eb; font-size: 0.85rem; background: #ffffff; }
+    textarea { resize: vertical; min-height: 40px; }
+    input:focus, select:focus, textarea:focus { outline: none; border-color: #111827; box-shadow: 0 0 0 1px #11182711; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+    th, td { padding: 0.4rem 0.45rem; text-align: left; border-bottom: 1px solid #f3f4f6; white-space: nowrap; }
+    th { font-size: 0.72rem; font-weight: 700; color: #6b7280; background: #f9fafb; }
+    tr:nth-child(even) td { background: #f9fafb; }
+    .pill { display: inline-flex; align-items: center; padding: 0.08rem 0.55rem; border-radius: 999px; font-size: 0.72rem; }
+    .pill-status { background: #e5e7eb; color: #111827; }
+    .pill-status.pending { background: #fef3c7; color: #92400e; }
+    .pill-status.delivered { background: #dcfce7; color: #166534; }
+    .pill-open { background: #fef3c7; color: #92400e; }
+    .pill-done { background: #dcfce7; color: #166534; }
+    .table-wrapper { width: 100%; overflow-x: auto; margin-top: 0.4rem; }
+    .danger { color: #b91c1c; font-weight: 700; }
     /* Login card */
-    #loginView {
-      max-width: 640px;
-      margin: 2.5rem auto;
-      padding: 0 1rem;
-    }
-
-    .card {
-      background: white;
-      border-radius: 1rem;
-      padding: 1.2rem 1.5rem;
-      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
-    }
-
-    .card h2 {
-      margin: 0 0 0.5rem;
-      font-size: 1.2rem;
-    }
-
+    #loginView { max-width: 640px; margin: 2.5rem auto; padding: 0 1rem; }
+    .card { background: white; border-radius: 1rem; padding: 1.2rem 1.5rem; box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08); }
+    .card h2 { margin: 0 0 0.5rem; font-size: 1.2rem; }
     .mt-xs { margin-top: 0.35rem; }
     .mt-sm { margin-top: 0.6rem; }
     .mt-md { margin-top: 0.9rem; }
     .mt-lg { margin-top: 1.2rem; }
+    .error-text { margin-top: 0.4rem; font-size: 0.85rem; color: #b91c1c; }
+    .summary-row { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 0.6rem; }
+    .summary-card { flex: 1 1 160px; background: #f9fafb; border-radius: 0.7rem; padding: 0.6rem 0.8rem; font-size: 0.85rem; }
+    .summary-label { font-size: 0.72rem; color: #6b7280; }
+    .summary-value { font-size: 0.95rem; font-weight: 800; margin-top: 0.2rem; }
 
-    .error-text {
-      margin-top: 0.4rem;
-      font-size: 0.8rem;
-      color: #b91c1c;
-    }
-
-    .summary-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.6rem;
-      margin-top: 0.5rem;
-    }
-
-    .summary-card {
-      flex: 1 1 140px;
-      background: #f9fafb;
-      border-radius: 0.7rem;
-      padding: 0.5rem 0.7rem;
-      font-size: 0.8rem;
-    }
-
-    .summary-label {
-      font-size: 0.72rem;
-      color: #6b7280;
-    }
-
-    .summary-value {
-      font-size: 0.9rem;
-      font-weight: 600;
-      margin-top: 0.2rem;
-    }
+    .toolbar { display:flex; gap:0.6rem; flex-wrap:wrap; align-items:flex-end; }
+    .toolbar > div { min-width: 220px; flex: 1 1 220px; }
 
     @media (max-width: 768px) {
-      header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.25rem;
-      }
-      main { padding: 0.6rem; }
-      .panel { padding: 0.7rem 0.8rem; }
+      header { flex-direction: column; align-items: flex-start; gap: 0.25rem; }
+      main { padding: 0.7rem; }
+      .panel { padding: 0.75rem 0.85rem; }
       .grid, .grid-2 { grid-template-columns: minmax(0, 1fr); }
-      table { font-size: 0.75rem; }
-      th, td { padding: 0.25rem 0.3rem; }
+      table { font-size: 0.76rem; }
+      th, td { padding: 0.3rem 0.35rem; }
+      .btn { width: 100%; padding: 0.75rem 1rem; font-size: 1rem; }
+      .btn-sm { width: auto; padding: 0.5rem 0.8rem; font-size: 0.85rem; }
+      .toolbar > div { min-width: 100%; }
     }
   </style>
 </head>
@@ -321,9 +82,7 @@
   <div class="header-right">
     <span id="headerUserName" class="badge" style="display:none;"></span>
     <span id="headerRole" class="badge" style="display:none;"></span>
-    <button id="logoutBtn" class="btn btn-secondary btn-sm" style="display:none;">
-      Logout
-    </button>
+    <button id="logoutBtn" class="btn btn-secondary btn-sm" style="display:none;">Logout</button>
   </div>
 </header>
 
@@ -335,18 +94,15 @@
     <div class="mt-md grid-2">
       <div>
         <label>Username</label>
-        <input id="loginNameInput" placeholder="Admin, Manager1, StaffZahra..." />
+        <input id="loginNameInput" />
       </div>
       <div>
         <label>Password</label>
-        <input id="loginPasswordInput" type="password" placeholder="••••••••" />
+        <input id="loginPasswordInput" type="password" />
       </div>
     </div>
 
-    <button id="loginBtn" class="btn btn-primary mt-md" style="width: 100%;">
-      Sign in
-    </button>
-
+    <button id="loginBtn" class="btn btn-primary mt-md" style="width: 100%;">Sign in</button>
     <div id="loginError" class="error-text" style="display:none;"></div>
   </div>
 </section>
@@ -358,14 +114,67 @@
   <section id="inventoryPanel" class="panel">
     <div class="panel-header">
       <div>
-        <div class="panel-title">Inventory (by branch)</div>
-        <div class="panel-subtitle">
-          Admin & Manager can add items and see stock by branch.
-        </div>
+        <div class="panel-title">Inventory</div>
+        <div class="panel-subtitle">Admin & Manager can add items and manage inventory. Viewer lets you choose any branch list.</div>
       </div>
     </div>
 
-    <div class="panel-section-title">Add / update items (Admin & Manager)</div>
+    <!-- Viewer branch select -->
+    <div class="panel-section-title">View inventory list</div>
+    <div class="toolbar">
+      <div>
+        <label>Select list</label>
+        <select id="inventoryViewBranchSelect"></select>
+      </div>
+      <div>
+        <button id="inventoryRefreshBtn" class="btn btn-secondary">Refresh</button>
+      </div>
+    </div>
+
+    <div class="table-wrapper mt-sm">
+      <table>
+        <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Branch</th>
+          <th>Qty</th>
+          <th>Min</th>
+          <th>Unit cost</th>
+          <th>Value</th>
+        </tr>
+        </thead>
+        <tbody id="itemsTableBody"></tbody>
+      </table>
+    </div>
+
+    <div class="summary-row mt-sm">
+      <div class="summary-card">
+        <div class="summary-label">Selected list value (KWD)</div>
+        <div id="selectedListValue" class="summary-value">0</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label">Main Storage value (KWD)</div>
+        <div id="storageTotalValue" class="summary-value">0</div>
+      </div>
+    </div>
+
+    <div class="panel-section-title mt-md">Restock alerts (Main Storage)</div>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+        <tr>
+          <th>Item</th>
+          <th>Qty</th>
+          <th>Min</th>
+        </tr>
+        </thead>
+        <tbody id="alertsTableBody"></tbody>
+      </table>
+    </div>
+
+    <!-- Add/update items -->
+    <div class="panel-section-title mt-md">Add / update items (Admin & Manager)</div>
     <div class="grid mt-xs">
       <div>
         <label>Item ID (auto)</label>
@@ -373,10 +182,10 @@
       </div>
       <div>
         <label>Name</label>
-        <input id="itemNameInput" placeholder="ZIPPER MAKFI LONG YKK" />
+        <input id="itemNameInput" />
       </div>
       <div>
-        <label>Branch (storage)</label>
+        <label>Branch (where item lives)</label>
         <select id="itemBranchSelect"></select>
       </div>
     </div>
@@ -394,49 +203,7 @@
         <input id="itemUnitCostInput" type="number" min="0" step="0.001" value="0" />
       </div>
     </div>
-    <button id="addItemBtn" class="btn btn-primary mt-sm">
-      Save item
-    </button>
-
-    <div class="panel-section-title mt-md">Items list</div>
-    <div class="table-wrapper">
-      <table>
-        <thead>
-        <tr>
-          <th>ID</th>
-          <th>Name</th>
-          <th>Branch</th>
-          <th>Base qty</th>
-          <th>Min</th>
-          <th>Unit cost</th>
-          <th>Value</th>
-        </tr>
-        </thead>
-        <tbody id="itemsTableBody"></tbody>
-      </table>
-    </div>
-
-    <div class="summary-row mt-sm">
-      <div class="summary-card">
-        <div class="summary-label">Main storage inventory value (KWD)</div>
-        <div id="storageTotalValue" class="summary-value">0</div>
-      </div>
-    </div>
-
-    <div class="panel-section-title mt-md">Restock alerts (Main Storage)</div>
-    <div class="table-wrapper">
-      <table>
-        <thead>
-        <tr>
-          <th>Item</th>
-          <th>Branch</th>
-          <th>Qty</th>
-          <th>Min</th>
-        </tr>
-        </thead>
-        <tbody id="alertsTableBody"></tbody>
-      </table>
-    </div>
+    <button id="addItemBtn" class="btn btn-primary mt-sm">Save item</button>
   </section>
 
   <!-- Users (Admin) -->
@@ -444,9 +211,7 @@
     <div class="panel-header">
       <div>
         <div class="panel-title">Users & branches</div>
-        <div class="panel-subtitle">
-          Admin can create, edit and delete users and assign them to branches.
-        </div>
+        <div class="panel-subtitle">Admin can create, edit and delete users and assign them to branches.</div>
       </div>
     </div>
 
@@ -454,11 +219,11 @@
     <div class="grid mt-xs">
       <div>
         <label>Username</label>
-        <input id="newUserName" placeholder="StaffZahra" />
+        <input id="newUserName" />
       </div>
       <div>
         <label>Password</label>
-        <input id="newUserPassword" placeholder="********" />
+        <input id="newUserPassword" />
       </div>
       <div>
         <label>Role</label>
@@ -485,11 +250,7 @@
     <div class="table-wrapper">
       <table>
         <thead>
-        <tr>
-          <th>Name</th>
-          <th>Role</th>
-          <th>Branch</th>
-        </tr>
+        <tr><th>Name</th><th>Role</th><th>Branch</th></tr>
         </thead>
         <tbody id="usersTableBody"></tbody>
       </table>
@@ -509,7 +270,7 @@
       </div>
       <div>
         <label>Password (leave empty to keep)</label>
-        <input id="editUserPassword" placeholder="••••••••" />
+        <input id="editUserPassword" type="password" />
       </div>
       <div>
         <label>Role</label>
@@ -527,12 +288,8 @@
         <select id="editUserBranchSelect"></select>
       </div>
       <div style="display:flex;align-items:flex-end;gap:0.4rem;">
-        <button id="saveUserChangesBtn" class="btn btn-primary" style="flex:1;">
-          Save changes
-        </button>
-        <button id="deleteUserBtn" class="btn btn-secondary" style="flex:1;">
-          Delete user
-        </button>
+        <button id="saveUserChangesBtn" class="btn btn-primary" style="flex:1;">Save changes</button>
+        <button id="deleteUserBtn" class="btn btn-secondary" style="flex:1;">Delete user</button>
       </div>
     </div>
   </section>
@@ -542,9 +299,7 @@
     <div class="panel-header">
       <div>
         <div class="panel-title">Branch requests</div>
-        <div class="panel-subtitle">
-          Staff / Manager / Admin request items from Main Storage to their own branch.
-        </div>
+        <div class="panel-subtitle">Staff / Manager / Admin request items from Main Storage to their own branch.</div>
       </div>
     </div>
 
@@ -552,11 +307,11 @@
     <div class="grid mt-xs">
       <div>
         <label>From storage</label>
-        <div id="requestFromBranchLabel" class="text-muted" style="font-size:0.8rem;"></div>
+        <div id="requestFromBranchLabel" class="text-muted" style="font-size:0.85rem;"></div>
       </div>
       <div>
         <label>To branch</label>
-        <div id="requestToBranchLabel" class="text-muted" style="font-size:0.8rem;"></div>
+        <div id="requestToBranchLabel" class="text-muted" style="font-size:0.85rem;"></div>
       </div>
       <div>
         <label>Item (from storage)</label>
@@ -571,12 +326,10 @@
       </div>
       <div>
         <label>Note</label>
-        <input id="requestNoteInput" placeholder="For client order, urgent..." />
+        <input id="requestNoteInput" />
       </div>
       <div style="display:flex;align-items:flex-end;">
-        <button id="createRequestBtn" class="btn btn-primary" style="width:100%;">
-          Create request
-        </button>
+        <button id="createRequestBtn" class="btn btn-primary" style="width:100%;">Create request</button>
       </div>
     </div>
 
@@ -585,14 +338,7 @@
       <table>
         <thead>
         <tr>
-          <th>ID</th>
-          <th>Item</th>
-          <th>Qty</th>
-          <th>From</th>
-          <th>To</th>
-          <th>Status</th>
-          <th>By</th>
-          <th>Driver</th>
+          <th>ID</th><th>Item</th><th>Qty</th><th>From</th><th>To</th><th>Status</th><th>By</th><th>Driver</th>
         </tr>
         </thead>
         <tbody id="requestsTableBody"></tbody>
@@ -605,9 +351,7 @@
     <div class="panel-header">
       <div>
         <div class="panel-title">Driver deliveries</div>
-        <div class="panel-subtitle">
-          Drivers see all pending requests and mark them as delivered.
-        </div>
+        <div class="panel-subtitle">Drivers see all pending requests and mark them as delivered.</div>
       </div>
     </div>
 
@@ -615,84 +359,10 @@
       <table>
         <thead>
         <tr>
-          <th>ID</th>
-          <th>Item</th>
-          <th>Qty</th>
-          <th>From</th>
-          <th>To</th>
-          <th>Requested by</th>
-          <th>Status</th>
-          <th>Action</th>
+          <th>ID</th><th>Item</th><th>Qty</th><th>From</th><th>To</th><th>Requested by</th><th>Status</th><th>Action</th>
         </tr>
         </thead>
         <tbody id="driverRequestsTableBody"></tbody>
-      </table>
-    </div>
-  </section>
-
-  <!-- ✅ Vehicle reminders (Driver/Manager/Admin) -->
-  <section id="vehicleRemindersPanel" class="panel" style="display:none;">
-    <div class="panel-header">
-      <div>
-        <div class="panel-title">Vehicle reminders</div>
-        <div class="panel-subtitle">Oil change • Meter • Yearly renewal</div>
-      </div>
-    </div>
-
-    <div class="panel-section-title">Add reminder</div>
-    <div class="grid mt-xs">
-      <div>
-        <label>Type</label>
-        <select id="vrType">
-          <option value="oil">Oil change</option>
-          <option value="meter">Meter</option>
-          <option value="renewal">Yearly renewal</option>
-          <option value="other">Other</option>
-        </select>
-      </div>
-      <div>
-        <label>Title</label>
-        <input id="vrTitle" placeholder="Oil change - Toyota" />
-      </div>
-      <div>
-        <label>Due date</label>
-        <input id="vrDueDate" type="date" />
-      </div>
-    </div>
-
-    <div class="grid mt-xs">
-      <div>
-        <label>Odometer (km) - optional</label>
-        <input id="vrOdometer" type="number" min="0" placeholder="120000" />
-      </div>
-      <div>
-        <label>Repeat every (days) - optional</label>
-        <input id="vrRepeatDays" type="number" min="0" placeholder="90" />
-      </div>
-      <div>
-        <label>Note (optional)</label>
-        <input id="vrNote" placeholder="Change filter / check oil..." />
-      </div>
-    </div>
-
-    <button id="vrAddBtn" class="btn btn-primary mt-sm">Save reminder</button>
-
-    <div class="panel-section-title mt-md">Upcoming & overdue</div>
-    <div class="table-wrapper">
-      <table>
-        <thead>
-        <tr>
-          <th>Status</th>
-          <th>Due</th>
-          <th>Type</th>
-          <th>Title</th>
-          <th>Odometer</th>
-          <th>Repeat</th>
-          <th>Note</th>
-          <th>Action</th>
-        </tr>
-        </thead>
-        <tbody id="vrTableBody"></tbody>
       </table>
     </div>
   </section>
@@ -702,9 +372,7 @@
     <div class="panel-header">
       <div>
         <div class="panel-title">Manual stock movements</div>
-        <div class="panel-subtitle">
-          Only Admin & Manager can record IN / OUT movements that change stock.
-        </div>
+        <div class="panel-subtitle">Only Admin & Manager can record IN / OUT movements that change stock.</div>
       </div>
     </div>
 
@@ -728,12 +396,10 @@
     <div class="grid mt-xs">
       <div>
         <label>Note</label>
-        <input id="movementNoteInput" placeholder="Adjustment, correction..." />
+        <input id="movementNoteInput" />
       </div>
       <div style="display:flex;align-items:flex-end;">
-        <button id="addMovementBtn" class="btn btn-primary" style="width:100%;">
-          Save movement
-        </button>
+        <button id="addMovementBtn" class="btn btn-primary" style="width:100%;">Save movement</button>
       </div>
     </div>
 
@@ -741,15 +407,7 @@
     <div class="table-wrapper">
       <table>
         <thead>
-        <tr>
-          <th>ID</th>
-          <th>Item</th>
-          <th>Type</th>
-          <th>Qty</th>
-          <th>Branch</th>
-          <th>User</th>
-          <th>Time</th>
-        </tr>
+        <tr><th>ID</th><th>Item</th><th>Type</th><th>Qty</th><th>Branch</th><th>User</th><th>Time</th></tr>
         </thead>
         <tbody id="movementsTableBody"></tbody>
       </table>
@@ -761,10 +419,7 @@
     <div class="panel-header">
       <div>
         <div class="panel-title">Budget & usage dashboard</div>
-        <div class="panel-subtitle">
-          Automatic spend calculation from delivered requests (qty × item price),
-          filter by date and branch.
-        </div>
+        <div class="panel-subtitle">Automatic spend calculation from delivered requests (qty × item price), filter by date and branch.</div>
       </div>
     </div>
 
@@ -784,9 +439,7 @@
         <input id="analyticsToDate" type="date" />
       </div>
     </div>
-    <button id="analyticsApplyBtn" class="btn btn-primary mt-sm">
-      Apply filters
-    </button>
+    <button id="analyticsApplyBtn" class="btn btn-primary mt-sm">Apply filters</button>
 
     <div class="summary-row mt-sm">
       <div class="summary-card">
@@ -803,19 +456,108 @@
       </div>
     </div>
 
-    <div class="panel-section-title mt-md">
-      Most ordered items (by cost)
-    </div>
+    <div class="panel-section-title mt-md">Most ordered items (by cost)</div>
     <div class="table-wrapper">
+      <table>
+        <thead><tr><th>Item</th><th>Total qty</th><th>Total cost</th></tr></thead>
+        <tbody id="analyticsItemsTableBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Vehicle reminders (Admin/Manager/Driver) -->
+  <section id="vehiclePanel" class="panel" style="display:none;">
+    <div class="panel-header">
+      <div>
+        <div class="panel-title">Vehicle reminders</div>
+        <div class="panel-subtitle">Oil change, meter, yearly renewal. Admin/Manager can add; Driver can mark done.</div>
+      </div>
+    </div>
+
+    <div id="vehicleCreateBlock" style="display:none;">
+      <div class="panel-section-title">Add vehicle (Admin/Manager)</div>
+      <div class="grid mt-xs">
+        <div>
+          <label>Vehicle name</label>
+          <input id="vehNameInput" placeholder="Delivery Car 1" />
+        </div>
+        <div>
+          <label>Plate (optional)</label>
+          <input id="vehPlateInput" placeholder="KUWAIT-12345" />
+        </div>
+        <div style="display:flex;align-items:flex-end;">
+          <button id="addVehicleBtn" class="btn btn-primary" style="width:100%;">Add vehicle</button>
+        </div>
+      </div>
+
+      <div class="panel-section-title mt-md">Add reminder (Admin/Manager)</div>
+      <div class="grid mt-xs">
+        <div>
+          <label>Vehicle</label>
+          <select id="remVehicleSelect"></select>
+        </div>
+        <div>
+          <label>Type</label>
+          <select id="remTypeSelect">
+            <option value="OIL_CHANGE">Oil change</option>
+            <option value="METER">Meter</option>
+            <option value="YEARLY_RENEW">Yearly renewal</option>
+            <option value="OTHER">Other</option>
+          </select>
+        </div>
+        <div>
+          <label>Due date</label>
+          <input id="remDueDateInput" type="date" />
+        </div>
+      </div>
+      <div class="grid mt-xs">
+        <div>
+          <label>Due odometer (km)</label>
+          <input id="remDueOdoInput" type="number" min="0" placeholder="e.g. 50000" />
+        </div>
+        <div>
+          <label>Note</label>
+          <input id="remNoteInput" placeholder="Change oil filter too..." />
+        </div>
+        <div style="display:flex;align-items:flex-end;">
+          <button id="addReminderBtn" class="btn btn-primary" style="width:100%;">Add reminder</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel-section-title mt-md">Reminders</div>
+    <div class="toolbar">
+      <div>
+        <label>Filter</label>
+        <select id="remFilterSelect">
+          <option value="open">Open</option>
+          <option value="all">All</option>
+          <option value="done">Done</option>
+        </select>
+      </div>
+      <div>
+        <label>Vehicle</label>
+        <select id="remVehicleFilterSelect"></select>
+      </div>
+      <div>
+        <button id="remRefreshBtn" class="btn btn-secondary">Refresh</button>
+      </div>
+    </div>
+
+    <div class="table-wrapper mt-sm">
       <table>
         <thead>
         <tr>
-          <th>Item</th>
-          <th>Total qty</th>
-          <th>Total cost</th>
+          <th>Status</th>
+          <th>Vehicle</th>
+          <th>Type</th>
+          <th>Due</th>
+          <th>Odometer</th>
+          <th>Note</th>
+          <th>Action</th>
         </tr>
         </thead>
-        <tbody id="analyticsItemsTableBody"></tbody>
+        <tbody id="remindersTableBody"></tbody>
       </table>
     </div>
   </section>
@@ -833,7 +575,8 @@
     movements: [],
     budgets: [],
     requests: [],
-    vehicleReminders: [] // ✅ added
+    vehicles: [],
+    vehicleReminders: []
   };
 
   // ----- Helpers -----
@@ -841,43 +584,39 @@
     const b = state.branches.find((x) => x.id === id);
     return b ? b.name : id || "";
   }
-
   function getUserName(id) {
     const u = state.users.find((x) => x.id === id);
     return u ? u.name : id || "";
   }
-
   function getItemById(id) {
     return state.items.find((x) => x.id === id);
   }
-
   function formatDateTime(iso) {
     if (!iso) return "";
     const d = new Date(iso);
     if (Number.isNaN(d.getTime())) return iso;
     return d.toLocaleString();
   }
-
   function getMainStorageId() {
-    const byName = state.branches.find((b) =>
-      (b.name || "").toLowerCase().includes("main")
-    );
+    // server uses MAIN_STORAGE_BRANCH_ID; client assumes branches[0] is not safe.
+    // We'll find by branchId "B001" if exists else fallback: name includes "main"
+    const byId = state.branches.find((b) => b.id === "B001");
+    if (byId) return byId.id;
+    const byName = state.branches.find((b) => (b.name || "").toLowerCase().includes("main"));
     if (byName) return byName.id;
     return state.branches[0] ? state.branches[0].id : null;
   }
 
-  // generate new item ID: ITM-001, ITM-002...
-  function getNextItemIdClient() {
-    let max = 0;
-    for (const it of state.items || []) {
-      const m = /^ITM-(\d+)$/.exec(it.id || "");
-      if (m) {
-        const num = parseInt(m[1], 10);
-        if (!isNaN(num) && num > max) max = num;
-      }
-    }
-    const next = max + 1;
-    return "ITM-" + String(next).padStart(3, "0");
+  function typeLabel(t) {
+    if (t === "OIL_CHANGE") return "Oil change";
+    if (t === "METER") return "Meter";
+    if (t === "YEARLY_RENEW") return "Yearly renewal";
+    return "Other";
+  }
+  function vehicleNameById(id) {
+    const v = (state.vehicles || []).find(x => x.id === id);
+    if (!v) return id;
+    return v.plate ? `${v.name} (${v.plate})` : v.name;
   }
 
   // ----- API calls -----
@@ -899,17 +638,18 @@
     return body;
   }
 
+  async function apiNextItemId() {
+    const res = await fetch(`${API_BASE}/next-item-id`);
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(body.error || "Failed to get next item id");
+    return body.nextId;
+  }
+
   async function apiCreateUser(name, role, password, branchId) {
     const res = await fetch(`${API_BASE}/users`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        name,
-        role,
-        password,
-        branchId,
-        adminUserId: state.user.id
-      })
+      body: JSON.stringify({ name, role, password, branchId, adminUserId: state.user.id })
     });
     const body = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(body.error || "Create user failed");
@@ -920,10 +660,7 @@
     const res = await fetch(`${API_BASE}/users/${userId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        adminUserId: state.user.id,
-        ...updates
-      })
+      body: JSON.stringify({ adminUserId: state.user.id, ...updates })
     });
     const body = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(body.error || "Update user failed");
@@ -956,13 +693,7 @@
     const res = await fetch(`${API_BASE}/movements`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        itemId,
-        type,
-        qty,
-        note,
-        userId: state.user.id
-      })
+      body: JSON.stringify({ itemId, type, qty, note, userId: state.user.id })
     });
     const body = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(body.error || "Movement failed");
@@ -973,12 +704,7 @@
     const res = await fetch(`${API_BASE}/requests`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        itemId,
-        qty,
-        note,
-        userId: state.user.id
-      })
+      body: JSON.stringify({ itemId, qty, note, userId: state.user.id })
     });
     const body = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(body.error || "Request failed");
@@ -996,41 +722,51 @@
     return body;
   }
 
-  // ✅ vehicle reminders
-  async function apiCreateVehicleReminder(payload) {
+  async function apiCreateVehicle(name, plate) {
+    const res = await fetch(`${API_BASE}/vehicles`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId: state.user.id, name, plate })
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(body.error || "Create vehicle failed");
+    return body;
+  }
+
+  async function apiCreateReminder(data) {
     const res = await fetch(`${API_BASE}/vehicle-reminders`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
+      body: JSON.stringify({ userId: state.user.id, ...data })
     });
     const body = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(body.error || "Failed to create reminder");
+    if (!res.ok) throw new Error(body.error || "Create reminder failed");
     return body;
   }
 
-  async function apiDoneVehicleReminder(id) {
-    const res = await fetch(`${API_BASE}/vehicle-reminders/${id}/done`, {
-      method: "POST",
+  async function apiUpdateReminder(id, patch) {
+    const res = await fetch(`${API_BASE}/vehicle-reminders/${id}`, {
+      method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId: state.user.id })
+      body: JSON.stringify({ userId: state.user.id, ...patch })
     });
     const body = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(body.error || "Failed");
+    if (!res.ok) throw new Error(body.error || "Update reminder failed");
     return body;
   }
 
-  async function apiDeleteVehicleReminder(id) {
+  async function apiDeleteReminder(id) {
     const res = await fetch(`${API_BASE}/vehicle-reminders/${id}`, {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ userId: state.user.id })
     });
     const body = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(body.error || "Failed");
+    if (!res.ok) throw new Error(body.error || "Delete reminder failed");
     return body;
   }
 
-  // ----- Render functions -----
+  // ----- Render -----
   function renderHeader() {
     const headerUser = document.getElementById("headerUserName");
     const headerRole = document.getElementById("headerRole");
@@ -1046,9 +782,7 @@
     headerUser.textContent = state.user.name;
     headerUser.style.display = "inline-flex";
 
-    const branchText = state.user.branchId
-      ? ` | Branch: ${getBranchName(state.user.branchId)}`
-      : "";
+    const branchText = state.user.branchId ? ` | Branch: ${getBranchName(state.user.branchId)}` : "";
     headerRole.textContent = `Role: ${state.user.role}${branchText}`;
     headerRole.style.display = "inline-flex";
 
@@ -1074,16 +808,27 @@
       });
     });
 
-    const fromLabel = document.getElementById("requestFromBranchLabel");
-    const toLabel = document.getElementById("requestToBranchLabel");
-    if (fromLabel) {
+    // inventory viewer select
+    const invSel = document.getElementById("inventoryViewBranchSelect");
+    if (invSel) {
+      invSel.innerHTML = "";
       const mainId = getMainStorageId();
-      fromLabel.textContent = getBranchName(mainId);
-    }
-    if (toLabel && state.user && state.user.branchId) {
-      toLabel.textContent = getBranchName(state.user.branchId);
+      state.branches.forEach((b) => {
+        const opt = document.createElement("option");
+        opt.value = b.id;
+        opt.textContent = b.id === mainId ? `${b.name} (Main Storage)` : b.name;
+        invSel.appendChild(opt);
+      });
+      // default view = main storage
+      if (mainId) invSel.value = mainId;
     }
 
+    const fromLabel = document.getElementById("requestFromBranchLabel");
+    const toLabel = document.getElementById("requestToBranchLabel");
+    if (fromLabel) fromLabel.textContent = getBranchName(getMainStorageId());
+    if (toLabel && state.user && state.user.branchId) toLabel.textContent = getBranchName(state.user.branchId);
+
+    // Analytics branch select
     const analyticsBranchSelect = document.getElementById("analyticsBranchSelect");
     if (analyticsBranchSelect) {
       analyticsBranchSelect.innerHTML = "";
@@ -1100,81 +845,81 @@
     }
   }
 
-  function renderItemsTable() {
+  function renderInventoryViewer() {
     const tbody = document.getElementById("itemsTableBody");
     const alertsBody = document.getElementById("alertsTableBody");
     const storageTotalEl = document.getElementById("storageTotalValue");
+    const selectedValueEl = document.getElementById("selectedListValue");
+    const invSel = document.getElementById("inventoryViewBranchSelect");
 
     tbody.innerHTML = "";
     if (alertsBody) alertsBody.innerHTML = "";
-    if (storageTotalEl) storageTotalEl.textContent = "0";
 
-    const items = [...state.items].sort((a, b) => a.name.localeCompare(b.name));
     const mainId = getMainStorageId();
-    let storageTotal = 0;
-    const lowItems = [];
+    const selectedBranchId = invSel ? invSel.value : mainId;
 
-    if (!items.length) {
-      const tr = document.createElement("tr");
-      tr.innerHTML = '<td colspan="7" class="text-muted">No items defined.</td>';
-      tbody.appendChild(tr);
+    const itemsSelected = (state.items || []).filter(it => it.branchId === selectedBranchId);
+    const itemsMain = (state.items || []).filter(it => it.branchId === mainId);
 
-      if (alertsBody) {
-        const trA = document.createElement("tr");
-        trA.innerHTML = '<td colspan="4" class="text-muted">No low stock alerts in Main Storage.</td>';
-        alertsBody.appendChild(trA);
-      }
-      if (storageTotalEl) storageTotalEl.textContent = "0";
-      return;
-    }
+    // Totals
+    const selectedTotal = itemsSelected.reduce((sum, it) => sum + (Number(it.baseQty)||0)*(Number(it.unitCost)||0), 0);
+    const storageTotal = itemsMain.reduce((sum, it) => sum + (Number(it.baseQty)||0)*(Number(it.unitCost)||0), 0);
 
-    items.forEach((it) => {
-      const value = (Number(it.baseQty) || 0) * (Number(it.unitCost) || 0);
-
-      if (it.branchId === mainId) {
-        storageTotal += value;
-        if (it.minQty > 0 && it.baseQty <= it.minQty) lowItems.push(it);
-      }
-
-      const tr = document.createElement("tr");
-      const low = it.baseQty <= it.minQty && it.minQty > 0;
-      tr.innerHTML = `
-        <td>${it.id}</td>
-        <td>${it.name}</td>
-        <td>${getBranchName(it.branchId)}</td>
-        <td${low ? ' class="danger"' : ""}>${it.baseQty}</td>
-        <td>${it.minQty}</td>
-        <td>${it.unitCost}</td>
-        <td>${value.toFixed(3)}</td>
-      `;
-      tbody.appendChild(tr);
-    });
-
+    if (selectedValueEl) selectedValueEl.textContent = selectedTotal.toFixed(3);
     if (storageTotalEl) storageTotalEl.textContent = storageTotal.toFixed(3);
 
+    // Render selected items table
+    const sorted = [...itemsSelected].sort((a,b)=> (a.name||"").localeCompare(b.name||""));
+    if (!sorted.length) {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td colspan="7" class="text-muted">No items in ${getBranchName(selectedBranchId)}.</td>`;
+      tbody.appendChild(tr);
+    } else {
+      sorted.forEach((it) => {
+        const value = (Number(it.baseQty)||0) * (Number(it.unitCost)||0);
+        const low = it.minQty > 0 && Number(it.baseQty||0) <= Number(it.minQty||0);
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${it.id}</td>
+          <td>${it.name}</td>
+          <td>${getBranchName(it.branchId)}</td>
+          <td${low ? ' class="danger"' : ""}>${it.baseQty}</td>
+          <td>${it.minQty}</td>
+          <td>${it.unitCost}</td>
+          <td>${value.toFixed(3)}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // Alerts ONLY for Main Storage
     if (alertsBody) {
+      const lowItems = itemsMain.filter(it => it.minQty > 0 && Number(it.baseQty||0) <= Number(it.minQty||0));
       if (!lowItems.length) {
         const trA = document.createElement("tr");
-        trA.innerHTML = '<td colspan="4" class="text-muted">No low stock alerts in Main Storage.</td>';
+        trA.innerHTML = `<td colspan="3" class="text-muted">No low stock alerts in Main Storage.</td>`;
         alertsBody.appendChild(trA);
       } else {
-        lowItems.forEach((it) => {
-          const tr = document.createElement("tr");
-          tr.innerHTML = `
-            <td>${it.name}</td>
-            <td>${getBranchName(it.branchId)}</td>
-            <td class="danger">${it.baseQty}</td>
-            <td>${it.minQty}</td>
-          `;
-          alertsBody.appendChild(tr);
-        });
+        lowItems
+          .sort((a,b)=> (Number(a.baseQty||0)-Number(b.baseQty||0)))
+          .forEach((it)=>{
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+              <td>${it.name}</td>
+              <td class="danger">${it.baseQty}</td>
+              <td>${it.minQty}</td>
+            `;
+            alertsBody.appendChild(tr);
+          });
       }
     }
 
+    // movement item select (only items in selected branch makes sense? keep all items)
     const moveSelect = document.getElementById("movementItemSelect");
     if (moveSelect) {
       moveSelect.innerHTML = "";
-      state.items.forEach((it, idx) => {
+      const all = [...state.items].sort((a,b)=>(a.name||"").localeCompare(b.name||""));
+      all.forEach((it, idx) => {
         const opt = document.createElement("option");
         opt.value = it.id;
         opt.textContent = `${it.name} (${getBranchName(it.branchId)})`;
@@ -1190,6 +935,7 @@
     const storageId = getMainStorageId();
     itemSel.innerHTML = "";
     const items = state.items.filter((it) => it.branchId === storageId);
+    items.sort((a,b)=>(a.name||"").localeCompare(b.name||""));
     items.forEach((it, idx) => {
       const opt = document.createElement("option");
       opt.value = it.id;
@@ -1203,14 +949,9 @@
     const tbody = document.getElementById("usersTableBody");
     tbody.innerHTML = "";
     const users = [...state.users].sort((a, b) => a.name.localeCompare(b.name));
-
     users.forEach((u) => {
       const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${u.name}</td>
-        <td>${u.role}</td>
-        <td>${getBranchName(u.branchId)}</td>
-      `;
+      tr.innerHTML = `<td>${u.name}</td><td>${u.role}</td><td>${getBranchName(u.branchId)}</td>`;
       tbody.appendChild(tr);
     });
 
@@ -1234,16 +975,15 @@
   function renderRequestsTable() {
     const tbody = document.getElementById("requestsTableBody");
     tbody.innerHTML = "";
-    const all = [...state.requests].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    const all = [...state.requests].sort((a,b)=> new Date(b.createdAt)-new Date(a.createdAt));
 
-    const visible =
-      state.user.role === "driver"
-        ? all
-        : all.filter((r) => r.toBranchId === state.user.branchId);
+    const visible = (state.user.role === "driver")
+      ? all
+      : all.filter((r) => r.toBranchId === state.user.branchId);
 
     if (!visible.length) {
       const tr = document.createElement("tr");
-      tr.innerHTML = '<td colspan="8" class="text-muted">No requests yet.</td>';
+      tr.innerHTML = `<td colspan="8" class="text-muted">No requests yet.</td>`;
       tbody.appendChild(tr);
       return;
     }
@@ -1272,10 +1012,11 @@
     const pending = state.requests.filter((r) => r.status === "pending");
     if (!pending.length) {
       const tr = document.createElement("tr");
-      tr.innerHTML = '<td colspan="8" class="text-muted">No pending requests.</td>';
+      tr.innerHTML = `<td colspan="8" class="text-muted">No pending requests.</td>`;
       tbody.appendChild(tr);
       return;
     }
+
     pending.forEach((r) => {
       const item = getItemById(r.itemId);
       const tr = document.createElement("tr");
@@ -1296,13 +1037,11 @@
   function renderMovementsTable() {
     const tbody = document.getElementById("movementsTableBody");
     tbody.innerHTML = "";
-    const moves = [...state.movements]
-      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-      .slice(0, 50);
+    const moves = [...state.movements].sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt)).slice(0, 60);
 
     if (!moves.length) {
       const tr = document.createElement("tr");
-      tr.innerHTML = '<td colspan="7" class="text-muted">No movements recorded.</td>';
+      tr.innerHTML = `<td colspan="7" class="text-muted">No movements recorded.</td>`;
       tbody.appendChild(tr);
       return;
     }
@@ -1323,7 +1062,7 @@
     });
   }
 
-  // ----- Analytics -----
+  // ----- Analytics: compute from delivered requests -----
   function computeAnalytics() {
     const branchSel = document.getElementById("analyticsBranchSelect");
     const fromInput = document.getElementById("analyticsFromDate");
@@ -1367,7 +1106,7 @@
       stat.cost += cost;
     });
 
-    const itemsArray = Array.from(itemStats.values()).sort((a, b) => b.cost - a.cost);
+    const itemsArray = Array.from(itemStats.values()).sort((a,b)=> b.cost - a.cost);
 
     return { totalCost, totalQty, totalRequests: delivered.length, items: itemsArray };
   }
@@ -1388,68 +1127,113 @@
     tbody.innerHTML = "";
     if (!items.length) {
       const tr = document.createElement("tr");
-      tr.innerHTML = '<td colspan="3" class="text-muted">No delivered requests in this period.</td>';
+      tr.innerHTML = `<td colspan="3" class="text-muted">No delivered requests in this period.</td>`;
       tbody.appendChild(tr);
       return;
     }
 
     items.forEach((it) => {
       const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${it.name}</td>
-        <td>${it.qty}</td>
-        <td>${it.cost.toFixed(3)}</td>
-      `;
+      tr.innerHTML = `<td>${it.name}</td><td>${it.qty}</td><td>${it.cost.toFixed(3)}</td>`;
       tbody.appendChild(tr);
     });
   }
 
-  // ✅ Vehicle reminders rendering
-  function daysUntil(dateStr) {
-    const today = new Date();
-    const d = new Date(dateStr + "T00:00:00");
-    const base = new Date(today.toISOString().slice(0, 10) + "T00:00:00");
-    return Math.round((d - base) / (1000 * 60 * 60 * 24));
+  // ----- Vehicle reminders -----
+  function renderVehiclesUI() {
+    const isAdmin = state.user.role === "admin";
+    const isManager = state.user.role === "manager";
+    const isDriver = state.user.role === "driver";
+
+    const panel = document.getElementById("vehiclePanel");
+    const createBlock = document.getElementById("vehicleCreateBlock");
+
+    if (panel) panel.style.display = (isAdmin || isManager || isDriver) ? "block" : "none";
+    if (createBlock) createBlock.style.display = (isAdmin || isManager) ? "block" : "none";
+
+    // fill vehicle selects
+    const remVehSel = document.getElementById("remVehicleSelect");
+    const remVehFilter = document.getElementById("remVehicleFilterSelect");
+
+    function fillSelect(sel, addAll) {
+      if (!sel) return;
+      sel.innerHTML = "";
+      if (addAll) {
+        const all = document.createElement("option");
+        all.value = "ALL";
+        all.textContent = "All vehicles";
+        sel.appendChild(all);
+      }
+      (state.vehicles || []).forEach((v) => {
+        const opt = document.createElement("option");
+        opt.value = v.id;
+        opt.textContent = v.plate ? `${v.name} (${v.plate})` : v.name;
+        sel.appendChild(opt);
+      });
+      if (addAll) sel.value = "ALL";
+    }
+
+    fillSelect(remVehSel, false);
+    fillSelect(remVehFilter, true);
+
+    renderRemindersTable();
   }
 
-  function renderVehicleReminders() {
-    const tbody = document.getElementById("vrTableBody");
+  function renderRemindersTable() {
+    const tbody = document.getElementById("remindersTableBody");
     if (!tbody) return;
     tbody.innerHTML = "";
 
-    const list = [...(state.vehicleReminders || [])]
-      .filter((r) => !r.done)
-      .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
+    const filter = document.getElementById("remFilterSelect")?.value || "open";
+    const vehFilter = document.getElementById("remVehicleFilterSelect")?.value || "ALL";
+
+    let list = [...(state.vehicleReminders || [])];
+
+    if (filter === "open") list = list.filter(r => r.status === "open");
+    if (filter === "done") list = list.filter(r => r.status === "done");
+    if (vehFilter !== "ALL") list = list.filter(r => r.vehicleId === vehFilter);
+
+    // sort: open first, then dueDate ascending
+    list.sort((a,b)=>{
+      if (a.status !== b.status) return a.status === "open" ? -1 : 1;
+      const ad = a.dueDate ? new Date(a.dueDate).getTime() : Infinity;
+      const bd = b.dueDate ? new Date(b.dueDate).getTime() : Infinity;
+      return ad - bd;
+    });
 
     if (!list.length) {
       const tr = document.createElement("tr");
-      tr.innerHTML = `<td colspan="8" class="text-muted">No upcoming reminders.</td>`;
+      tr.innerHTML = `<td colspan="7" class="text-muted">No reminders.</td>`;
       tbody.appendChild(tr);
       return;
     }
 
+    const isEditor = state.user.role === "admin" || state.user.role === "manager";
+
     list.forEach((r) => {
-      const du = daysUntil(r.dueDate);
-      const statusText = du < 0 ? `Overdue ${Math.abs(du)}d` : du === 0 ? "Due today" : `In ${du}d`;
-      const isOver = du < 0;
+      const statusPill = r.status === "done"
+        ? `<span class="pill pill-done">done</span>`
+        : `<span class="pill pill-open">open</span>`;
+
+      const dueText = r.dueDate ? r.dueDate : "";
+      const odoText = (r.dueOdometer === null || typeof r.dueOdometer === "undefined") ? "" : r.dueOdometer;
+
+      const actionBtns = `
+        <button class="btn btn-primary btn-sm" data-rem-done="${r.id}">
+          ${r.status === "done" ? "Re-open" : "Done"}
+        </button>
+        ${isEditor ? `<button class="btn btn-secondary btn-sm" data-rem-del="${r.id}">Delete</button>` : ""}
+      `;
 
       const tr = document.createElement("tr");
       tr.innerHTML = `
-        <td class="${isOver ? "danger" : ""}">${statusText}</td>
-        <td>${r.dueDate}</td>
-        <td>${r.type}</td>
-        <td>${r.title}</td>
-        <td>${r.odometerKm ?? ""}</td>
-        <td>${r.repeatEveryDays ? (r.repeatEveryDays + "d") : ""}</td>
-        <td>${r.note || ""}</td>
-        <td style="display:flex; gap:6px;">
-          <button class="btn btn-primary btn-sm" data-vr-done="${r.id}">Done</button>
-          ${
-            (state.user.role === "admin" || state.user.role === "manager")
-              ? `<button class="btn btn-secondary btn-sm" data-vr-del="${r.id}">Delete</button>`
-              : ""
-          }
-        </td>
+        <td>${statusPill}</td>
+        <td>${vehicleNameById(r.vehicleId)}</td>
+        <td>${typeLabel(r.type)}</td>
+        <td>${dueText}</td>
+        <td>${odoText}</td>
+        <td>${(r.note || "").replace(/</g,"&lt;")}</td>
+        <td style="display:flex;gap:0.4rem;align-items:center;flex-wrap:wrap;">${actionBtns}</td>
       `;
       tbody.appendChild(tr);
     });
@@ -1467,21 +1251,11 @@
     document.getElementById("usersPanel").style.display = isAdmin ? "block" : "none";
     document.getElementById("driverPanel").style.display = isDriver ? "block" : "none";
 
-    // staff only sees Requests
     document.getElementById("requestsPanel").style.display = isDriver ? "none" : "block";
     document.getElementById("inventoryPanel").style.display = (isAdmin || isManager) ? "block" : "none";
     document.getElementById("movementsPanel").style.display = (isAdmin || isManager) ? "block" : "none";
     document.getElementById("analyticsPanel").style.display = (isAdmin || isManager) ? "block" : "none";
-
-    // ✅ vehicle reminders visible for driver/manager/admin
-    const vrPanel = document.getElementById("vehicleRemindersPanel");
-    if (vrPanel) vrPanel.style.display = (isAdmin || isManager || isDriver) ? "block" : "none";
-  }
-
-  function resetLoginForm() {
-    document.getElementById("loginNameInput").value = "";
-    document.getElementById("loginPasswordInput").value = "";
-    document.getElementById("loginError").style.display = "none";
+    document.getElementById("vehiclePanel").style.display = (isAdmin || isManager || isDriver) ? "block" : "none";
   }
 
   function logout() {
@@ -1492,14 +1266,42 @@
     state.movements = [];
     state.budgets = [];
     state.requests = [];
+    state.vehicles = [];
     state.vehicleReminders = [];
     document.getElementById("appView").style.display = "none";
     document.getElementById("loginView").style.display = "block";
     renderHeader();
-    resetLoginForm();
+    document.getElementById("loginNameInput").value = "";
+    document.getElementById("loginPasswordInput").value = "";
+    const err = document.getElementById("loginError");
+    err.style.display = "none";
+    err.textContent = "";
   }
 
-  // ----- Event wiring -----
+  async function refreshAllState() {
+    const all = await apiLoadState();
+    state.branches = all.branches || [];
+    state.users = all.users || [];
+    state.items = all.items || [];
+    state.movements = all.movements || [];
+    state.budgets = all.budgets || [];
+    state.requests = all.requests || [];
+    state.vehicles = all.vehicles || [];
+    state.vehicleReminders = all.vehicleReminders || [];
+  }
+
+  async function updateItemIdField() {
+    const idInput = document.getElementById("itemIdInput");
+    if (!idInput) return;
+    try {
+      idInput.value = await apiNextItemId();
+    } catch {
+      // fallback: client scan if endpoint failed
+      idInput.value = "ITM-001";
+    }
+  }
+
+  // ----- Events -----
   document.getElementById("loginBtn").addEventListener("click", async () => {
     const name = document.getElementById("loginNameInput").value.trim();
     const password = document.getElementById("loginPasswordInput").value;
@@ -1517,30 +1319,24 @@
       const user = await apiLogin(name, password);
       state.user = user;
 
-      const all = await apiLoadState();
-      state.branches = all.branches || [];
-      state.users = all.users || [];
-      state.items = all.items || [];
-      state.movements = all.movements || [];
-      state.budgets = all.budgets || [];
-      state.requests = all.requests || [];
-      state.vehicleReminders = all.vehicleReminders || []; // ✅
+      await refreshAllState();
 
       renderHeader();
       renderBranchSelects();
-      renderItemsTable();
       fillRequestItemsFromStorage();
       renderUsersTable();
       renderRequestsTable();
       renderDriverRequestsTable();
       renderMovementsTable();
       renderAnalytics();
-      renderVehicleReminders(); // ✅
+      renderVehiclesUI();
 
-      const idInput = document.getElementById("itemIdInput");
-      if (idInput) idInput.value = getNextItemIdClient();
+      await updateItemIdField();
 
       showApp();
+
+      // inventory viewer render after select is populated
+      renderInventoryViewer();
     } catch (e) {
       errorEl.textContent = e.message;
       errorEl.style.display = "block";
@@ -1548,6 +1344,23 @@
   });
 
   document.getElementById("logoutBtn").addEventListener("click", logout);
+
+  document.getElementById("inventoryViewBranchSelect").addEventListener("change", () => {
+    renderInventoryViewer();
+  });
+
+  document.getElementById("inventoryRefreshBtn").addEventListener("click", async () => {
+    await refreshAllState();
+    renderBranchSelects();
+    fillRequestItemsFromStorage();
+    renderInventoryViewer();
+    renderRequestsTable();
+    renderDriverRequestsTable();
+    renderMovementsTable();
+    renderAnalytics();
+    renderVehiclesUI();
+    await updateItemIdField();
+  });
 
   // create user
   document.getElementById("addUserBtn").addEventListener("click", async () => {
@@ -1575,6 +1388,7 @@
     }
   });
 
+  // edit user select -> fill form
   document.getElementById("editUserSelect").addEventListener("change", () => {
     const id = document.getElementById("editUserSelect").value;
     const user = state.users.find((u) => u.id === id);
@@ -1589,12 +1403,11 @@
     document.getElementById("editUserBranchSelect").value = user.branchId || "";
   });
 
+  // save user changes
   document.getElementById("saveUserChangesBtn").addEventListener("click", async () => {
     const id = document.getElementById("editUserSelect").value;
-    if (!id) {
-      alert("Select a user first.");
-      return;
-    }
+    if (!id) { alert("Select a user first."); return; }
+
     const name = document.getElementById("editUserName").value.trim();
     const password = document.getElementById("editUserPassword").value.trim();
     const role = document.getElementById("editUserRole").value;
@@ -1614,13 +1427,12 @@
     }
   });
 
+  // delete user
   document.getElementById("deleteUserBtn").addEventListener("click", async () => {
     const id = document.getElementById("editUserSelect").value;
-    if (!id) {
-      alert("Select a user first.");
-      return;
-    }
+    if (!id) { alert("Select a user first."); return; }
     if (!confirm("Delete this user?")) return;
+
     try {
       await apiDeleteUser(id);
       state.users = state.users.filter((u) => u.id !== id);
@@ -1639,17 +1451,15 @@
       alert("Only admin/manager can create items.");
       return;
     }
-    const id = document.getElementById("itemIdInput").value.trim();
+
+    const id = document.getElementById("itemIdInput").value.trim(); // server will accept auto
     const name = document.getElementById("itemNameInput").value.trim();
     const branchId = document.getElementById("itemBranchSelect").value;
     const baseQty = Number(document.getElementById("itemBaseQtyInput").value || "0");
     const minQty = Number(document.getElementById("itemMinQtyInput").value || "0");
     const unitCost = Number(document.getElementById("itemUnitCostInput").value || "0");
 
-    if (!name) {
-      alert("Item name required.");
-      return;
-    }
+    if (!name) { alert("Item name required."); return; }
 
     try {
       const newItem = await apiCreateItem({
@@ -1661,15 +1471,18 @@
         unitCost,
         managerUserId: state.user.id
       });
+
       state.items.push(newItem);
-      renderItemsTable();
+
+      renderInventoryViewer();
       fillRequestItemsFromStorage();
 
       document.getElementById("itemNameInput").value = "";
       document.getElementById("itemBaseQtyInput").value = "0";
       document.getElementById("itemMinQtyInput").value = "0";
       document.getElementById("itemUnitCostInput").value = "0";
-      document.getElementById("itemIdInput").value = getNextItemIdClient();
+
+      await updateItemIdField();
     } catch (e) {
       alert(e.message);
     }
@@ -1687,26 +1500,21 @@
     const qty = Number(document.getElementById("movementQtyInput").value || "1");
     const note = document.getElementById("movementNoteInput").value.trim();
 
-    if (!itemId || !qty || qty <= 0) {
-      alert("Item and quantity required.");
-      return;
-    }
+    if (!itemId || !qty || qty <= 0) { alert("Item and quantity required."); return; }
 
     try {
       await apiCreateMovement(itemId, type, qty, note);
-      const all = await apiLoadState();
-      state.items = all.items || [];
-      state.movements = all.movements || [];
-      state.vehicleReminders = all.vehicleReminders || state.vehicleReminders;
+      await refreshAllState();
 
-      renderItemsTable();
+      renderBranchSelects();
       fillRequestItemsFromStorage();
+      renderInventoryViewer();
       renderMovementsTable();
       renderAnalytics();
-      renderVehicleReminders();
 
       document.getElementById("movementQtyInput").value = "1";
       document.getElementById("movementNoteInput").value = "";
+      await updateItemIdField();
     } catch (e) {
       alert(e.message);
     }
@@ -1714,23 +1522,14 @@
 
   // create request
   document.getElementById("createRequestBtn").addEventListener("click", async () => {
-    if (!state.user || state.user.role === "driver") {
-      alert("Drivers cannot create requests.");
-      return;
-    }
-    if (!state.user.branchId) {
-      alert("Your user is not assigned to a branch. Ask admin.");
-      return;
-    }
+    if (!state.user || state.user.role === "driver") { alert("Drivers cannot create requests."); return; }
+    if (!state.user.branchId) { alert("Your user is not assigned to a branch. Ask admin."); return; }
 
     const itemId = document.getElementById("requestItemSelect").value;
     const qty = Number(document.getElementById("requestQtyInput").value || "1");
     const note = document.getElementById("requestNoteInput").value.trim();
 
-    if (!itemId || !qty || qty <= 0) {
-      alert("Item and quantity required.");
-      return;
-    }
+    if (!itemId || !qty || qty <= 0) { alert("Item and quantity required."); return; }
 
     try {
       const req = await apiCreateRequest(itemId, qty, note);
@@ -1750,94 +1549,104 @@
     const btn = e.target.closest("button[data-req-id]");
     if (!btn) return;
     const id = btn.getAttribute("data-req-id");
+
     if (!confirm("Mark this request as delivered?")) return;
 
     try {
       await apiDeliverRequest(id);
-      const all = await apiLoadState();
-      state.items = all.items || [];
-      state.movements = all.movements || [];
-      state.requests = all.requests || [];
-      state.vehicleReminders = all.vehicleReminders || state.vehicleReminders;
+      await refreshAllState();
 
-      renderItemsTable();
+      renderBranchSelects();
       fillRequestItemsFromStorage();
+      renderInventoryViewer();
       renderDriverRequestsTable();
       renderRequestsTable();
       renderMovementsTable();
       renderAnalytics();
-      renderVehicleReminders();
     } catch (err) {
       alert(err.message);
     }
   });
 
   // analytics filters
-  document.getElementById("analyticsApplyBtn").addEventListener("click", () => renderAnalytics());
+  document.getElementById("analyticsApplyBtn").addEventListener("click", () => {
+    renderAnalytics();
+  });
 
-  // ✅ Vehicle reminders events
-  document.getElementById("vrAddBtn").addEventListener("click", async () => {
-    if (!state.user) return;
-
-    const title = document.getElementById("vrTitle").value.trim();
-    const type = document.getElementById("vrType").value;
-    const dueDate = document.getElementById("vrDueDate").value;
-    const odometerKm = document.getElementById("vrOdometer").value;
-    const repeatEveryDays = document.getElementById("vrRepeatDays").value;
-    const note = document.getElementById("vrNote").value.trim();
-
-    if (!title || !dueDate) {
-      alert("Title and due date required.");
-      return;
-    }
+  // Vehicle actions
+  document.getElementById("addVehicleBtn").addEventListener("click", async () => {
+    const name = document.getElementById("vehNameInput").value.trim();
+    const plate = document.getElementById("vehPlateInput").value.trim();
+    if (!name) { alert("Vehicle name required"); return; }
 
     try {
-      const created = await apiCreateVehicleReminder({
-        userId: state.user.id,
-        title,
-        type,
-        dueDate,
-        odometerKm: odometerKm ? Number(odometerKm) : null,
-        repeatEveryDays: repeatEveryDays ? Number(repeatEveryDays) : null,
-        note
-      });
-
-      state.vehicleReminders.push(created);
-      renderVehicleReminders();
-
-      document.getElementById("vrTitle").value = "";
-      document.getElementById("vrOdometer").value = "";
-      document.getElementById("vrRepeatDays").value = "";
-      document.getElementById("vrNote").value = "";
+      await apiCreateVehicle(name, plate);
+      await refreshAllState();
+      renderVehiclesUI();
+      document.getElementById("vehNameInput").value = "";
+      document.getElementById("vehPlateInput").value = "";
     } catch (e) {
       alert(e.message);
     }
   });
 
-  document.getElementById("vrTableBody").addEventListener("click", async (e) => {
-    const doneBtn = e.target.closest("button[data-vr-done]");
-    const delBtn = e.target.closest("button[data-vr-del]");
+  document.getElementById("addReminderBtn").addEventListener("click", async () => {
+    const vehicleId = document.getElementById("remVehicleSelect").value;
+    const type = document.getElementById("remTypeSelect").value;
+    const dueDate = document.getElementById("remDueDateInput").value || null;
+    const dueOdometerRaw = document.getElementById("remDueOdoInput").value;
+    const dueOdometer = dueOdometerRaw === "" ? null : Number(dueOdometerRaw);
+    const note = document.getElementById("remNoteInput").value.trim();
+
+    if (!vehicleId) { alert("Select a vehicle"); return; }
 
     try {
-      if (doneBtn) {
-        const id = doneBtn.getAttribute("data-vr-done");
-        if (!confirm("Mark as done?")) return;
-        await apiDoneVehicleReminder(id);
-        const all = await apiLoadState();
-        state.vehicleReminders = all.vehicleReminders || [];
-        renderVehicleReminders();
-      }
+      await apiCreateReminder({ vehicleId, type, dueDate, dueOdometer, note });
+      await refreshAllState();
+      renderVehiclesUI();
+      document.getElementById("remDueDateInput").value = "";
+      document.getElementById("remDueOdoInput").value = "";
+      document.getElementById("remNoteInput").value = "";
+    } catch (e) {
+      alert(e.message);
+    }
+  });
 
-      if (delBtn) {
-        const id = delBtn.getAttribute("data-vr-del");
-        if (!confirm("Delete this reminder?")) return;
-        await apiDeleteVehicleReminder(id);
-        const all = await apiLoadState();
-        state.vehicleReminders = all.vehicleReminders || [];
-        renderVehicleReminders();
+  document.getElementById("remRefreshBtn").addEventListener("click", async () => {
+    await refreshAllState();
+    renderVehiclesUI();
+  });
+
+  document.getElementById("remFilterSelect").addEventListener("change", renderRemindersTable);
+  document.getElementById("remVehicleFilterSelect").addEventListener("change", renderRemindersTable);
+
+  document.getElementById("remindersTableBody").addEventListener("click", async (e) => {
+    const doneBtn = e.target.closest("button[data-rem-done]");
+    const delBtn = e.target.closest("button[data-rem-del]");
+
+    if (doneBtn) {
+      const id = doneBtn.getAttribute("data-rem-done");
+      const r = (state.vehicleReminders || []).find(x => x.id === id);
+      if (!r) return;
+      try {
+        await apiUpdateReminder(id, { status: r.status === "done" ? "open" : "done" });
+        await refreshAllState();
+        renderVehiclesUI();
+      } catch (err) {
+        alert(err.message);
       }
-    } catch (err) {
-      alert(err.message);
+    }
+
+    if (delBtn) {
+      const id = delBtn.getAttribute("data-rem-del");
+      if (!confirm("Delete this reminder?")) return;
+      try {
+        await apiDeleteReminder(id);
+        await refreshAllState();
+        renderVehiclesUI();
+      } catch (err) {
+        alert(err.message);
+      }
     }
   });
 </script>

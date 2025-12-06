@@ -316,5 +316,6 @@
   "budgets": [],
   "requests": [],
   "trips": [],
+  "vehicles": [],
   "vehicleReminders": []
 }
