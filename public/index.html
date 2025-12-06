@@ -7,7 +7,8 @@
   <style>
     * {
       box-sizing: border-box;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        sans-serif;
     }
 
     body {
@@ -26,8 +27,17 @@
       gap: 0.5rem;
     }
 
-    header h1 { font-size: 1rem; margin: 0; letter-spacing: 0.03em; }
-    header small { display: block; font-size: 0.7rem; opacity: 0.8; }
+    header h1 {
+      font-size: 1rem;
+      margin: 0;
+      letter-spacing: 0.03em;
+    }
+
+    header small {
+      display: block;
+      font-size: 0.7rem;
+      opacity: 0.8;
+    }
 
     .header-right {
       display: flex;
@@ -52,19 +62,36 @@
       justify-content: center;
       border-radius: 999px;
       border: none;
-      padding: 0.55rem 1.2rem;
-      font-size: 0.9rem;
+      padding: 0.45rem 1.1rem;
+      font-size: 0.85rem;
       cursor: pointer;
       transition: background 0.15s, transform 0.1s;
     }
 
-    .btn-primary { background: #111827; color: white; }
-    .btn-primary:hover { background: #020617; transform: translateY(-1px); }
+    .btn-primary {
+      background: #111827;
+      color: white;
+    }
 
-    .btn-secondary { background: #e5e7eb; color: #111827; }
-    .btn-secondary:hover { background: #d1d5db; transform: translateY(-1px); }
+    .btn-primary:hover {
+      background: #020617;
+      transform: translateY(-1px);
+    }
 
-    .btn-sm { padding: 0.35rem 0.8rem; font-size: 0.78rem; }
+    .btn-secondary {
+      background: #e5e7eb;
+      color: #111827;
+    }
+
+    .btn-secondary:hover {
+      background: #d1d5db;
+      transform: translateY(-1px);
+    }
+
+    .btn-sm {
+      padding: 0.35rem 0.8rem;
+      font-size: 0.78rem;
+    }
 
     main {
       padding: 1rem;
@@ -88,51 +115,94 @@
       gap: 0.75rem;
     }
 
-    .panel-title { font-size: 0.95rem; font-weight: 600; color: #111827; }
-    .panel-subtitle { font-size: 0.75rem; color: #6b7280; }
-    .panel-section-title { font-size: 0.85rem; font-weight: 600; margin: 0.5rem 0 0.3rem; }
+    .panel-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #111827;
+    }
 
-    .text-muted { color: #9ca3af; }
+    .panel-subtitle {
+      font-size: 0.75rem;
+      color: #6b7280;
+    }
 
-    .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.6rem; }
-    .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.6rem; }
-
-    label { font-size: 0.78rem; display: block; margin-bottom: 0.15rem; color: #374151; }
-
-    input, select, textarea {
-      width: 100%;
-      padding: 0.45rem 0.6rem;
-      border-radius: 0.6rem;
-      border: 1px solid #e5e7eb;
+    .panel-section-title {
       font-size: 0.85rem;
+      font-weight: 600;
+      margin: 0.5rem 0 0.3rem;
+    }
+
+    .text-muted {
+      color: #9ca3af;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0.6rem;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.6rem;
+    }
+
+    label {
+      font-size: 0.78rem;
+      display: block;
+      margin-bottom: 0.15rem;
+      color: #374151;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      padding: 0.35rem 0.55rem;
+      border-radius: 0.5rem;
+      border: 1px solid #e5e7eb;
+      font-size: 0.8rem;
       background: #ffffff;
     }
 
-    textarea { resize: vertical; min-height: 40px; }
+    textarea {
+      resize: vertical;
+      min-height: 40px;
+    }
 
-    input:focus, select:focus, textarea:focus {
+    input:focus,
+    select:focus,
+    textarea:focus {
       outline: none;
       border-color: #111827;
       box-shadow: 0 0 0 1px #11182711;
     }
 
-    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.8rem;
+    }
 
-    th, td {
-      padding: 0.45rem 0.55rem;
+    th,
+    td {
+      padding: 0.35rem 0.4rem;
       text-align: left;
       border-bottom: 1px solid #f3f4f6;
       white-space: nowrap;
     }
 
     th {
-      font-size: 0.75rem;
+      font-size: 0.72rem;
       font-weight: 600;
       color: #6b7280;
       background: #f9fafb;
     }
 
-    tr:nth-child(even) td { background: #f9fafb; }
+    tr:nth-child(even) td {
+      background: #f9fafb;
+    }
 
     .pill {
       display: inline-flex;
@@ -142,17 +212,42 @@
       font-size: 0.7rem;
     }
 
-    .pill-status { background: #e5e7eb; color: #111827; }
-    .pill-status.pending { background: #fef3c7; color: #92400e; }
-    .pill-status.delivered { background: #dcfce7; color: #166534; }
+    .pill-status {
+      background: #e5e7eb;
+      color: #111827;
+    }
 
-    .table-wrapper { width: 100%; overflow-x: auto; margin-top: 0.4rem; }
+    .pill-status.pending {
+      background: #fef3c7;
+      color: #92400e;
+    }
 
-    .danger { color: #b91c1c; font-weight: 700; }
-    .success { color: #166534; }
+    .pill-status.delivered {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .table-wrapper {
+      width: 100%;
+      overflow-x: auto;
+      margin-top: 0.4rem;
+    }
+
+    .danger {
+      color: #b91c1c;
+      font-weight: 600;
+    }
+
+    .success {
+      color: #166534;
+    }
 
     /* Login card */
-    #loginView { max-width: 640px; margin: 2.5rem auto; padding: 0 1rem; }
+    #loginView {
+      max-width: 640px;
+      margin: 2.5rem auto;
+      padding: 0 1rem;
+    }
 
     .card {
       background: white;
@@ -161,38 +256,62 @@
       box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
     }
 
-    .card h2 { margin: 0 0 0.5rem; font-size: 1.2rem; }
+    .card h2 {
+      margin: 0 0 0.5rem;
+      font-size: 1.2rem;
+    }
 
     .mt-xs { margin-top: 0.35rem; }
     .mt-sm { margin-top: 0.6rem; }
     .mt-md { margin-top: 0.9rem; }
     .mt-lg { margin-top: 1.2rem; }
 
-    .error-text { margin-top: 0.4rem; font-size: 0.85rem; color: #b91c1c; }
+    .error-text {
+      margin-top: 0.4rem;
+      font-size: 0.8rem;
+      color: #b91c1c;
+    }
 
-    .summary-row { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 0.5rem; }
+    .summary-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      margin-top: 0.5rem;
+    }
+
     .summary-card {
       flex: 1 1 140px;
       background: #f9fafb;
       border-radius: 0.7rem;
-      padding: 0.6rem 0.8rem;
-      font-size: 0.85rem;
+      padding: 0.5rem 0.7rem;
+      font-size: 0.8rem;
     }
-    .summary-label { font-size: 0.75rem; color: #6b7280; }
-    .summary-value { font-size: 1rem; font-weight: 700; margin-top: 0.2rem; }
+
+    .summary-label {
+      font-size: 0.72rem;
+      color: #6b7280;
+    }
+
+    .summary-value {
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-top: 0.2rem;
+    }
 
     @media (max-width: 768px) {
-      header { flex-direction: column; align-items: flex-start; gap: 0.25rem; }
-      main { padding: 0.7rem; }
+      header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+      }
+      main { padding: 0.6rem; }
       .panel { padding: 0.7rem 0.8rem; }
       .grid, .grid-2 { grid-template-columns: minmax(0, 1fr); }
-      table { font-size: 0.8rem; }
-      th, td { padding: 0.35rem 0.4rem; }
-      .btn { padding: 0.65rem 1.25rem; font-size: 0.95rem; }
+      table { font-size: 0.75rem; }
+      th, td { padding: 0.25rem 0.3rem; }
     }
   </style>
 </head>
-
 <body>
 <header>
   <div>
@@ -202,7 +321,9 @@
   <div class="header-right">
     <span id="headerUserName" class="badge" style="display:none;"></span>
     <span id="headerRole" class="badge" style="display:none;"></span>
-    <button id="logoutBtn" class="btn btn-secondary btn-sm" style="display:none;">Logout</button>
+    <button id="logoutBtn" class="btn btn-secondary btn-sm" style="display:none;">
+      Logout
+    </button>
   </div>
 </header>
 
@@ -222,7 +343,10 @@
       </div>
     </div>
 
-    <button id="loginBtn" class="btn btn-primary mt-md" style="width: 100%;">Sign in</button>
+    <button id="loginBtn" class="btn btn-primary mt-md" style="width: 100%;">
+      Sign in
+    </button>
+
     <div id="loginError" class="error-text" style="display:none;"></div>
   </div>
 </section>
@@ -235,7 +359,9 @@
     <div class="panel-header">
       <div>
         <div class="panel-title">Inventory (by branch)</div>
-        <div class="panel-subtitle">Admin & Manager can add items and see stock by branch.</div>
+        <div class="panel-subtitle">
+          Admin & Manager can add items and see stock by branch.
+        </div>
       </div>
     </div>
 
@@ -254,7 +380,6 @@
         <select id="itemBranchSelect"></select>
       </div>
     </div>
-
     <div class="grid mt-xs">
       <div>
         <label>Base quantity</label>
@@ -269,27 +394,18 @@
         <input id="itemUnitCostInput" type="number" min="0" step="0.001" value="0" />
       </div>
     </div>
+    <button id="addItemBtn" class="btn btn-primary mt-sm">
+      Save item
+    </button>
 
-    <button id="addItemBtn" class="btn btn-primary mt-sm">Save item</button>
-
-    <!-- ✅ NEW: choose which branch list to show -->
-    <div class="panel-header mt-md" style="margin-bottom:0.4rem;">
-      <div>
-        <div class="panel-title">Items list (by selected branch)</div>
-        <div class="panel-subtitle">Choose a branch/storage to view its items list.</div>
-      </div>
-      <div style="min-width:220px;">
-        <label style="margin-bottom:0.15rem;">View items for</label>
-        <select id="itemsViewBranchSelect"></select>
-      </div>
-    </div>
-
+    <div class="panel-section-title mt-md">Items list</div>
     <div class="table-wrapper">
       <table>
         <thead>
         <tr>
           <th>ID</th>
           <th>Name</th>
+          <th>Branch</th>
           <th>Base qty</th>
           <th>Min</th>
           <th>Unit cost</th>
@@ -328,7 +444,9 @@
     <div class="panel-header">
       <div>
         <div class="panel-title">Users & branches</div>
-        <div class="panel-subtitle">Admin can create, edit and delete users and assign them to branches.</div>
+        <div class="panel-subtitle">
+          Admin can create, edit and delete users and assign them to branches.
+        </div>
       </div>
     </div>
 
@@ -409,8 +527,12 @@
         <select id="editUserBranchSelect"></select>
       </div>
       <div style="display:flex;align-items:flex-end;gap:0.4rem;">
-        <button id="saveUserChangesBtn" class="btn btn-primary" style="flex:1;">Save changes</button>
-        <button id="deleteUserBtn" class="btn btn-secondary" style="flex:1;">Delete user</button>
+        <button id="saveUserChangesBtn" class="btn btn-primary" style="flex:1;">
+          Save changes
+        </button>
+        <button id="deleteUserBtn" class="btn btn-secondary" style="flex:1;">
+          Delete user
+        </button>
       </div>
     </div>
   </section>
@@ -420,7 +542,9 @@
     <div class="panel-header">
       <div>
         <div class="panel-title">Branch requests</div>
-        <div class="panel-subtitle">Staff / Manager / Admin request items from Main Storage to their own branch.</div>
+        <div class="panel-subtitle">
+          Staff / Manager / Admin request items from Main Storage to their own branch.
+        </div>
       </div>
     </div>
 
@@ -428,11 +552,11 @@
     <div class="grid mt-xs">
       <div>
         <label>From storage</label>
-        <div id="requestFromBranchLabel" class="text-muted" style="font-size:0.85rem;"></div>
+        <div id="requestFromBranchLabel" class="text-muted" style="font-size:0.8rem;"></div>
       </div>
       <div>
         <label>To branch</label>
-        <div id="requestToBranchLabel" class="text-muted" style="font-size:0.85rem;"></div>
+        <div id="requestToBranchLabel" class="text-muted" style="font-size:0.8rem;"></div>
       </div>
       <div>
         <label>Item (from storage)</label>
@@ -450,7 +574,9 @@
         <input id="requestNoteInput" placeholder="For client order, urgent..." />
       </div>
       <div style="display:flex;align-items:flex-end;">
-        <button id="createRequestBtn" class="btn btn-primary" style="width:100%;">Create request</button>
+        <button id="createRequestBtn" class="btn btn-primary" style="width:100%;">
+          Create request
+        </button>
       </div>
     </div>
 
@@ -479,7 +605,9 @@
     <div class="panel-header">
       <div>
         <div class="panel-title">Driver deliveries</div>
-        <div class="panel-subtitle">Drivers see all pending requests and mark them as delivered.</div>
+        <div class="panel-subtitle">
+          Drivers see all pending requests and mark them as delivered.
+        </div>
       </div>
     </div>
 
@@ -502,12 +630,81 @@
     </div>
   </section>
 
+  <!-- ✅ Vehicle reminders (Driver/Manager/Admin) -->
+  <section id="vehicleRemindersPanel" class="panel" style="display:none;">
+    <div class="panel-header">
+      <div>
+        <div class="panel-title">Vehicle reminders</div>
+        <div class="panel-subtitle">Oil change • Meter • Yearly renewal</div>
+      </div>
+    </div>
+
+    <div class="panel-section-title">Add reminder</div>
+    <div class="grid mt-xs">
+      <div>
+        <label>Type</label>
+        <select id="vrType">
+          <option value="oil">Oil change</option>
+          <option value="meter">Meter</option>
+          <option value="renewal">Yearly renewal</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+      <div>
+        <label>Title</label>
+        <input id="vrTitle" placeholder="Oil change - Toyota" />
+      </div>
+      <div>
+        <label>Due date</label>
+        <input id="vrDueDate" type="date" />
+      </div>
+    </div>
+
+    <div class="grid mt-xs">
+      <div>
+        <label>Odometer (km) - optional</label>
+        <input id="vrOdometer" type="number" min="0" placeholder="120000" />
+      </div>
+      <div>
+        <label>Repeat every (days) - optional</label>
+        <input id="vrRepeatDays" type="number" min="0" placeholder="90" />
+      </div>
+      <div>
+        <label>Note (optional)</label>
+        <input id="vrNote" placeholder="Change filter / check oil..." />
+      </div>
+    </div>
+
+    <button id="vrAddBtn" class="btn btn-primary mt-sm">Save reminder</button>
+
+    <div class="panel-section-title mt-md">Upcoming & overdue</div>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+        <tr>
+          <th>Status</th>
+          <th>Due</th>
+          <th>Type</th>
+          <th>Title</th>
+          <th>Odometer</th>
+          <th>Repeat</th>
+          <th>Note</th>
+          <th>Action</th>
+        </tr>
+        </thead>
+        <tbody id="vrTableBody"></tbody>
+      </table>
+    </div>
+  </section>
+
   <!-- Movements (Admin & Manager) -->
   <section id="movementsPanel" class="panel">
     <div class="panel-header">
       <div>
         <div class="panel-title">Manual stock movements</div>
-        <div class="panel-subtitle">Only Admin & Manager can record IN / OUT movements that change stock.</div>
+        <div class="panel-subtitle">
+          Only Admin & Manager can record IN / OUT movements that change stock.
+        </div>
       </div>
     </div>
 
@@ -534,7 +731,9 @@
         <input id="movementNoteInput" placeholder="Adjustment, correction..." />
       </div>
       <div style="display:flex;align-items:flex-end;">
-        <button id="addMovementBtn" class="btn btn-primary" style="width:100%;">Save movement</button>
+        <button id="addMovementBtn" class="btn btn-primary" style="width:100%;">
+          Save movement
+        </button>
       </div>
     </div>
 
@@ -585,7 +784,9 @@
         <input id="analyticsToDate" type="date" />
       </div>
     </div>
-    <button id="analyticsApplyBtn" class="btn btn-primary mt-sm">Apply filters</button>
+    <button id="analyticsApplyBtn" class="btn btn-primary mt-sm">
+      Apply filters
+    </button>
 
     <div class="summary-row mt-sm">
       <div class="summary-card">
@@ -602,7 +803,9 @@
       </div>
     </div>
 
-    <div class="panel-section-title mt-md">Most ordered items (by cost)</div>
+    <div class="panel-section-title mt-md">
+      Most ordered items (by cost)
+    </div>
     <div class="table-wrapper">
       <table>
         <thead>
@@ -629,7 +832,8 @@
     items: [],
     movements: [],
     budgets: [],
-    requests: []
+    requests: [],
+    vehicleReminders: [] // ✅ added
   };
 
   // ----- Helpers -----
@@ -655,12 +859,14 @@
   }
 
   function getMainStorageId() {
-    const byName = state.branches.find((b) => (b.name || "").toLowerCase().includes("main"));
+    const byName = state.branches.find((b) =>
+      (b.name || "").toLowerCase().includes("main")
+    );
     if (byName) return byName.id;
     return state.branches[0] ? state.branches[0].id : null;
   }
 
-  // Auto generate item IDs like ITM-001, ITM-002...
+  // generate new item ID: ITM-001, ITM-002...
   function getNextItemIdClient() {
     let max = 0;
     for (const it of state.items || []) {
@@ -697,7 +903,13 @@
     const res = await fetch(`${API_BASE}/users`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, role, password, branchId, adminUserId: state.user.id })
+      body: JSON.stringify({
+        name,
+        role,
+        password,
+        branchId,
+        adminUserId: state.user.id
+      })
     });
     const body = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(body.error || "Create user failed");
@@ -708,7 +920,10 @@
     const res = await fetch(`${API_BASE}/users/${userId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ adminUserId: state.user.id, ...updates })
+      body: JSON.stringify({
+        adminUserId: state.user.id,
+        ...updates
+      })
     });
     const body = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(body.error || "Update user failed");
@@ -741,7 +956,13 @@
     const res = await fetch(`${API_BASE}/movements`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ itemId, type, qty, note, userId: state.user.id })
+      body: JSON.stringify({
+        itemId,
+        type,
+        qty,
+        note,
+        userId: state.user.id
+      })
     });
     const body = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(body.error || "Movement failed");
@@ -752,7 +973,12 @@
     const res = await fetch(`${API_BASE}/requests`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ itemId, qty, note, userId: state.user.id })
+      body: JSON.stringify({
+        itemId,
+        qty,
+        note,
+        userId: state.user.id
+      })
     });
     const body = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(body.error || "Request failed");
@@ -767,6 +993,40 @@
     });
     const body = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(body.error || "Deliver failed");
+    return body;
+  }
+
+  // ✅ vehicle reminders
+  async function apiCreateVehicleReminder(payload) {
+    const res = await fetch(`${API_BASE}/vehicle-reminders`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(body.error || "Failed to create reminder");
+    return body;
+  }
+
+  async function apiDoneVehicleReminder(id) {
+    const res = await fetch(`${API_BASE}/vehicle-reminders/${id}/done`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId: state.user.id })
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(body.error || "Failed");
+    return body;
+  }
+
+  async function apiDeleteVehicleReminder(id) {
+    const res = await fetch(`${API_BASE}/vehicle-reminders/${id}`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId: state.user.id })
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(body.error || "Failed");
     return body;
   }
 
@@ -786,7 +1046,9 @@
     headerUser.textContent = state.user.name;
     headerUser.style.display = "inline-flex";
 
-    const branchText = state.user.branchId ? ` | Branch: ${getBranchName(state.user.branchId)}` : "";
+    const branchText = state.user.branchId
+      ? ` | Branch: ${getBranchName(state.user.branchId)}`
+      : "";
     headerRole.textContent = `Role: ${state.user.role}${branchText}`;
     headerRole.style.display = "inline-flex";
 
@@ -812,7 +1074,6 @@
       });
     });
 
-    // Requests labels
     const fromLabel = document.getElementById("requestFromBranchLabel");
     const toLabel = document.getElementById("requestToBranchLabel");
     if (fromLabel) {
@@ -823,7 +1084,6 @@
       toLabel.textContent = getBranchName(state.user.branchId);
     }
 
-    // Analytics branch select
     const analyticsBranchSelect = document.getElementById("analyticsBranchSelect");
     if (analyticsBranchSelect) {
       analyticsBranchSelect.innerHTML = "";
@@ -838,114 +1098,83 @@
         analyticsBranchSelect.appendChild(opt);
       });
     }
-
-    // ✅ Items list view select (separate lists)
-    const itemsViewSel = document.getElementById("itemsViewBranchSelect");
-    if (itemsViewSel) {
-      itemsViewSel.innerHTML = "";
-      const mainId = getMainStorageId();
-      const branchesSorted = [...state.branches].sort((a, b) => {
-        if (a.id === mainId) return -1;
-        if (b.id === mainId) return 1;
-        return (a.name || "").localeCompare(b.name || "");
-      });
-
-      branchesSorted.forEach((b) => {
-        const opt = document.createElement("option");
-        opt.value = b.id;
-        opt.textContent = b.name;
-        itemsViewSel.appendChild(opt);
-      });
-
-      itemsViewSel.value = mainId || (state.branches[0] ? state.branches[0].id : "");
-    }
   }
 
   function renderItemsTable() {
     const tbody = document.getElementById("itemsTableBody");
     const alertsBody = document.getElementById("alertsTableBody");
     const storageTotalEl = document.getElementById("storageTotalValue");
-    const viewSel = document.getElementById("itemsViewBranchSelect");
-    if (!tbody) return;
-
-    const mainId = getMainStorageId();
-    const selectedBranchId = viewSel ? viewSel.value : mainId;
 
     tbody.innerHTML = "";
     if (alertsBody) alertsBody.innerHTML = "";
     if (storageTotalEl) storageTotalEl.textContent = "0";
 
-    const branchItems = (state.items || [])
-      .filter((it) => it.branchId === selectedBranchId)
-      .sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+    const items = [...state.items].sort((a, b) => a.name.localeCompare(b.name));
+    const mainId = getMainStorageId();
+    let storageTotal = 0;
+    const lowItems = [];
 
-    if (!branchItems.length) {
+    if (!items.length) {
       const tr = document.createElement("tr");
-      tr.innerHTML = `<td colspan="6" class="text-muted">No items in ${getBranchName(selectedBranchId)}.</td>`;
+      tr.innerHTML = '<td colspan="7" class="text-muted">No items defined.</td>';
       tbody.appendChild(tr);
-    } else {
-      branchItems.forEach((it) => {
-        const value = (Number(it.baseQty) || 0) * (Number(it.unitCost) || 0);
-        const low = it.baseQty <= it.minQty && it.minQty > 0;
 
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${it.id}</td>
-          <td>${it.name}</td>
-          <td${low ? ' class="danger"' : ""}>${it.baseQty}</td>
-          <td>${it.minQty}</td>
-          <td>${it.unitCost}</td>
-          <td>${value.toFixed(3)}</td>
-        `;
-        tbody.appendChild(tr);
-      });
-    }
-
-    // Main storage total + alerts ONLY when viewing main storage
-    if (selectedBranchId === mainId) {
-      let storageTotal = 0;
-      const lowItems = [];
-
-      branchItems.forEach((it) => {
-        const value = (Number(it.baseQty) || 0) * (Number(it.unitCost) || 0);
-        storageTotal += value;
-        if (it.minQty > 0 && it.baseQty <= it.minQty) lowItems.push(it);
-      });
-
-      if (storageTotalEl) storageTotalEl.textContent = storageTotal.toFixed(3);
-
-      if (alertsBody) {
-        if (!lowItems.length) {
-          const trA = document.createElement("tr");
-          trA.innerHTML = '<td colspan="4" class="text-muted">No low stock alerts in Main Storage.</td>';
-          alertsBody.appendChild(trA);
-        } else {
-          lowItems.forEach((it) => {
-            const tr = document.createElement("tr");
-            tr.innerHTML = `
-              <td>${it.name}</td>
-              <td>${getBranchName(it.branchId)}</td>
-              <td class="danger">${it.baseQty}</td>
-              <td>${it.minQty}</td>
-            `;
-            alertsBody.appendChild(tr);
-          });
-        }
-      }
-    } else {
-      if (storageTotalEl) storageTotalEl.textContent = "—";
       if (alertsBody) {
         const trA = document.createElement("tr");
-        trA.innerHTML = '<td colspan="4" class="text-muted">Switch view to Main Storage to see restock alerts.</td>';
+        trA.innerHTML = '<td colspan="4" class="text-muted">No low stock alerts in Main Storage.</td>';
         alertsBody.appendChild(trA);
+      }
+      if (storageTotalEl) storageTotalEl.textContent = "0";
+      return;
+    }
+
+    items.forEach((it) => {
+      const value = (Number(it.baseQty) || 0) * (Number(it.unitCost) || 0);
+
+      if (it.branchId === mainId) {
+        storageTotal += value;
+        if (it.minQty > 0 && it.baseQty <= it.minQty) lowItems.push(it);
+      }
+
+      const tr = document.createElement("tr");
+      const low = it.baseQty <= it.minQty && it.minQty > 0;
+      tr.innerHTML = `
+        <td>${it.id}</td>
+        <td>${it.name}</td>
+        <td>${getBranchName(it.branchId)}</td>
+        <td${low ? ' class="danger"' : ""}>${it.baseQty}</td>
+        <td>${it.minQty}</td>
+        <td>${it.unitCost}</td>
+        <td>${value.toFixed(3)}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    if (storageTotalEl) storageTotalEl.textContent = storageTotal.toFixed(3);
+
+    if (alertsBody) {
+      if (!lowItems.length) {
+        const trA = document.createElement("tr");
+        trA.innerHTML = '<td colspan="4" class="text-muted">No low stock alerts in Main Storage.</td>';
+        alertsBody.appendChild(trA);
+      } else {
+        lowItems.forEach((it) => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${it.name}</td>
+            <td>${getBranchName(it.branchId)}</td>
+            <td class="danger">${it.baseQty}</td>
+            <td>${it.minQty}</td>
+          `;
+          alertsBody.appendChild(tr);
+        });
       }
     }
 
-    // movement item select (all items globally)
     const moveSelect = document.getElementById("movementItemSelect");
     if (moveSelect) {
       moveSelect.innerHTML = "";
-      (state.items || []).forEach((it, idx) => {
+      state.items.forEach((it, idx) => {
         const opt = document.createElement("option");
         opt.value = it.id;
         opt.textContent = `${it.name} (${getBranchName(it.branchId)})`;
@@ -974,9 +1203,14 @@
     const tbody = document.getElementById("usersTableBody");
     tbody.innerHTML = "";
     const users = [...state.users].sort((a, b) => a.name.localeCompare(b.name));
+
     users.forEach((u) => {
       const tr = document.createElement("tr");
-      tr.innerHTML = `<td>${u.name}</td><td>${u.role}</td><td>${getBranchName(u.branchId)}</td>`;
+      tr.innerHTML = `
+        <td>${u.name}</td>
+        <td>${u.role}</td>
+        <td>${getBranchName(u.branchId)}</td>
+      `;
       tbody.appendChild(tr);
     });
 
@@ -1001,7 +1235,11 @@
     const tbody = document.getElementById("requestsTableBody");
     tbody.innerHTML = "";
     const all = [...state.requests].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-    const visible = state.user.role === "driver" ? all : all.filter((r) => r.toBranchId === state.user.branchId);
+
+    const visible =
+      state.user.role === "driver"
+        ? all
+        : all.filter((r) => r.toBranchId === state.user.branchId);
 
     if (!visible.length) {
       const tr = document.createElement("tr");
@@ -1058,7 +1296,9 @@
   function renderMovementsTable() {
     const tbody = document.getElementById("movementsTableBody");
     tbody.innerHTML = "";
-    const moves = [...state.movements].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 50);
+    const moves = [...state.movements]
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+      .slice(0, 50);
 
     if (!moves.length) {
       const tr = document.createElement("tr");
@@ -1083,7 +1323,7 @@
     });
   }
 
-  // ----- Analytics: compute from delivered requests -----
+  // ----- Analytics -----
   function computeAnalytics() {
     const branchSel = document.getElementById("analyticsBranchSelect");
     const fromInput = document.getElementById("analyticsFromDate");
@@ -1128,6 +1368,7 @@
     });
 
     const itemsArray = Array.from(itemStats.values()).sort((a, b) => b.cost - a.cost);
+
     return { totalCost, totalQty, totalRequests: delivered.length, items: itemsArray };
   }
 
@@ -1154,7 +1395,62 @@
 
     items.forEach((it) => {
       const tr = document.createElement("tr");
-      tr.innerHTML = `<td>${it.name}</td><td>${it.qty}</td><td>${it.cost.toFixed(3)}</td>`;
+      tr.innerHTML = `
+        <td>${it.name}</td>
+        <td>${it.qty}</td>
+        <td>${it.cost.toFixed(3)}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  // ✅ Vehicle reminders rendering
+  function daysUntil(dateStr) {
+    const today = new Date();
+    const d = new Date(dateStr + "T00:00:00");
+    const base = new Date(today.toISOString().slice(0, 10) + "T00:00:00");
+    return Math.round((d - base) / (1000 * 60 * 60 * 24));
+  }
+
+  function renderVehicleReminders() {
+    const tbody = document.getElementById("vrTableBody");
+    if (!tbody) return;
+    tbody.innerHTML = "";
+
+    const list = [...(state.vehicleReminders || [])]
+      .filter((r) => !r.done)
+      .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
+
+    if (!list.length) {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td colspan="8" class="text-muted">No upcoming reminders.</td>`;
+      tbody.appendChild(tr);
+      return;
+    }
+
+    list.forEach((r) => {
+      const du = daysUntil(r.dueDate);
+      const statusText = du < 0 ? `Overdue ${Math.abs(du)}d` : du === 0 ? "Due today" : `In ${du}d`;
+      const isOver = du < 0;
+
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td class="${isOver ? "danger" : ""}">${statusText}</td>
+        <td>${r.dueDate}</td>
+        <td>${r.type}</td>
+        <td>${r.title}</td>
+        <td>${r.odometerKm ?? ""}</td>
+        <td>${r.repeatEveryDays ? (r.repeatEveryDays + "d") : ""}</td>
+        <td>${r.note || ""}</td>
+        <td style="display:flex; gap:6px;">
+          <button class="btn btn-primary btn-sm" data-vr-done="${r.id}">Done</button>
+          ${
+            (state.user.role === "admin" || state.user.role === "manager")
+              ? `<button class="btn btn-secondary btn-sm" data-vr-del="${r.id}">Delete</button>`
+              : ""
+          }
+        </td>
+      `;
       tbody.appendChild(tr);
     });
   }
@@ -1171,10 +1467,15 @@
     document.getElementById("usersPanel").style.display = isAdmin ? "block" : "none";
     document.getElementById("driverPanel").style.display = isDriver ? "block" : "none";
 
+    // staff only sees Requests
     document.getElementById("requestsPanel").style.display = isDriver ? "none" : "block";
     document.getElementById("inventoryPanel").style.display = (isAdmin || isManager) ? "block" : "none";
     document.getElementById("movementsPanel").style.display = (isAdmin || isManager) ? "block" : "none";
     document.getElementById("analyticsPanel").style.display = (isAdmin || isManager) ? "block" : "none";
+
+    // ✅ vehicle reminders visible for driver/manager/admin
+    const vrPanel = document.getElementById("vehicleRemindersPanel");
+    if (vrPanel) vrPanel.style.display = (isAdmin || isManager || isDriver) ? "block" : "none";
   }
 
   function resetLoginForm() {
@@ -1191,6 +1492,7 @@
     state.movements = [];
     state.budgets = [];
     state.requests = [];
+    state.vehicleReminders = [];
     document.getElementById("appView").style.display = "none";
     document.getElementById("loginView").style.display = "block";
     renderHeader();
@@ -1222,27 +1524,21 @@
       state.movements = all.movements || [];
       state.budgets = all.budgets || [];
       state.requests = all.requests || [];
+      state.vehicleReminders = all.vehicleReminders || []; // ✅
 
       renderHeader();
       renderBranchSelects();
+      renderItemsTable();
       fillRequestItemsFromStorage();
       renderUsersTable();
       renderRequestsTable();
       renderDriverRequestsTable();
       renderMovementsTable();
       renderAnalytics();
+      renderVehicleReminders(); // ✅
 
       const idInput = document.getElementById("itemIdInput");
       if (idInput) idInput.value = getNextItemIdClient();
-
-      // Render items after selects are ready
-      renderItemsTable();
-
-      // ✅ rerender items list when switching branch view
-      const itemsViewSel = document.getElementById("itemsViewBranchSelect");
-      if (itemsViewSel) {
-        itemsViewSel.addEventListener("change", () => renderItemsTable());
-      }
 
       showApp();
     } catch (e) {
@@ -1274,10 +1570,11 @@
       renderUsersTable();
       document.getElementById("newUserName").value = "";
       document.getElementById("newUserPassword").value = "";
-    } catch (e) { alert(e.message); }
+    } catch (e) {
+      alert(e.message);
+    }
   });
 
-  // edit user select -> fill form
   document.getElementById("editUserSelect").addEventListener("change", () => {
     const id = document.getElementById("editUserSelect").value;
     const user = state.users.find((u) => u.id === id);
@@ -1292,10 +1589,12 @@
     document.getElementById("editUserBranchSelect").value = user.branchId || "";
   });
 
-  // save user changes
   document.getElementById("saveUserChangesBtn").addEventListener("click", async () => {
     const id = document.getElementById("editUserSelect").value;
-    if (!id) { alert("Select a user first."); return; }
+    if (!id) {
+      alert("Select a user first.");
+      return;
+    }
     const name = document.getElementById("editUserName").value.trim();
     const password = document.getElementById("editUserPassword").value.trim();
     const role = document.getElementById("editUserRole").value;
@@ -1310,13 +1609,17 @@
       if (idx >= 0) state.users[idx] = updated;
       renderUsersTable();
       alert("User updated.");
-    } catch (e) { alert(e.message); }
+    } catch (e) {
+      alert(e.message);
+    }
   });
 
-  // delete user
   document.getElementById("deleteUserBtn").addEventListener("click", async () => {
     const id = document.getElementById("editUserSelect").value;
-    if (!id) { alert("Select a user first."); return; }
+    if (!id) {
+      alert("Select a user first.");
+      return;
+    }
     if (!confirm("Delete this user?")) return;
     try {
       await apiDeleteUser(id);
@@ -1325,7 +1628,9 @@
       document.getElementById("editUserName").value = "";
       document.getElementById("editUserPassword").value = "";
       alert("User deleted.");
-    } catch (e) { alert(e.message); }
+    } catch (e) {
+      alert(e.message);
+    }
   });
 
   // create item
@@ -1341,14 +1646,22 @@
     const minQty = Number(document.getElementById("itemMinQtyInput").value || "0");
     const unitCost = Number(document.getElementById("itemUnitCostInput").value || "0");
 
-    if (!name) { alert("Item name required."); return; }
+    if (!name) {
+      alert("Item name required.");
+      return;
+    }
 
     try {
       const newItem = await apiCreateItem({
-        id, name, branchId, baseQty, minQty, unitCost, managerUserId: state.user.id
+        id,
+        name,
+        branchId,
+        baseQty,
+        minQty,
+        unitCost,
+        managerUserId: state.user.id
       });
       state.items.push(newItem);
-
       renderItemsTable();
       fillRequestItemsFromStorage();
 
@@ -1357,7 +1670,9 @@
       document.getElementById("itemMinQtyInput").value = "0";
       document.getElementById("itemUnitCostInput").value = "0";
       document.getElementById("itemIdInput").value = getNextItemIdClient();
-    } catch (e) { alert(e.message); }
+    } catch (e) {
+      alert(e.message);
+    }
   });
 
   // manual movement
@@ -1372,32 +1687,50 @@
     const qty = Number(document.getElementById("movementQtyInput").value || "1");
     const note = document.getElementById("movementNoteInput").value.trim();
 
-    if (!itemId || !qty || qty <= 0) { alert("Item and quantity required."); return; }
+    if (!itemId || !qty || qty <= 0) {
+      alert("Item and quantity required.");
+      return;
+    }
 
     try {
       await apiCreateMovement(itemId, type, qty, note);
       const all = await apiLoadState();
       state.items = all.items || [];
       state.movements = all.movements || [];
+      state.vehicleReminders = all.vehicleReminders || state.vehicleReminders;
+
       renderItemsTable();
       fillRequestItemsFromStorage();
       renderMovementsTable();
       renderAnalytics();
+      renderVehicleReminders();
+
       document.getElementById("movementQtyInput").value = "1";
       document.getElementById("movementNoteInput").value = "";
-    } catch (e) { alert(e.message); }
+    } catch (e) {
+      alert(e.message);
+    }
   });
 
   // create request
   document.getElementById("createRequestBtn").addEventListener("click", async () => {
-    if (!state.user || state.user.role === "driver") { alert("Drivers cannot create requests."); return; }
-    if (!state.user.branchId) { alert("Your user is not assigned to a branch. Ask admin."); return; }
+    if (!state.user || state.user.role === "driver") {
+      alert("Drivers cannot create requests.");
+      return;
+    }
+    if (!state.user.branchId) {
+      alert("Your user is not assigned to a branch. Ask admin.");
+      return;
+    }
 
     const itemId = document.getElementById("requestItemSelect").value;
     const qty = Number(document.getElementById("requestQtyInput").value || "1");
     const note = document.getElementById("requestNoteInput").value.trim();
 
-    if (!itemId || !qty || qty <= 0) { alert("Item and quantity required."); return; }
+    if (!itemId || !qty || qty <= 0) {
+      alert("Item and quantity required.");
+      return;
+    }
 
     try {
       const req = await apiCreateRequest(itemId, qty, note);
@@ -1407,7 +1740,9 @@
       renderAnalytics();
       document.getElementById("requestQtyInput").value = "1";
       document.getElementById("requestNoteInput").value = "";
-    } catch (e) { alert(e.message); }
+    } catch (e) {
+      alert(e.message);
+    }
   });
 
   // driver deliver
@@ -1423,6 +1758,7 @@
       state.items = all.items || [];
       state.movements = all.movements || [];
       state.requests = all.requests || [];
+      state.vehicleReminders = all.vehicleReminders || state.vehicleReminders;
 
       renderItemsTable();
       fillRequestItemsFromStorage();
@@ -1430,10 +1766,80 @@
       renderRequestsTable();
       renderMovementsTable();
       renderAnalytics();
-    } catch (err) { alert(err.message); }
+      renderVehicleReminders();
+    } catch (err) {
+      alert(err.message);
+    }
   });
 
+  // analytics filters
   document.getElementById("analyticsApplyBtn").addEventListener("click", () => renderAnalytics());
+
+  // ✅ Vehicle reminders events
+  document.getElementById("vrAddBtn").addEventListener("click", async () => {
+    if (!state.user) return;
+
+    const title = document.getElementById("vrTitle").value.trim();
+    const type = document.getElementById("vrType").value;
+    const dueDate = document.getElementById("vrDueDate").value;
+    const odometerKm = document.getElementById("vrOdometer").value;
+    const repeatEveryDays = document.getElementById("vrRepeatDays").value;
+    const note = document.getElementById("vrNote").value.trim();
+
+    if (!title || !dueDate) {
+      alert("Title and due date required.");
+      return;
+    }
+
+    try {
+      const created = await apiCreateVehicleReminder({
+        userId: state.user.id,
+        title,
+        type,
+        dueDate,
+        odometerKm: odometerKm ? Number(odometerKm) : null,
+        repeatEveryDays: repeatEveryDays ? Number(repeatEveryDays) : null,
+        note
+      });
+
+      state.vehicleReminders.push(created);
+      renderVehicleReminders();
+
+      document.getElementById("vrTitle").value = "";
+      document.getElementById("vrOdometer").value = "";
+      document.getElementById("vrRepeatDays").value = "";
+      document.getElementById("vrNote").value = "";
+    } catch (e) {
+      alert(e.message);
+    }
+  });
+
+  document.getElementById("vrTableBody").addEventListener("click", async (e) => {
+    const doneBtn = e.target.closest("button[data-vr-done]");
+    const delBtn = e.target.closest("button[data-vr-del]");
+
+    try {
+      if (doneBtn) {
+        const id = doneBtn.getAttribute("data-vr-done");
+        if (!confirm("Mark as done?")) return;
+        await apiDoneVehicleReminder(id);
+        const all = await apiLoadState();
+        state.vehicleReminders = all.vehicleReminders || [];
+        renderVehicleReminders();
+      }
+
+      if (delBtn) {
+        const id = delBtn.getAttribute("data-vr-del");
+        if (!confirm("Delete this reminder?")) return;
+        await apiDeleteVehicleReminder(id);
+        const all = await apiLoadState();
+        state.vehicleReminders = all.vehicleReminders || [];
+        renderVehicleReminders();
+      }
+    } catch (err) {
+      alert(err.message);
+    }
+  });
 </script>
 </body>
 </html>

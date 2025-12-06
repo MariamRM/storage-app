@@ -7,8 +7,8 @@ const app = express();
 const PORT = process.env.PORT || 4000;
 const DATA_FILE = path.join(__dirname, "data.json");
 
-// IMPORTANT: set this to your MAIN STORAGE branch id in data.json
-const MAIN_STORAGE_BRANCH_ID = "B001";
+// IMPORTANT: keep your main storage branch ID
+const MAIN_STORAGE_BRANCH_ID = "B001"; // change if needed
 
 app.use(cors());
 app.use(express.json());
@@ -17,7 +17,19 @@ app.use(express.static(path.join(__dirname, "public"))); // serve frontend
 // ---------- Helpers ----------
 async function loadData() {
   const raw = await fs.readFile(DATA_FILE, "utf-8");
-  return JSON.parse(raw);
+  const data = JSON.parse(raw);
+
+  // Make sure new arrays exist (so old data.json doesn't break)
+  data.vehicleReminders = data.vehicleReminders || [];
+  data.trips = data.trips || [];
+  data.branches = data.branches || [];
+  data.users = data.users || [];
+  data.items = data.items || [];
+  data.movements = data.movements || [];
+  data.budgets = data.budgets || [];
+  data.requests = data.requests || [];
+
+  return data;
 }
 
 async function saveData(data) {
@@ -25,13 +37,17 @@ async function saveData(data) {
 }
 
 function findUserById(data, userId) {
-  return (data.users || []).find((u) => u.id === userId);
+  return data.users.find((u) => u.id === userId);
 }
 
 function findUserByName(data, name) {
-  return (data.users || []).find(
+  return data.users.find(
     (u) => u.name.toLowerCase() === String(name).toLowerCase()
   );
+}
+
+function canManageVehicleReminders(user) {
+  return user && (user.role === "admin" || user.role === "manager" || user.role === "driver");
 }
 
 // ---------- AUTH ----------
@@ -69,7 +85,8 @@ app.get("/api/state", async (req, res) => {
       movements: data.movements || [],
       budgets: data.budgets || [],
       requests: data.requests || [],
-      trips: data.trips || []
+      trips: data.trips || [],
+      vehicleReminders: data.vehicleReminders || [] // ✅ added
     });
   } catch (err) {
     console.error("State error", err);
@@ -127,8 +144,10 @@ app.patch("/api/users/:id", async (req, res) => {
       return res.status(403).json({ error: "Only admin can edit users" });
     }
 
-    const user = (data.users || []).find((u) => u.id === id);
-    if (!user) return res.status(404).json({ error: "User not found" });
+    const user = data.users.find((u) => u.id === id);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
 
     if (name) user.name = name;
     if (role) user.role = role;
@@ -162,8 +181,10 @@ app.delete("/api/users/:id", async (req, res) => {
         .json({ error: "Admin cannot delete their own account" });
     }
 
-    const idx = (data.users || []).findIndex((u) => u.id === id);
-    if (idx === -1) return res.status(404).json({ error: "User not found" });
+    const idx = data.users.findIndex((u) => u.id === id);
+    if (idx === -1) {
+      return res.status(404).json({ error: "User not found" });
+    }
 
     data.users.splice(idx, 1);
     await saveData(data);
@@ -199,7 +220,7 @@ app.post("/api/items", async (req, res) => {
         .json({ error: "Only manager or admin can create items" });
     }
 
-    if ((data.items || []).find((x) => x.id === id && x.branchId === branchId)) {
+    if (data.items.find((x) => x.id === id && x.branchId === branchId)) {
       return res
         .status(400)
         .json({ error: "Item ID already exists in this branch" });
@@ -242,7 +263,7 @@ app.post("/api/movements", async (req, res) => {
         .json({ error: "Only admin/manager can record movements" });
     }
 
-    const item = (data.items || []).find((it) => it.id === itemId);
+    const item = data.items.find((it) => it.id === itemId);
     if (!item) return res.status(400).json({ error: "Item not found" });
 
     const movement = {
@@ -294,7 +315,7 @@ app.post("/api/requests", async (req, res) => {
         .json({ error: "User is not assigned to a branch" });
     }
 
-    const storageItem = (data.items || []).find(
+    const storageItem = data.items.find(
       (it) => it.id === itemId && it.branchId === MAIN_STORAGE_BRANCH_ID
     );
     if (!storageItem) {
@@ -340,13 +361,13 @@ app.post("/api/requests/:id/deliver", async (req, res) => {
       return res.status(403).json({ error: "Only drivers can deliver" });
     }
 
-    const request = (data.requests || []).find((r) => r.id === id);
+    const request = data.requests.find((r) => r.id === id);
     if (!request) return res.status(404).json({ error: "Request not found" });
     if (request.status === "delivered") {
       return res.status(400).json({ error: "Request already delivered" });
     }
 
-    const storageItem = (data.items || []).find(
+    const storageItem = data.items.find(
       (it) => it.id === request.itemId && it.branchId === request.fromBranchId
     );
     if (!storageItem) {
@@ -376,7 +397,7 @@ app.post("/api/requests/:id/deliver", async (req, res) => {
     storageItem.baseQty -= qty;
 
     // IN movement to destination branch
-    let destItem = (data.items || []).find(
+    let destItem = data.items.find(
       (it) => it.id === request.itemId && it.branchId === request.toBranchId
     );
     if (!destItem) {
@@ -431,7 +452,7 @@ app.post("/api/budgets", async (req, res) => {
       return res.status(403).json({ error: "Only admin can set budgets" });
     }
 
-    let budget = (data.budgets || []).find(
+    let budget = data.budgets.find(
       (b) => b.branchId === branchId && b.month === month
     );
     if (!budget) {
@@ -451,6 +472,132 @@ app.post("/api/budgets", async (req, res) => {
   } catch (err) {
     console.error("Budget error", err);
     res.status(500).json({ error: "Failed to save budget" });
+  }
+});
+
+
+// ============================================================
+// ✅ VEHICLE REMINDERS (Driver/Manager/Admin)
+// ============================================================
+
+// Create reminder
+app.post("/api/vehicle-reminders", async (req, res) => {
+  try {
+    const { userId, title, type, dueDate, odometerKm, repeatEveryDays, note } =
+      req.body;
+
+    if (!userId || !title || !type || !dueDate) {
+      return res
+        .status(400)
+        .json({ error: "userId, title, type, dueDate are required" });
+    }
+
+    const data = await loadData();
+    const user = findUserById(data, userId);
+    if (!canManageVehicleReminders(user)) {
+      return res
+        .status(403)
+        .json({ error: "Only driver/manager/admin can add reminders" });
+    }
+
+    const reminder = {
+      id: "VR-" + Date.now(),
+      title: String(title).trim(),
+      type: String(type), // oil | meter | renewal | other
+      dueDate: String(dueDate), // YYYY-MM-DD
+      odometerKm:
+        odometerKm !== undefined && odometerKm !== null
+          ? Number(odometerKm)
+          : null,
+      repeatEveryDays: repeatEveryDays ? Number(repeatEveryDays) : null,
+      note: note ? String(note) : "",
+      createdByUserId: userId,
+      createdAt: new Date().toISOString(),
+      done: false,
+      doneAt: null
+    };
+
+    data.vehicleReminders.push(reminder);
+    await saveData(data);
+    res.status(201).json(reminder);
+  } catch (err) {
+    console.error("Vehicle reminder create error", err);
+    res.status(500).json({ error: "Failed to create reminder" });
+  }
+});
+
+// Mark reminder done (+ auto-create next one if repeatEveryDays)
+app.post("/api/vehicle-reminders/:id/done", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { userId } = req.body;
+    if (!userId) return res.status(400).json({ error: "userId required" });
+
+    const data = await loadData();
+    const user = findUserById(data, userId);
+    if (!canManageVehicleReminders(user)) {
+      return res.status(403).json({ error: "Not allowed" });
+    }
+
+    const r = data.vehicleReminders.find((x) => x.id === id);
+    if (!r) return res.status(404).json({ error: "Reminder not found" });
+
+    r.done = true;
+    r.doneAt = new Date().toISOString();
+
+    if (r.repeatEveryDays && r.repeatEveryDays > 0) {
+      const d = new Date(r.dueDate + "T00:00:00");
+      d.setDate(d.getDate() + Number(r.repeatEveryDays));
+
+      data.vehicleReminders.push({
+        id: "VR-" + (Date.now() + 1),
+        title: r.title,
+        type: r.type,
+        dueDate: d.toISOString().slice(0, 10),
+        odometerKm: r.odometerKm ?? null,
+        repeatEveryDays: r.repeatEveryDays,
+        note: r.note || "",
+        createdByUserId: userId,
+        createdAt: new Date().toISOString(),
+        done: false,
+        doneAt: null
+      });
+    }
+
+    await saveData(data);
+    res.json({ ok: true });
+  } catch (err) {
+    console.error("Vehicle reminder done error", err);
+    res.status(500).json({ error: "Failed to mark reminder done" });
+  }
+});
+
+// Delete reminder (admin/manager only)
+app.delete("/api/vehicle-reminders/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { userId } = req.body;
+    if (!userId) return res.status(400).json({ error: "userId required" });
+
+    const data = await loadData();
+    const user = findUserById(data, userId);
+    if (!user || (user.role !== "admin" && user.role !== "manager")) {
+      return res
+        .status(403)
+        .json({ error: "Only admin/manager can delete reminders" });
+    }
+
+    const before = data.vehicleReminders.length;
+    data.vehicleReminders = data.vehicleReminders.filter((x) => x.id !== id);
+    if (data.vehicleReminders.length === before) {
+      return res.status(404).json({ error: "Reminder not found" });
+    }
+
+    await saveData(data);
+    res.json({ ok: true });
+  } catch (err) {
+    console.error("Vehicle reminder delete error", err);
+    res.status(500).json({ error: "Failed to delete reminder" });
   }
 });
 
