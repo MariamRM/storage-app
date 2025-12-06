@@ -50,6 +50,8 @@
     {
       "id": "ITEM-001",
       "name": "DUBU BOX PIN",
+      "nameEn": "DUBU BOX PIN",
+      "nameAr": "دبابيس دوبو",
       "branchId": "B001",
       "minQty": 0,
       "baseQty": 72,
@@ -58,6 +60,8 @@
     {
       "id": "ITEM-002",
       "name": "OPNER",
+      "nameEn": "OPNER",
+      "nameAr": "فتّاحة",
       "branchId": "B001",
       "minQty": 0,
       "baseQty": 52,
@@ -66,6 +70,8 @@
     {
       "id": "ITEM-003",
       "name": "NEEDLE 7 HAND",
+      "nameEn": "NEEDLE 7 HAND",
+      "nameAr": "إبرة 7 يدوي",
       "branchId": "B001",
       "minQty": 0,
       "baseQty": 24,
@@ -74,6 +80,8 @@
     {
       "id": "ITEM-004",
       "name": "CUTTER",
+      "nameEn": "CUTTER",
+      "nameAr": "قطّاعة",
       "branchId": "B001",
       "minQty": 0,
       "baseQty": 20,
@@ -82,6 +90,8 @@
     {
       "id": "ITEM-005",
       "name": "METTER 2",
+      "nameEn": "METTER 2",
+      "nameAr": "متر 2",
       "branchId": "B001",
       "minQty": 0,
       "baseQty": 12,
@@ -90,6 +100,8 @@
     {
       "id": "ITEM-006",
       "name": "METTER 1.5",
+      "nameEn": "METTER 1.5",
+      "nameAr": "متر 1.5",
       "branchId": "B001",
       "minQty": 0,
       "baseQty": 18,
@@ -98,6 +110,8 @@
     {
       "id": "ITEM-007",
       "name": "OIL",
+      "nameEn": "OIL",
+      "nameAr": "زيت",
       "branchId": "B001",
       "minQty": 0,
       "baseQty": 4,
@@ -106,6 +120,8 @@
     {
       "id": "ITEM-008",
       "name": "BUST CUP BLACK LARGE",
+      "nameEn": "BUST CUP BLACK LARGE",
+      "nameAr": "كاب صدر أسود كبير",
       "branchId": "B001",
       "minQty": 0,
       "baseQty": 24,
@@ -114,6 +130,8 @@
     {
       "id": "ITEM-009",
       "name": "BUST CUP WHITE LARGE",
+      "nameEn": "BUST CUP WHITE LARGE",
+      "nameAr": "كاب صدر أبيض كبير",
       "branchId": "B001",
       "minQty": 0,
       "baseQty": 17,
@@ -122,6 +140,8 @@
     {
       "id": "ITEM-010",
       "name": "BUST CUP BLACK MEDIUM",
+      "nameEn": "BUST CUP BLACK MEDIUM",
+      "nameAr": "كاب صدر أسود وسط",
       "branchId": "B001",
       "minQty": 0,
       "baseQty": 15,
@@ -130,6 +150,8 @@
     {
       "id": "ITEM-011",
       "name": "BUST CUP WHITE MEDIUM",
+      "nameEn": "BUST CUP WHITE MEDIUM",
+      "nameAr": "كاب صدر أبيض وسط",
       "branchId": "B001",
       "minQty": 0,
       "baseQty": 3,
@@ -138,6 +160,8 @@
     {
       "id": "ITEM-012",
       "name": "BUST CUP BLACK SMALL",
+      "nameEn": "BUST CUP BLACK SMALL",
+      "nameAr": "كاب صدر أسود صغير",
       "branchId": "B001",
       "minQty": 0,
       "baseQty": 6,
@@ -146,6 +170,8 @@
     {
       "id": "ITEM-013",
       "name": "BUST CUP WHITE SMALL",
+      "nameEn": "BUST CUP WHITE SMALL",
+      "nameAr": "كاب صدر أبيض صغير",
       "branchId": "B001",
       "minQty": 0,
       "baseQty": 13,
@@ -154,6 +180,8 @@
     {
       "id": "ITEM-014",
       "name": "BUST CUP BLACK XL",
+      "nameEn": "BUST CUP BLACK XL",
+      "nameAr": "كاب صدر أسود XL",
       "branchId": "B001",
       "minQty": 0,
       "baseQty": 5,
@@ -162,6 +190,8 @@
     {
       "id": "ITEM-015",
       "name": "BUST CUP WHITE XL",
+      "nameEn": "BUST CUP WHITE XL",
+      "nameAr": "كاب صدر أبيض XL",
       "branchId": "B001",
       "minQty": 0,
       "baseQty": 5,
@@ -170,6 +200,8 @@
     {
       "id": "ITEM-016",
       "name": "DOUBLE FACE 0.55''",
+      "nameEn": "DOUBLE FACE 0.55''",
+      "nameAr": "شريط لاصق وجهين 0.55",
       "branchId": "B001",
       "minQty": 0,
       "baseQty": 26,
@@ -178,6 +210,8 @@
     {
       "id": "ITEM-017",
       "name": "TRANSPARENT BRA STREP",
+      "nameEn": "TRANSPARENT BRA STREP",
+      "nameAr": "حمالة صدر شفافة",
       "branchId": "B001",
       "minQty": 0,
       "baseQty": 31,
@@ -186,6 +220,8 @@
     {
       "id": "ITEM-018",
       "name": "MARKER",
+      "nameEn": "MARKER",
+      "nameAr": "ماركر",
       "branchId": "B001",
       "minQty": 0,
       "baseQty": 24,
@@ -194,6 +230,8 @@
     {
       "id": "ITEM-019",
       "name": "NEEDLE DB 11",
+      "nameEn": "NEEDLE DB 11",
+      "nameAr": "إبرة DB 11",
       "branchId": "B001",
       "minQty": 0,
       "baseQty": 35,
@@ -202,6 +240,8 @@
     {
       "id": "ITEM-020",
       "name": "NEEDLE DB 14",
+      "nameEn": "NEEDLE DB 14",
+      "nameAr": "إبرة DB 14",
       "branchId": "B001",
       "minQty": 0,
       "baseQty": 29,
@@ -210,6 +250,8 @@
     {
       "id": "ITEM-021",
       "name": "NEEDLE DB 16",
+      "nameEn": "NEEDLE DB 16",
+      "nameAr": "إبرة DB 16",
       "branchId": "B001",
       "minQty": 0,
       "baseQty": 100,
@@ -218,6 +260,8 @@
     {
       "id": "ITEM-022",
       "name": "NEEDLE DB 18",
+      "nameEn": "NEEDLE DB 18",
+      "nameAr": "إبرة DB 18",
       "branchId": "B001",
       "minQty": 0,
       "baseQty": 49,
@@ -226,6 +270,8 @@
     {
       "id": "ITEM-023",
       "name": "NEEDLE DC 11",
+      "nameEn": "NEEDLE DC 11",
+      "nameAr": "إبرة DC 11",
       "branchId": "B001",
       "minQty": 0,
       "baseQty": 6,
@@ -234,6 +280,8 @@
     {
       "id": "ITEM-024",
       "name": "NEEDLE DC 14",
+      "nameEn": "NEEDLE DC 14",
+      "nameAr": "إبرة DC 14",
       "branchId": "B001",
       "minQty": 0,
       "baseQty": 4,
@@ -242,6 +290,8 @@
     {
       "id": "ITEM-025",
       "name": "NEEDLE DC 16",
+      "nameEn": "NEEDLE DC 16",
+      "nameAr": "إبرة DC 16",
       "branchId": "B001",
       "minQty": 0,
       "baseQty": 12,
@@ -250,6 +300,8 @@
     {
       "id": "ITEM-026",
       "name": "NEEDLE DC 18",
+      "nameEn": "NEEDLE DC 18",
+      "nameAr": "إبرة DC 18",
       "branchId": "B001",
       "minQty": 0,
       "baseQty": 11,
@@ -258,6 +310,8 @@
     {
       "id": "ITEM-027",
       "name": "ZIPPER MAKFI LONG YKK",
+      "nameEn": "ZIPPER MAKFI LONG YKK",
+      "nameAr": "سحاب مخفي طويل YKK",
       "branchId": "B001",
       "minQty": 0,
       "baseQty": 727,
@@ -266,6 +320,8 @@
     {
       "id": "ITEM-028",
       "name": "ZIPPER MAKFI SMALL",
+      "nameEn": "ZIPPER MAKFI SMALL",
+      "nameAr": "سحاب مخفي صغير",
       "branchId": "B001",
       "minQty": 0,
       "baseQty": 170,
@@ -274,6 +330,8 @@
     {
       "id": "ITEM-029",
       "name": "ZIPPER PANT",
+      "nameEn": "ZIPPER PANT",
+      "nameAr": "سحاب بنطال",
       "branchId": "B001",
       "minQty": 0,
       "baseQty": 272,
@@ -282,6 +340,8 @@
     {
       "id": "ITEM-030",
       "name": "ZIPPERT JEANS",
+      "nameEn": "ZIPPERT JEANS",
+      "nameAr": "سحاب جينز",
       "branchId": "B001",
       "minQty": 0,
       "baseQty": 31,
@@ -290,6 +350,8 @@
     {
       "id": "ITEM-031",
       "name": "ZIPPER ADI LONG",
+      "nameEn": "ZIPPER ADI LONG",
+      "nameAr": "سحاب عادي طويل",
       "branchId": "B001",
       "minQty": 0,
       "baseQty": 72,
@@ -298,6 +360,8 @@
     {
       "id": "ITEM-032",
       "name": "ZIPPER jacket metal",
+      "nameEn": "ZIPPER jacket metal",
+      "nameAr": "سحاب جاكيت معدني",
       "branchId": "B001",
       "minQty": 0,
       "baseQty": 43,
@@ -306,6 +370,8 @@
     {
       "id": "ITEM-033",
       "name": "zipper plastic jacket",
+      "nameEn": "zipper plastic jacket",
+      "nameAr": "سحاب جاكيت بلاستيك",
       "branchId": "B001",
       "minQty": 0,
       "baseQty": 71,
