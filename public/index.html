@@ -5,65 +5,194 @@
   <title>Storage Manage Method</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    * { box-sizing: border-box; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
-    body { margin: 0; background: #f3f4f6; color: #111827; }
-    header { background: #111827; color: white; padding: 0.75rem 1.25rem; display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+    * {
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body {
+      margin: 0;
+      background: #f3f4f6;
+      color: #111827;
+    }
+
+    header {
+      background: #111827;
+      color: white;
+      padding: 0.75rem 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+    }
+
     header h1 { font-size: 1rem; margin: 0; letter-spacing: 0.03em; }
     header small { display: block; font-size: 0.7rem; opacity: 0.8; }
-    .header-right { display: flex; align-items: center; gap: 0.75rem; font-size: 0.8rem; }
-    .badge { display: inline-flex; align-items: center; padding: 0.15rem 0.6rem; border-radius: 999px; font-size: 0.75rem; background: #e5e7eb; color: #111827; }
-    .btn { display: inline-flex; align-items: center; justify-content: center; border-radius: 999px; border: none; padding: 0.45rem 1.1rem; font-size: 0.85rem; cursor: pointer; transition: background 0.15s, transform 0.1s; }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 0.8rem;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.15rem 0.6rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      background: #e5e7eb;
+      color: #111827;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      border: none;
+      padding: 0.55rem 1.2rem;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+    }
+
     .btn-primary { background: #111827; color: white; }
     .btn-primary:hover { background: #020617; transform: translateY(-1px); }
+
     .btn-secondary { background: #e5e7eb; color: #111827; }
     .btn-secondary:hover { background: #d1d5db; transform: translateY(-1px); }
+
     .btn-sm { padding: 0.35rem 0.8rem; font-size: 0.78rem; }
-    main { padding: 1rem; max-width: 1200px; margin: 0 auto 2rem; }
-    .panel { background: white; border-radius: 0.9rem; padding: 0.9rem 1rem; margin-bottom: 0.9rem; box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06); }
-    .panel-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem; gap: 0.75rem; }
+
+    main {
+      padding: 1rem;
+      max-width: 1200px;
+      margin: 0 auto 2rem;
+    }
+
+    .panel {
+      background: white;
+      border-radius: 0.9rem;
+      padding: 0.9rem 1rem;
+      margin-bottom: 0.9rem;
+      box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.75rem;
+      gap: 0.75rem;
+    }
+
     .panel-title { font-size: 0.95rem; font-weight: 600; color: #111827; }
     .panel-subtitle { font-size: 0.75rem; color: #6b7280; }
     .panel-section-title { font-size: 0.85rem; font-weight: 600; margin: 0.5rem 0 0.3rem; }
+
     .text-muted { color: #9ca3af; }
+
     .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.6rem; }
     .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.6rem; }
+
     label { font-size: 0.78rem; display: block; margin-bottom: 0.15rem; color: #374151; }
-    input, select, textarea { width: 100%; padding: 0.35rem 0.55rem; border-radius: 0.5rem; border: 1px solid #e5e7eb; font-size: 0.8rem; background: #ffffff; }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 0.45rem 0.6rem;
+      border-radius: 0.6rem;
+      border: 1px solid #e5e7eb;
+      font-size: 0.85rem;
+      background: #ffffff;
+    }
+
     textarea { resize: vertical; min-height: 40px; }
-    input:focus, select:focus, textarea:focus { outline: none; border-color: #111827; box-shadow: 0 0 0 1px #11182711; }
-    table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
-    th, td { padding: 0.35rem 0.4rem; text-align: left; border-bottom: 1px solid #f3f4f6; white-space: nowrap; }
-    th { font-size: 0.72rem; font-weight: 600; color: #6b7280; background: #f9fafb; }
+
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: #111827;
+      box-shadow: 0 0 0 1px #11182711;
+    }
+
+    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+
+    th, td {
+      padding: 0.45rem 0.55rem;
+      text-align: left;
+      border-bottom: 1px solid #f3f4f6;
+      white-space: nowrap;
+    }
+
+    th {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #6b7280;
+      background: #f9fafb;
+    }
+
     tr:nth-child(even) td { background: #f9fafb; }
-    .pill { display: inline-flex; align-items: center; padding: 0.05rem 0.5rem; border-radius: 999px; font-size: 0.7rem; }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.05rem 0.5rem;
+      border-radius: 999px;
+      font-size: 0.7rem;
+    }
+
     .pill-status { background: #e5e7eb; color: #111827; }
     .pill-status.pending { background: #fef3c7; color: #92400e; }
     .pill-status.delivered { background: #dcfce7; color: #166534; }
+
     .table-wrapper { width: 100%; overflow-x: auto; margin-top: 0.4rem; }
-    .danger { color: #b91c1c; font-weight: 600; }
+
+    .danger { color: #b91c1c; font-weight: 700; }
     .success { color: #166534; }
+
+    /* Login card */
     #loginView { max-width: 640px; margin: 2.5rem auto; padding: 0 1rem; }
-    .card { background: white; border-radius: 1rem; padding: 1.2rem 1.5rem; box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08); }
+
+    .card {
+      background: white;
+      border-radius: 1rem;
+      padding: 1.2rem 1.5rem;
+      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+    }
+
     .card h2 { margin: 0 0 0.5rem; font-size: 1.2rem; }
+
     .mt-xs { margin-top: 0.35rem; }
     .mt-sm { margin-top: 0.6rem; }
     .mt-md { margin-top: 0.9rem; }
     .mt-lg { margin-top: 1.2rem; }
-    .error-text { margin-top: 0.4rem; font-size: 0.8rem; color: #b91c1c; }
+
+    .error-text { margin-top: 0.4rem; font-size: 0.85rem; color: #b91c1c; }
+
     .summary-row { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 0.5rem; }
-    .summary-card { flex: 1 1 140px; background: #f9fafb; border-radius: 0.7rem; padding: 0.5rem 0.7rem; font-size: 0.8rem; }
-    .summary-label { font-size: 0.72rem; color: #6b7280; }
-    .summary-value { font-size: 0.9rem; font-weight: 600; margin-top: 0.2rem; }
+    .summary-card {
+      flex: 1 1 140px;
+      background: #f9fafb;
+      border-radius: 0.7rem;
+      padding: 0.6rem 0.8rem;
+      font-size: 0.85rem;
+    }
+    .summary-label { font-size: 0.75rem; color: #6b7280; }
+    .summary-value { font-size: 1rem; font-weight: 700; margin-top: 0.2rem; }
+
     @media (max-width: 768px) {
       header { flex-direction: column; align-items: flex-start; gap: 0.25rem; }
-      main { padding: 0.6rem; }
+      main { padding: 0.7rem; }
       .panel { padding: 0.7rem 0.8rem; }
       .grid, .grid-2 { grid-template-columns: minmax(0, 1fr); }
-      table { font-size: 0.75rem; }
-      th, td { padding: 0.25rem 0.3rem; }
+      table { font-size: 0.8rem; }
+      th, td { padding: 0.35rem 0.4rem; }
+      .btn { padding: 0.65rem 1.25rem; font-size: 0.95rem; }
     }
   </style>
 </head>
+
 <body>
 <header>
   <div>
@@ -77,9 +206,11 @@
   </div>
 </header>
 
+<!-- LOGIN VIEW -->
 <section id="loginView">
   <div class="card">
     <h2>Sign in</h2>
+
     <div class="mt-md grid-2">
       <div>
         <label>Username</label>
@@ -90,13 +221,16 @@
         <input id="loginPasswordInput" type="password" placeholder="••••••••" />
       </div>
     </div>
+
     <button id="loginBtn" class="btn btn-primary mt-md" style="width: 100%;">Sign in</button>
     <div id="loginError" class="error-text" style="display:none;"></div>
   </div>
 </section>
 
+<!-- APP VIEW -->
 <main id="appView" style="display:none;">
 
+  <!-- Inventory panel (Admin & Manager) -->
   <section id="inventoryPanel" class="panel">
     <div class="panel-header">
       <div>
@@ -120,6 +254,7 @@
         <select id="itemBranchSelect"></select>
       </div>
     </div>
+
     <div class="grid mt-xs">
       <div>
         <label>Base quantity</label>
@@ -134,14 +269,31 @@
         <input id="itemUnitCostInput" type="number" min="0" step="0.001" value="0" />
       </div>
     </div>
+
     <button id="addItemBtn" class="btn btn-primary mt-sm">Save item</button>
 
-    <div class="panel-section-title mt-md">Items list</div>
+    <!-- ✅ NEW: choose which branch list to show -->
+    <div class="panel-header mt-md" style="margin-bottom:0.4rem;">
+      <div>
+        <div class="panel-title">Items list (by selected branch)</div>
+        <div class="panel-subtitle">Choose a branch/storage to view its items list.</div>
+      </div>
+      <div style="min-width:220px;">
+        <label style="margin-bottom:0.15rem;">View items for</label>
+        <select id="itemsViewBranchSelect"></select>
+      </div>
+    </div>
+
     <div class="table-wrapper">
       <table>
         <thead>
         <tr>
-          <th>ID</th><th>Name</th><th>Branch</th><th>Base qty</th><th>Min</th><th>Unit cost</th><th>Value</th>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Base qty</th>
+          <th>Min</th>
+          <th>Unit cost</th>
+          <th>Value</th>
         </tr>
         </thead>
         <tbody id="itemsTableBody"></tbody>
@@ -159,13 +311,19 @@
     <div class="table-wrapper">
       <table>
         <thead>
-        <tr><th>Item</th><th>Branch</th><th>Qty</th><th>Min</th></tr>
+        <tr>
+          <th>Item</th>
+          <th>Branch</th>
+          <th>Qty</th>
+          <th>Min</th>
+        </tr>
         </thead>
         <tbody id="alertsTableBody"></tbody>
       </table>
     </div>
   </section>
 
+  <!-- Users (Admin) -->
   <section id="usersPanel" class="panel" style="display:none;">
     <div class="panel-header">
       <div>
@@ -176,8 +334,14 @@
 
     <div class="panel-section-title">Create user</div>
     <div class="grid mt-xs">
-      <div><label>Username</label><input id="newUserName" placeholder="StaffZahra" /></div>
-      <div><label>Password</label><input id="newUserPassword" placeholder="********" /></div>
+      <div>
+        <label>Username</label>
+        <input id="newUserName" placeholder="StaffZahra" />
+      </div>
+      <div>
+        <label>Password</label>
+        <input id="newUserPassword" placeholder="********" />
+      </div>
       <div>
         <label>Role</label>
         <select id="newUserRole">
@@ -189,26 +353,46 @@
       </div>
     </div>
     <div class="grid mt-xs">
-      <div><label>Branch</label><select id="newUserBranchSelect"></select></div>
+      <div>
+        <label>Branch</label>
+        <select id="newUserBranchSelect"></select>
+      </div>
       <div></div>
-      <div style="display:flex;align-items:flex-end;"><button id="addUserBtn" class="btn btn-primary" style="width:100%;">Create user</button></div>
+      <div style="display:flex;align-items:flex-end;">
+        <button id="addUserBtn" class="btn btn-primary" style="width:100%;">Create user</button>
+      </div>
     </div>
 
     <div class="panel-section-title mt-md">Users list</div>
     <div class="table-wrapper">
       <table>
-        <thead><tr><th>Name</th><th>Role</th><th>Branch</th></tr></thead>
+        <thead>
+        <tr>
+          <th>Name</th>
+          <th>Role</th>
+          <th>Branch</th>
+        </tr>
+        </thead>
         <tbody id="usersTableBody"></tbody>
       </table>
     </div>
 
     <div class="panel-section-title mt-md">Edit / delete user</div>
     <div class="grid mt-xs">
-      <div><label>Select user</label><select id="editUserSelect"></select></div>
+      <div>
+        <label>Select user</label>
+        <select id="editUserSelect"></select>
+      </div>
     </div>
     <div class="grid mt-xs">
-      <div><label>Name</label><input id="editUserName" /></div>
-      <div><label>Password (leave empty to keep)</label><input id="editUserPassword" placeholder="••••••••" /></div>
+      <div>
+        <label>Name</label>
+        <input id="editUserName" />
+      </div>
+      <div>
+        <label>Password (leave empty to keep)</label>
+        <input id="editUserPassword" placeholder="••••••••" />
+      </div>
       <div>
         <label>Role</label>
         <select id="editUserRole">
@@ -220,7 +404,10 @@
       </div>
     </div>
     <div class="grid mt-xs">
-      <div><label>Branch</label><select id="editUserBranchSelect"></select></div>
+      <div>
+        <label>Branch</label>
+        <select id="editUserBranchSelect"></select>
+      </div>
       <div style="display:flex;align-items:flex-end;gap:0.4rem;">
         <button id="saveUserChangesBtn" class="btn btn-primary" style="flex:1;">Save changes</button>
         <button id="deleteUserBtn" class="btn btn-secondary" style="flex:1;">Delete user</button>
@@ -228,6 +415,7 @@
     </div>
   </section>
 
+  <!-- Requests (staff/manager/admin) -->
   <section id="requestsPanel" class="panel">
     <div class="panel-header">
       <div>
@@ -238,28 +426,55 @@
 
     <div class="panel-section-title">New request</div>
     <div class="grid mt-xs">
-      <div><label>From storage</label><div id="requestFromBranchLabel" class="text-muted" style="font-size:0.8rem;"></div></div>
-      <div><label>To branch</label><div id="requestToBranchLabel" class="text-muted" style="font-size:0.8rem;"></div></div>
-      <div><label>Item (from storage)</label><select id="requestItemSelect"></select></div>
+      <div>
+        <label>From storage</label>
+        <div id="requestFromBranchLabel" class="text-muted" style="font-size:0.85rem;"></div>
+      </div>
+      <div>
+        <label>To branch</label>
+        <div id="requestToBranchLabel" class="text-muted" style="font-size:0.85rem;"></div>
+      </div>
+      <div>
+        <label>Item (from storage)</label>
+        <select id="requestItemSelect"></select>
+      </div>
     </div>
 
     <div class="grid mt-xs">
-      <div><label>Quantity</label><input id="requestQtyInput" type="number" min="1" value="1" /></div>
-      <div><label>Note</label><input id="requestNoteInput" placeholder="For client order, urgent..." /></div>
-      <div style="display:flex;align-items:flex-end;"><button id="createRequestBtn" class="btn btn-primary" style="width:100%;">Create request</button></div>
+      <div>
+        <label>Quantity</label>
+        <input id="requestQtyInput" type="number" min="1" value="1" />
+      </div>
+      <div>
+        <label>Note</label>
+        <input id="requestNoteInput" placeholder="For client order, urgent..." />
+      </div>
+      <div style="display:flex;align-items:flex-end;">
+        <button id="createRequestBtn" class="btn btn-primary" style="width:100%;">Create request</button>
+      </div>
     </div>
 
     <div class="panel-section-title mt-md">Requests for my branch</div>
     <div class="table-wrapper">
       <table>
         <thead>
-        <tr><th>ID</th><th>Item</th><th>Qty</th><th>From</th><th>To</th><th>Status</th><th>By</th><th>Driver</th></tr>
+        <tr>
+          <th>ID</th>
+          <th>Item</th>
+          <th>Qty</th>
+          <th>From</th>
+          <th>To</th>
+          <th>Status</th>
+          <th>By</th>
+          <th>Driver</th>
+        </tr>
         </thead>
         <tbody id="requestsTableBody"></tbody>
       </table>
     </div>
   </section>
 
+  <!-- Driver panel -->
   <section id="driverPanel" class="panel" style="display:none;">
     <div class="panel-header">
       <div>
@@ -271,13 +486,23 @@
     <div class="table-wrapper">
       <table>
         <thead>
-        <tr><th>ID</th><th>Item</th><th>Qty</th><th>From</th><th>To</th><th>Requested by</th><th>Status</th><th>Action</th></tr>
+        <tr>
+          <th>ID</th>
+          <th>Item</th>
+          <th>Qty</th>
+          <th>From</th>
+          <th>To</th>
+          <th>Requested by</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
         </thead>
         <tbody id="driverRequestsTableBody"></tbody>
       </table>
     </div>
   </section>
 
+  <!-- Movements (Admin & Manager) -->
   <section id="movementsPanel" class="panel">
     <div class="panel-header">
       <div>
@@ -287,7 +512,10 @@
     </div>
 
     <div class="grid mt-xs">
-      <div><label>Item</label><select id="movementItemSelect"></select></div>
+      <div>
+        <label>Item</label>
+        <select id="movementItemSelect"></select>
+      </div>
       <div>
         <label>Type</label>
         <select id="movementTypeSelect">
@@ -295,29 +523,49 @@
           <option value="OUT">OUT (remove)</option>
         </select>
       </div>
-      <div><label>Quantity</label><input id="movementQtyInput" type="number" min="1" value="1" /></div>
+      <div>
+        <label>Quantity</label>
+        <input id="movementQtyInput" type="number" min="1" value="1" />
+      </div>
     </div>
     <div class="grid mt-xs">
-      <div><label>Note</label><input id="movementNoteInput" placeholder="Adjustment, correction..." /></div>
-      <div style="display:flex;align-items:flex-end;"><button id="addMovementBtn" class="btn btn-primary" style="width:100%;">Save movement</button></div>
+      <div>
+        <label>Note</label>
+        <input id="movementNoteInput" placeholder="Adjustment, correction..." />
+      </div>
+      <div style="display:flex;align-items:flex-end;">
+        <button id="addMovementBtn" class="btn btn-primary" style="width:100%;">Save movement</button>
+      </div>
     </div>
 
     <div class="panel-section-title mt-md">Recent movements</div>
     <div class="table-wrapper">
       <table>
         <thead>
-        <tr><th>ID</th><th>Item</th><th>Type</th><th>Qty</th><th>Branch</th><th>User</th><th>Time</th></tr>
+        <tr>
+          <th>ID</th>
+          <th>Item</th>
+          <th>Type</th>
+          <th>Qty</th>
+          <th>Branch</th>
+          <th>User</th>
+          <th>Time</th>
+        </tr>
         </thead>
         <tbody id="movementsTableBody"></tbody>
       </table>
     </div>
   </section>
 
+  <!-- Analytics (budget/usage, Admin & Manager) -->
   <section id="analyticsPanel" class="panel" style="display:none;">
     <div class="panel-header">
       <div>
         <div class="panel-title">Budget & usage dashboard</div>
-        <div class="panel-subtitle">Automatic spend calculation from delivered requests (qty × item price), filter by date and branch.</div>
+        <div class="panel-subtitle">
+          Automatic spend calculation from delivered requests (qty × item price),
+          filter by date and branch.
+        </div>
       </div>
     </div>
 
@@ -328,21 +576,42 @@
           <option value="ALL">All branches</option>
         </select>
       </div>
-      <div><label>From date</label><input id="analyticsFromDate" type="date" /></div>
-      <div><label>To date</label><input id="analyticsToDate" type="date" /></div>
+      <div>
+        <label>From date</label>
+        <input id="analyticsFromDate" type="date" />
+      </div>
+      <div>
+        <label>To date</label>
+        <input id="analyticsToDate" type="date" />
+      </div>
     </div>
     <button id="analyticsApplyBtn" class="btn btn-primary mt-sm">Apply filters</button>
 
     <div class="summary-row mt-sm">
-      <div class="summary-card"><div class="summary-label">Total spent (KWD)</div><div id="analyticsTotalCost" class="summary-value">0</div></div>
-      <div class="summary-card"><div class="summary-label">Delivered requests</div><div id="analyticsTotalRequests" class="summary-value">0</div></div>
-      <div class="summary-card"><div class="summary-label">Total quantity</div><div id="analyticsTotalQty" class="summary-value">0</div></div>
+      <div class="summary-card">
+        <div class="summary-label">Total spent (KWD)</div>
+        <div id="analyticsTotalCost" class="summary-value">0</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label">Delivered requests</div>
+        <div id="analyticsTotalRequests" class="summary-value">0</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label">Total quantity</div>
+        <div id="analyticsTotalQty" class="summary-value">0</div>
+      </div>
     </div>
 
     <div class="panel-section-title mt-md">Most ordered items (by cost)</div>
     <div class="table-wrapper">
       <table>
-        <thead><tr><th>Item</th><th>Total qty</th><th>Total cost</th></tr></thead>
+        <thead>
+        <tr>
+          <th>Item</th>
+          <th>Total qty</th>
+          <th>Total cost</th>
+        </tr>
+        </thead>
         <tbody id="analyticsItemsTableBody"></tbody>
       </table>
     </div>
@@ -363,32 +632,35 @@
     requests: []
   };
 
+  // ----- Helpers -----
   function getBranchName(id) {
     const b = state.branches.find((x) => x.id === id);
     return b ? b.name : id || "";
   }
+
   function getUserName(id) {
     const u = state.users.find((x) => x.id === id);
     return u ? u.name : id || "";
   }
+
   function getItemById(id) {
     return state.items.find((x) => x.id === id);
   }
+
   function formatDateTime(iso) {
     if (!iso) return "";
     const d = new Date(iso);
     if (Number.isNaN(d.getTime())) return iso;
     return d.toLocaleString();
   }
+
   function getMainStorageId() {
-    const byName = state.branches.find((b) =>
-      (b.name || "").toLowerCase().includes("main")
-    );
+    const byName = state.branches.find((b) => (b.name || "").toLowerCase().includes("main"));
     if (byName) return byName.id;
     return state.branches[0] ? state.branches[0].id : null;
   }
 
-  // ✅ Auto Item ID: ITM-001, ITM-002...
+  // Auto generate item IDs like ITM-001, ITM-002...
   function getNextItemIdClient() {
     let max = 0;
     for (const it of state.items || []) {
@@ -402,6 +674,7 @@
     return "ITM-" + String(next).padStart(3, "0");
   }
 
+  // ----- API calls -----
   async function apiLogin(name, password) {
     const res = await fetch(`${API_BASE}/login`, {
       method: "POST",
@@ -412,25 +685,25 @@
     if (!res.ok) throw new Error(body.error || "Login failed");
     return body;
   }
+
   async function apiLoadState() {
     const res = await fetch(`${API_BASE}/state`);
     const body = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(body.error || "Load state failed");
     return body;
   }
+
   async function apiCreateUser(name, role, password, branchId) {
     const res = await fetch(`${API_BASE}/users`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        name, role, password, branchId,
-        adminUserId: state.user.id
-      })
+      body: JSON.stringify({ name, role, password, branchId, adminUserId: state.user.id })
     });
     const body = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(body.error || "Create user failed");
     return body;
   }
+
   async function apiUpdateUser(userId, updates) {
     const res = await fetch(`${API_BASE}/users/${userId}`, {
       method: "PATCH",
@@ -441,6 +714,7 @@
     if (!res.ok) throw new Error(body.error || "Update user failed");
     return body;
   }
+
   async function apiDeleteUser(userId) {
     const res = await fetch(`${API_BASE}/users/${userId}`, {
       method: "DELETE",
@@ -451,6 +725,7 @@
     if (!res.ok) throw new Error(body.error || "Delete user failed");
     return body;
   }
+
   async function apiCreateItem(data) {
     const res = await fetch(`${API_BASE}/items`, {
       method: "POST",
@@ -461,6 +736,7 @@
     if (!res.ok) throw new Error(body.error || "Create item failed");
     return body;
   }
+
   async function apiCreateMovement(itemId, type, qty, note) {
     const res = await fetch(`${API_BASE}/movements`, {
       method: "POST",
@@ -471,6 +747,7 @@
     if (!res.ok) throw new Error(body.error || "Movement failed");
     return body;
   }
+
   async function apiCreateRequest(itemId, qty, note) {
     const res = await fetch(`${API_BASE}/requests`, {
       method: "POST",
@@ -481,6 +758,7 @@
     if (!res.ok) throw new Error(body.error || "Request failed");
     return body;
   }
+
   async function apiDeliverRequest(id) {
     const res = await fetch(`${API_BASE}/requests/${id}/deliver`, {
       method: "POST",
@@ -492,21 +770,26 @@
     return body;
   }
 
+  // ----- Render functions -----
   function renderHeader() {
     const headerUser = document.getElementById("headerUserName");
     const headerRole = document.getElementById("headerRole");
     const logoutBtn = document.getElementById("logoutBtn");
+
     if (!state.user) {
       headerUser.style.display = "none";
       headerRole.style.display = "none";
       logoutBtn.style.display = "none";
       return;
     }
+
     headerUser.textContent = state.user.name;
     headerUser.style.display = "inline-flex";
+
     const branchText = state.user.branchId ? ` | Branch: ${getBranchName(state.user.branchId)}` : "";
     headerRole.textContent = `Role: ${state.user.role}${branchText}`;
     headerRole.style.display = "inline-flex";
+
     logoutBtn.style.display = "inline-flex";
   }
 
@@ -516,6 +799,7 @@
       document.getElementById("newUserBranchSelect"),
       document.getElementById("editUserBranchSelect")
     ];
+
     selects.forEach((sel) => {
       if (!sel) return;
       sel.innerHTML = "";
@@ -528,22 +812,52 @@
       });
     });
 
+    // Requests labels
     const fromLabel = document.getElementById("requestFromBranchLabel");
     const toLabel = document.getElementById("requestToBranchLabel");
-    if (fromLabel) fromLabel.textContent = getBranchName(getMainStorageId());
-    if (toLabel && state.user && state.user.branchId) toLabel.textContent = getBranchName(state.user.branchId);
+    if (fromLabel) {
+      const mainId = getMainStorageId();
+      fromLabel.textContent = getBranchName(mainId);
+    }
+    if (toLabel && state.user && state.user.branchId) {
+      toLabel.textContent = getBranchName(state.user.branchId);
+    }
 
+    // Analytics branch select
     const analyticsBranchSelect = document.getElementById("analyticsBranchSelect");
     if (analyticsBranchSelect) {
       analyticsBranchSelect.innerHTML = "";
       const allOpt = document.createElement("option");
-      allOpt.value = "ALL"; allOpt.textContent = "All branches";
+      allOpt.value = "ALL";
+      allOpt.textContent = "All branches";
       analyticsBranchSelect.appendChild(allOpt);
       state.branches.forEach((b) => {
         const opt = document.createElement("option");
-        opt.value = b.id; opt.textContent = b.name;
+        opt.value = b.id;
+        opt.textContent = b.name;
         analyticsBranchSelect.appendChild(opt);
       });
+    }
+
+    // ✅ Items list view select (separate lists)
+    const itemsViewSel = document.getElementById("itemsViewBranchSelect");
+    if (itemsViewSel) {
+      itemsViewSel.innerHTML = "";
+      const mainId = getMainStorageId();
+      const branchesSorted = [...state.branches].sort((a, b) => {
+        if (a.id === mainId) return -1;
+        if (b.id === mainId) return 1;
+        return (a.name || "").localeCompare(b.name || "");
+      });
+
+      branchesSorted.forEach((b) => {
+        const opt = document.createElement("option");
+        opt.value = b.id;
+        opt.textContent = b.name;
+        itemsViewSel.appendChild(opt);
+      });
+
+      itemsViewSel.value = mainId || (state.branches[0] ? state.branches[0].id : "");
     }
   }
 
@@ -551,75 +865,87 @@
     const tbody = document.getElementById("itemsTableBody");
     const alertsBody = document.getElementById("alertsTableBody");
     const storageTotalEl = document.getElementById("storageTotalValue");
+    const viewSel = document.getElementById("itemsViewBranchSelect");
+    if (!tbody) return;
+
+    const mainId = getMainStorageId();
+    const selectedBranchId = viewSel ? viewSel.value : mainId;
 
     tbody.innerHTML = "";
     if (alertsBody) alertsBody.innerHTML = "";
     if (storageTotalEl) storageTotalEl.textContent = "0";
 
-    const items = [...state.items].sort((a, b) => a.name.localeCompare(b.name));
-    const mainId = getMainStorageId();
-    let storageTotal = 0;
-    const lowItems = [];
+    const branchItems = (state.items || [])
+      .filter((it) => it.branchId === selectedBranchId)
+      .sort((a, b) => (a.name || "").localeCompare(b.name || ""));
 
-    if (!items.length) {
+    if (!branchItems.length) {
       const tr = document.createElement("tr");
-      tr.innerHTML = '<td colspan="7" class="text-muted">No items defined.</td>';
+      tr.innerHTML = `<td colspan="6" class="text-muted">No items in ${getBranchName(selectedBranchId)}.</td>`;
       tbody.appendChild(tr);
-      if (alertsBody) {
-        const trA = document.createElement("tr");
-        trA.innerHTML = '<td colspan="4" class="text-muted">No low stock alerts in Main Storage.</td>';
-        alertsBody.appendChild(trA);
-      }
-      return;
+    } else {
+      branchItems.forEach((it) => {
+        const value = (Number(it.baseQty) || 0) * (Number(it.unitCost) || 0);
+        const low = it.baseQty <= it.minQty && it.minQty > 0;
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${it.id}</td>
+          <td>${it.name}</td>
+          <td${low ? ' class="danger"' : ""}>${it.baseQty}</td>
+          <td>${it.minQty}</td>
+          <td>${it.unitCost}</td>
+          <td>${value.toFixed(3)}</td>
+        `;
+        tbody.appendChild(tr);
+      });
     }
 
-    items.forEach((it) => {
-      const value = (Number(it.baseQty) || 0) * (Number(it.unitCost) || 0);
+    // Main storage total + alerts ONLY when viewing main storage
+    if (selectedBranchId === mainId) {
+      let storageTotal = 0;
+      const lowItems = [];
 
-      if (it.branchId === mainId) {
+      branchItems.forEach((it) => {
+        const value = (Number(it.baseQty) || 0) * (Number(it.unitCost) || 0);
         storageTotal += value;
         if (it.minQty > 0 && it.baseQty <= it.minQty) lowItems.push(it);
+      });
+
+      if (storageTotalEl) storageTotalEl.textContent = storageTotal.toFixed(3);
+
+      if (alertsBody) {
+        if (!lowItems.length) {
+          const trA = document.createElement("tr");
+          trA.innerHTML = '<td colspan="4" class="text-muted">No low stock alerts in Main Storage.</td>';
+          alertsBody.appendChild(trA);
+        } else {
+          lowItems.forEach((it) => {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+              <td>${it.name}</td>
+              <td>${getBranchName(it.branchId)}</td>
+              <td class="danger">${it.baseQty}</td>
+              <td>${it.minQty}</td>
+            `;
+            alertsBody.appendChild(tr);
+          });
+        }
       }
-
-      const low = it.baseQty <= it.minQty && it.minQty > 0;
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${it.id}</td>
-        <td>${it.name}</td>
-        <td>${getBranchName(it.branchId)}</td>
-        <td${low ? ' class="danger"' : ""}>${it.baseQty}</td>
-        <td>${it.minQty}</td>
-        <td>${it.unitCost}</td>
-        <td>${value.toFixed(3)}</td>
-      `;
-      tbody.appendChild(tr);
-    });
-
-    if (storageTotalEl) storageTotalEl.textContent = storageTotal.toFixed(3);
-
-    if (alertsBody) {
-      if (!lowItems.length) {
+    } else {
+      if (storageTotalEl) storageTotalEl.textContent = "—";
+      if (alertsBody) {
         const trA = document.createElement("tr");
-        trA.innerHTML = '<td colspan="4" class="text-muted">No low stock alerts in Main Storage.</td>';
+        trA.innerHTML = '<td colspan="4" class="text-muted">Switch view to Main Storage to see restock alerts.</td>';
         alertsBody.appendChild(trA);
-      } else {
-        lowItems.forEach((it) => {
-          const tr = document.createElement("tr");
-          tr.innerHTML = `
-            <td>${it.name}</td>
-            <td>${getBranchName(it.branchId)}</td>
-            <td class="danger">${it.baseQty}</td>
-            <td>${it.minQty}</td>
-          `;
-          alertsBody.appendChild(tr);
-        });
       }
     }
 
+    // movement item select (all items globally)
     const moveSelect = document.getElementById("movementItemSelect");
     if (moveSelect) {
       moveSelect.innerHTML = "";
-      state.items.forEach((it, idx) => {
+      (state.items || []).forEach((it, idx) => {
         const opt = document.createElement("option");
         opt.value = it.id;
         opt.textContent = `${it.name} (${getBranchName(it.branchId)})`;
@@ -648,7 +974,6 @@
     const tbody = document.getElementById("usersTableBody");
     tbody.innerHTML = "";
     const users = [...state.users].sort((a, b) => a.name.localeCompare(b.name));
-
     users.forEach((u) => {
       const tr = document.createElement("tr");
       tr.innerHTML = `<td>${u.name}</td><td>${u.role}</td><td>${getBranchName(u.branchId)}</td>`;
@@ -662,6 +987,7 @@
       placeholder.value = "";
       placeholder.textContent = "Select user";
       editSel.appendChild(placeholder);
+
       users.forEach((u) => {
         const opt = document.createElement("option");
         opt.value = u.id;
@@ -757,6 +1083,7 @@
     });
   }
 
+  // ----- Analytics: compute from delivered requests -----
   function computeAnalytics() {
     const branchSel = document.getElementById("analyticsBranchSelect");
     const fromInput = document.getElementById("analyticsFromDate");
@@ -787,7 +1114,6 @@
       const unitCost = storageItem ? Number(storageItem.unitCost || 0) : 0;
       const qty = Number(r.qty || 0);
       const cost = unitCost * qty;
-
       totalCost += cost;
       totalQty += qty;
 
@@ -801,12 +1127,8 @@
       stat.cost += cost;
     });
 
-    return {
-      totalCost,
-      totalQty,
-      totalRequests: delivered.length,
-      items: Array.from(itemStats.values()).sort((a, b) => b.cost - a.cost)
-    };
+    const itemsArray = Array.from(itemStats.values()).sort((a, b) => b.cost - a.cost);
+    return { totalCost, totalQty, totalRequests: delivered.length, items: itemsArray };
   }
 
   function renderAnalytics() {
@@ -837,6 +1159,7 @@
     });
   }
 
+  // ----- UI toggling -----
   function showApp() {
     document.getElementById("loginView").style.display = "none";
     document.getElementById("appView").style.display = "block";
@@ -874,17 +1197,20 @@
     resetLoginForm();
   }
 
+  // ----- Event wiring -----
   document.getElementById("loginBtn").addEventListener("click", async () => {
     const name = document.getElementById("loginNameInput").value.trim();
     const password = document.getElementById("loginPasswordInput").value;
     const errorEl = document.getElementById("loginError");
     errorEl.style.display = "none";
     errorEl.textContent = "";
+
     if (!name || !password) {
       errorEl.textContent = "Enter username and password.";
       errorEl.style.display = "block";
       return;
     }
+
     try {
       const user = await apiLogin(name, password);
       state.user = user;
@@ -899,7 +1225,6 @@
 
       renderHeader();
       renderBranchSelects();
-      renderItemsTable();
       fillRequestItemsFromStorage();
       renderUsersTable();
       renderRequestsTable();
@@ -907,9 +1232,17 @@
       renderMovementsTable();
       renderAnalytics();
 
-      // ✅ Set next auto ID after loading items
       const idInput = document.getElementById("itemIdInput");
       if (idInput) idInput.value = getNextItemIdClient();
+
+      // Render items after selects are ready
+      renderItemsTable();
+
+      // ✅ rerender items list when switching branch view
+      const itemsViewSel = document.getElementById("itemsViewBranchSelect");
+      if (itemsViewSel) {
+        itemsViewSel.addEventListener("change", () => renderItemsTable());
+      }
 
       showApp();
     } catch (e) {
@@ -920,25 +1253,31 @@
 
   document.getElementById("logoutBtn").addEventListener("click", logout);
 
+  // create user
   document.getElementById("addUserBtn").addEventListener("click", async () => {
-    if (!state.user || state.user.role !== "admin") return alert("Only admin can create users.");
+    if (!state.user || state.user.role !== "admin") {
+      alert("Only admin can create users.");
+      return;
+    }
     const name = document.getElementById("newUserName").value.trim();
     const role = document.getElementById("newUserRole").value;
     const password = document.getElementById("newUserPassword").value.trim();
     const branchId = document.getElementById("newUserBranchSelect").value;
-    if (!name || !password) return alert("Name and password required.");
 
+    if (!name || !password) {
+      alert("Name and password required.");
+      return;
+    }
     try {
       const newUser = await apiCreateUser(name, role, password, branchId);
       state.users.push(newUser);
       renderUsersTable();
       document.getElementById("newUserName").value = "";
       document.getElementById("newUserPassword").value = "";
-    } catch (e) {
-      alert(e.message);
-    }
+    } catch (e) { alert(e.message); }
   });
 
+  // edit user select -> fill form
   document.getElementById("editUserSelect").addEventListener("change", () => {
     const id = document.getElementById("editUserSelect").value;
     const user = state.users.find((u) => u.id === id);
@@ -953,9 +1292,10 @@
     document.getElementById("editUserBranchSelect").value = user.branchId || "";
   });
 
+  // save user changes
   document.getElementById("saveUserChangesBtn").addEventListener("click", async () => {
     const id = document.getElementById("editUserSelect").value;
-    if (!id) return alert("Select a user first.");
+    if (!id) { alert("Select a user first."); return; }
     const name = document.getElementById("editUserName").value.trim();
     const password = document.getElementById("editUserPassword").value.trim();
     const role = document.getElementById("editUserRole").value;
@@ -970,14 +1310,13 @@
       if (idx >= 0) state.users[idx] = updated;
       renderUsersTable();
       alert("User updated.");
-    } catch (e) {
-      alert(e.message);
-    }
+    } catch (e) { alert(e.message); }
   });
 
+  // delete user
   document.getElementById("deleteUserBtn").addEventListener("click", async () => {
     const id = document.getElementById("editUserSelect").value;
-    if (!id) return alert("Select a user first.");
+    if (!id) { alert("Select a user first."); return; }
     if (!confirm("Delete this user?")) return;
     try {
       await apiDeleteUser(id);
@@ -986,40 +1325,30 @@
       document.getElementById("editUserName").value = "";
       document.getElementById("editUserPassword").value = "";
       alert("User deleted.");
-    } catch (e) {
-      alert(e.message);
-    }
+    } catch (e) { alert(e.message); }
   });
 
-  // ✅ Create item (auto ID, then next ID)
+  // create item
   document.getElementById("addItemBtn").addEventListener("click", async () => {
     if (!state.user || (state.user.role !== "admin" && state.user.role !== "manager")) {
       alert("Only admin/manager can create items.");
       return;
     }
-
-    const idInput = document.getElementById("itemIdInput");
-    let id = idInput.value.trim();
-    if (!id) {
-      id = getNextItemIdClient();
-      idInput.value = id;
-    }
-
+    const id = document.getElementById("itemIdInput").value.trim();
     const name = document.getElementById("itemNameInput").value.trim();
     const branchId = document.getElementById("itemBranchSelect").value;
     const baseQty = Number(document.getElementById("itemBaseQtyInput").value || "0");
     const minQty = Number(document.getElementById("itemMinQtyInput").value || "0");
     const unitCost = Number(document.getElementById("itemUnitCostInput").value || "0");
 
-    if (!name) return alert("Item name required.");
+    if (!name) { alert("Item name required."); return; }
 
     try {
       const newItem = await apiCreateItem({
-        id, name, branchId, baseQty, minQty, unitCost,
-        managerUserId: state.user.id
+        id, name, branchId, baseQty, minQty, unitCost, managerUserId: state.user.id
       });
-
       state.items.push(newItem);
+
       renderItemsTable();
       fillRequestItemsFromStorage();
 
@@ -1027,22 +1356,23 @@
       document.getElementById("itemBaseQtyInput").value = "0";
       document.getElementById("itemMinQtyInput").value = "0";
       document.getElementById("itemUnitCostInput").value = "0";
-      idInput.value = getNextItemIdClient(); // ✅ next
-    } catch (e) {
-      alert(e.message);
-    }
+      document.getElementById("itemIdInput").value = getNextItemIdClient();
+    } catch (e) { alert(e.message); }
   });
 
+  // manual movement
   document.getElementById("addMovementBtn").addEventListener("click", async () => {
     if (!state.user || (state.user.role !== "admin" && state.user.role !== "manager")) {
       alert("Only admin/manager can record movements.");
       return;
     }
+
     const itemId = document.getElementById("movementItemSelect").value;
     const type = document.getElementById("movementTypeSelect").value;
     const qty = Number(document.getElementById("movementQtyInput").value || "1");
     const note = document.getElementById("movementNoteInput").value.trim();
-    if (!itemId || !qty || qty <= 0) return alert("Item and quantity required.");
+
+    if (!itemId || !qty || qty <= 0) { alert("Item and quantity required."); return; }
 
     try {
       await apiCreateMovement(itemId, type, qty, note);
@@ -1055,20 +1385,19 @@
       renderAnalytics();
       document.getElementById("movementQtyInput").value = "1";
       document.getElementById("movementNoteInput").value = "";
-      document.getElementById("itemIdInput").value = getNextItemIdClient();
-    } catch (e) {
-      alert(e.message);
-    }
+    } catch (e) { alert(e.message); }
   });
 
+  // create request
   document.getElementById("createRequestBtn").addEventListener("click", async () => {
-    if (!state.user || state.user.role === "driver") return alert("Drivers cannot create requests.");
-    if (!state.user.branchId) return alert("Your user is not assigned to a branch. Ask admin.");
+    if (!state.user || state.user.role === "driver") { alert("Drivers cannot create requests."); return; }
+    if (!state.user.branchId) { alert("Your user is not assigned to a branch. Ask admin."); return; }
 
     const itemId = document.getElementById("requestItemSelect").value;
     const qty = Number(document.getElementById("requestQtyInput").value || "1");
     const note = document.getElementById("requestNoteInput").value.trim();
-    if (!itemId || !qty || qty <= 0) return alert("Item and quantity required.");
+
+    if (!itemId || !qty || qty <= 0) { alert("Item and quantity required."); return; }
 
     try {
       const req = await apiCreateRequest(itemId, qty, note);
@@ -1078,11 +1407,10 @@
       renderAnalytics();
       document.getElementById("requestQtyInput").value = "1";
       document.getElementById("requestNoteInput").value = "";
-    } catch (e) {
-      alert(e.message);
-    }
+    } catch (e) { alert(e.message); }
   });
 
+  // driver deliver
   document.getElementById("driverRequestsTableBody").addEventListener("click", async (e) => {
     const btn = e.target.closest("button[data-req-id]");
     if (!btn) return;
@@ -1095,16 +1423,14 @@
       state.items = all.items || [];
       state.movements = all.movements || [];
       state.requests = all.requests || [];
+
       renderItemsTable();
       fillRequestItemsFromStorage();
       renderDriverRequestsTable();
       renderRequestsTable();
       renderMovementsTable();
       renderAnalytics();
-      document.getElementById("itemIdInput").value = getNextItemIdClient();
-    } catch (err) {
-      alert(err.message);
-    }
+    } catch (err) { alert(err.message); }
   });
 
   document.getElementById("analyticsApplyBtn").addEventListener("click", () => renderAnalytics());
