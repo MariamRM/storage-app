@@ -177,6 +177,15 @@
 
     <!-- Add/update items -->
     <div class="panel-section-title mt-md" data-i18n="add_update_items">Add / update items (Admin & Manager)</div>
+
+    <!-- NEW: select existing item to edit -->
+    <div class="grid mt-xs">
+      <div>
+        <label>Select item to edit (optional)</label>
+        <select id="itemEditSelect"></select>
+      </div>
+    </div>
+
     <div class="grid mt-xs">
       <div>
         <label data-i18n="item_id_auto">Item ID (auto)</label>
@@ -205,7 +214,11 @@
         <input id="itemUnitCostInput" type="number" min="0" step="0.001" value="0" />
       </div>
     </div>
-    <button id="addItemBtn" class="btn btn-primary mt-sm" data-i18n="save_item">Save item</button>
+
+    <div class="mt-sm" style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+      <button id="addItemBtn" class="btn btn-primary" data-i18n="save_item">Save item</button>
+      <button id="updateItemBtn" class="btn btn-secondary">Update item</button>
+    </div>
   </section>
 
   <!-- Users (Admin) -->
@@ -1090,6 +1103,18 @@
     return body;
   }
 
+  // NEW: update item (admin/manager)
+  async function apiUpdateItem(id, data) {
+    const res = await fetch(`${API_BASE}/items/${encodeURIComponent(id)}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data)
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(body.error || "Update item failed");
+    return body;
+  }
+
   async function apiCreateMovement(itemId, type, qty, note) {
     const res = await fetch(`${API_BASE}/movements`, {
       method: "POST",
@@ -1245,6 +1270,31 @@
     }
   }
 
+  // NEW: fill select with all items for editing
+  function renderItemEditSelect() {
+    const sel = document.getElementById("itemEditSelect");
+    if (!sel) return;
+
+    sel.innerHTML = "";
+    const placeholder = document.createElement("option");
+    placeholder.value = "";
+    placeholder.textContent = (currentLang === "ar")
+      ? "اختر صنف للتعديل"
+      : "Select item to edit";
+    sel.appendChild(placeholder);
+
+    const all = [...(state.items || [])].sort((a, b) =>
+      (a.name || "").localeCompare(b.name || "")
+    );
+
+    all.forEach((it) => {
+      const opt = document.createElement("option");
+      opt.value = `${it.id}::${it.branchId}`;
+      opt.textContent = `${it.name} (${getBranchName(it.branchId)})`;
+      sel.appendChild(opt);
+    });
+  }
+
   function renderInventoryViewer() {
     const tbody = document.getElementById("itemsTableBody");
     const alertsBody = document.getElementById("alertsTableBody");
@@ -1324,6 +1374,9 @@
         moveSelect.appendChild(opt);
       });
     }
+
+    // NEW: update edit-items select when inventory changes
+    renderItemEditSelect();
   }
 
   function fillRequestItemsFromStorage() {
@@ -1739,6 +1792,7 @@
       renderHeader();
       renderBranchSelects();
       fillRequestItemsFromStorage();
+      renderInventoryViewer();
       renderUsersTable();
       renderRequestsTable();
       renderDriverRequestsTable();
@@ -1749,7 +1803,6 @@
       await updateItemIdField();
 
       showApp();
-      renderInventoryViewer();
     } catch (e) {
       errorEl.textContent = e.message;
       errorEl.style.display = "block";
@@ -1892,6 +1945,84 @@
       document.getElementById("itemUnitCostInput").value = "0";
 
       await updateItemIdField();
+      // reset select edit
+      document.getElementById("itemEditSelect").value = "";
+    } catch (e) {
+      alert(e.message);
+    }
+  });
+
+  // NEW: when selecting an item to edit, fill the form
+  document.getElementById("itemEditSelect").addEventListener("change", async () => {
+    const sel = document.getElementById("itemEditSelect");
+    const val = sel.value;
+
+    if (!val) {
+      document.getElementById("itemNameInput").value = "";
+      document.getElementById("itemBaseQtyInput").value = "0";
+      document.getElementById("itemMinQtyInput").value = "0";
+      document.getElementById("itemUnitCostInput").value = "0";
+      await updateItemIdField();
+      return;
+    }
+
+    const [id, branchId] = val.split("::");
+    const item = state.items.find(
+      (it) => it.id === id && it.branchId === branchId
+    );
+    if (!item) return;
+
+    document.getElementById("itemIdInput").value = item.id;
+    document.getElementById("itemNameInput").value = item.name || "";
+    document.getElementById("itemBranchSelect").value = item.branchId || "";
+    document.getElementById("itemBaseQtyInput").value = item.baseQty ?? 0;
+    document.getElementById("itemMinQtyInput").value = item.minQty ?? 0;
+    document.getElementById("itemUnitCostInput").value = item.unitCost ?? 0;
+  });
+
+  // NEW: update existing item (admin/manager)
+  document.getElementById("updateItemBtn").addEventListener("click", async () => {
+    if (!state.user || (state.user.role !== "admin" && state.user.role !== "manager")) {
+      alert(t("only_admin_mgr_create_items"));
+      return;
+    }
+
+    const id = document.getElementById("itemIdInput").value.trim();
+    const name = document.getElementById("itemNameInput").value.trim();
+    const branchId = document.getElementById("itemBranchSelect").value;
+    const baseQty = Number(document.getElementById("itemBaseQtyInput").value || "0");
+    const minQty = Number(document.getElementById("itemMinQtyInput").value || "0");
+    const unitCost = Number(document.getElementById("itemUnitCostInput").value || "0");
+
+    if (!id) {
+      alert(currentLang === "ar"
+        ? "اختاري صنف من القائمة أولاً"
+        : "Select an item first");
+      return;
+    }
+
+    try {
+      const updatedItem = await apiUpdateItem(id, {
+        userId: state.user.id,
+        branchId,
+        name,
+        baseQty,
+        minQty,
+        unitCost
+      });
+
+      const idx = state.items.findIndex(
+        (it) => it.id === updatedItem.id && it.branchId === updatedItem.branchId
+      );
+      if (idx >= 0) {
+        state.items[idx] = updatedItem;
+      }
+
+      renderInventoryViewer();
+      fillRequestItemsFromStorage();
+      renderItemEditSelect();
+
+      alert(currentLang === "ar" ? "تم تحديث الصنف" : "Item updated");
     } catch (e) {
       alert(e.message);
     }

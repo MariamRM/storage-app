@@ -276,6 +276,54 @@ app.post("/api/items", async (req, res) => {
   }
 });
 
+// ---------- ITEMS UPDATE (Admin & Manager can edit items) ----------
+app.patch("/api/items/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { userId, branchId, name, minQty, baseQty, unitCost } = req.body;
+
+    const data = await loadData();
+    const user = findUserById(data, userId);
+    if (!requireRole(user, ["admin", "manager"])) {
+      return res.status(403).json({ error: "Only admin/manager can update items" });
+    }
+
+    if (!branchId) {
+      return res.status(400).json({ error: "branchId is required to update item" });
+    }
+
+    // find item by id + branch
+    const item = data.items.find(
+      (it) =>
+        it.id === String(id).trim() &&
+        it.branchId === String(branchId).trim()
+    );
+
+    if (!item) {
+      return res.status(404).json({ error: "Item not found for this branch" });
+    }
+
+    if (typeof name !== "undefined") {
+      item.name = String(name).trim();
+    }
+    if (typeof minQty !== "undefined") {
+      item.minQty = Number(minQty) || 0;
+    }
+    if (typeof baseQty !== "undefined") {
+      item.baseQty = Number(baseQty) || 0;
+    }
+    if (typeof unitCost !== "undefined") {
+      item.unitCost = Number(unitCost) || 0;
+    }
+
+    await saveData(data);
+    res.json(item);
+  } catch (err) {
+    console.error("Update item error", err);
+    res.status(500).json({ error: "Failed to update item" });
+  }
+});
+
 // ---------- MOVEMENTS (Admin & Manager only, adjust stock) ----------
 app.post("/api/movements", async (req, res) => {
   try {
@@ -555,7 +603,8 @@ app.post("/api/vehicle-reminders", async (req, res) => {
       vehicleId,
       type, // "OIL_CHANGE" | "METER" | "YEARLY_RENEW" | "OTHER"
       dueDate: dueDate || null, // YYYY-MM-DD
-      dueOdometer: typeof dueOdometer === "undefined" ? null : Number(dueOdometer),
+      dueOdometer:
+        typeof dueOdometer === "undefined" ? null : Number(dueOdometer),
       note: note || "",
       status: "open", // open | done
       createdAt: new Date().toISOString(),
@@ -599,7 +648,8 @@ app.patch("/api/vehicle-reminders/:id", async (req, res) => {
       if (typeof type !== "undefined") r.type = type;
       if (typeof dueDate !== "undefined") r.dueDate = dueDate || null;
       if (typeof dueOdometer !== "undefined") {
-        r.dueOdometer = dueOdometer === null ? null : Number(dueOdometer);
+        r.dueOdometer =
+          dueOdometer === null ? null : Number(dueOdometer);
       }
       if (typeof note !== "undefined") r.note = note || "";
     }
@@ -650,3 +700,4 @@ app.listen(PORT, () => {
   console.log(`Main Storage Branch ID = ${MAIN_STORAGE_BRANCH_ID}`);
   console.log(`DATA_FILE = ${DATA_FILE}`);
 });
+//server.js ends here
