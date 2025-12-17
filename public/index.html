@@ -662,6 +662,133 @@
         <tbody id="remindersTableBody"></tbody>
       </table>
     </div>
+
+    <div class="panel-section-title mt-md" data-i18n="maintenance_records">Maintenance records</div>
+    <div class="panel-subtitle" data-i18n="maintenance_records_subtitle">Drivers log costs, invoices and notes. Admin/Manager can review every car.</div>
+
+    <div id="maintenanceFormBlock" class="mt-sm" style="display:none;">
+      <div class="grid mt-xs">
+        <div>
+          <label data-i18n="vehicle">Vehicle</label>
+          <select id="maintVehicleSelect"></select>
+        </div>
+        <div id="maintDriverField">
+          <label data-i18n="th_driver">Driver</label>
+          <select id="maintDriverSelect"></select>
+        </div>
+        <div>
+          <label data-i18n="maintenance_date">Maintenance date</label>
+          <input id="maintDateInput" type="date" />
+        </div>
+      </div>
+      <div class="grid mt-xs">
+        <div>
+          <label data-i18n="next_maintenance_date">Next maintenance date</label>
+          <input id="maintNextDateInput" type="date" />
+        </div>
+        <div>
+          <label data-i18n="maintenance_price">Price (KWD)</label>
+          <input id="maintPriceInput" type="number" min="0" step="0.001" />
+        </div>
+        <div>
+          <label data-i18n="invoice_number">Invoice number</label>
+          <input id="maintInvoiceInput" />
+        </div>
+      </div>
+      <div class="grid mt-xs">
+        <div>
+          <label data-i18n="maintenance_place">Place / workshop</label>
+          <input id="maintPlaceInput" placeholder="Garage name" />
+        </div>
+        <div>
+          <label data-i18n="store_name">Store</label>
+          <input id="maintStoreInput" placeholder="Spare parts store" />
+        </div>
+        <div>
+          <label data-i18n="note">Note</label>
+          <input id="maintNoteInput" placeholder="Extra details" />
+        </div>
+      </div>
+      <div class="mt-sm" style="display:flex;justify-content:flex-end;">
+        <button id="saveMaintenanceBtn" class="btn btn-primary" data-i18n="save_maintenance">Save maintenance</button>
+      </div>
+    </div>
+
+    <div class="panel-section-title mt-md" data-i18n="maintenance_history">Maintenance history</div>
+    <div class="panel-subtitle" data-i18n="maintenance_history_subtitle">Filtered automatically by your role. Drivers see their assigned cars.</div>
+    <div class="toolbar">
+      <div>
+        <label data-i18n="vehicle">Vehicle</label>
+        <select id="maintenanceHistoryVehicleSelect"></select>
+      </div>
+      <div>
+        <button id="maintenanceRefreshBtn" class="btn btn-secondary" data-i18n="refresh">Refresh</button>
+      </div>
+    </div>
+
+    <div class="table-wrapper mt-sm">
+      <table>
+        <thead>
+        <tr>
+          <th data-i18n="maintenance_date">Maintenance date</th>
+          <th data-i18n="vehicle">Vehicle</th>
+          <th data-i18n="th_driver">Driver</th>
+          <th data-i18n="maintenance_price">Price (KWD)</th>
+          <th data-i18n="invoice_number_short">Invoice #</th>
+          <th data-i18n="next_maintenance_date">Next date</th>
+          <th data-i18n="note">Note</th>
+          <th data-i18n="th_time">Recorded at</th>
+        </tr>
+        </thead>
+        <tbody id="maintenanceTableBody"></tbody>
+      </table>
+    </div>
+
+    <div id="maintenanceSummaryBlock" class="mt-md" style="display:none;">
+      <div class="panel-section-title" data-i18n="maintenance_summary_title">Maintenance budget summary</div>
+      <div class="panel-subtitle" data-i18n="maintenance_summary_subtitle">Filter by day or month, then download totals.</div>
+      <div class="toolbar">
+        <div>
+          <label data-i18n="from_date">From date</label>
+          <input id="maintenanceSummaryFrom" type="date" />
+        </div>
+        <div>
+          <label data-i18n="to_date">To date</label>
+          <input id="maintenanceSummaryTo" type="date" />
+        </div>
+        <div>
+          <label data-i18n="vehicle">Vehicle</label>
+          <select id="maintenanceSummaryVehicleSelect"></select>
+        </div>
+        <div style="display:flex;gap:0.4rem;flex-wrap:wrap;">
+          <button id="maintenanceSummaryApplyBtn" class="btn btn-secondary" data-i18n="apply_filters">Apply filters</button>
+          <button id="maintenanceExportBtn" class="btn btn-primary" data-i18n="maintenance_export">Export CSV</button>
+        </div>
+      </div>
+
+      <div class="summary-row">
+        <div class="summary-card">
+          <div class="summary-label" data-i18n="total_spent">Total spent (KWD)</div>
+          <div id="maintenanceSummaryTotal" class="summary-value">0</div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-label" data-i18n="records_count">Records</div>
+          <div id="maintenanceSummaryCount" class="summary-value">0</div>
+        </div>
+      </div>
+
+      <div class="table-wrapper mt-sm">
+        <table>
+          <thead>
+          <tr>
+            <th data-i18n="vehicle">Vehicle</th>
+            <th data-i18n="th_total_cost">Total cost</th>
+          </tr>
+          </thead>
+          <tbody id="maintenanceSummaryTableBody"></tbody>
+        </table>
+      </div>
+    </div>
   </section>
 
 </main>
@@ -831,7 +958,26 @@
       filter: "Filter",
       due: "Due",
       odometer: "Odometer",
-
+      maintenance_records: "Maintenance records",
+      maintenance_records_subtitle: "Drivers log date, invoice, price and notes. Admin/Manager can review them all.",
+      maintenance_date: "Maintenance date",
+      next_maintenance_date: "Next maintenance date",
+      maintenance_price: "Maintenance cost (KWD)",
+      invoice_number: "Invoice number",
+      invoice_number_short: "Invoice #",
+      maintenance_place: "Place / workshop (optional)",
+      store_name: "Store (optional)",
+      save_maintenance: "Save maintenance record",
+      maintenance_history: "Maintenance history",
+      maintenance_history_subtitle: "Visible to Admin/Manager and to each assigned driver.",
+      maintenance_summary_title: "Maintenance budget summary",
+      maintenance_summary_subtitle: "Filter by date or vehicle and export totals.",
+      maintenance_required_fields: "Vehicle, maintenance date, price and invoice are required.",
+      no_maintenance_records: "No maintenance records yet.",
+      maintenance_saved: "Maintenance record saved.",
+      records_count: "Records",
+      maintenance_export: "Export maintenance CSV",
+      all_vehicles: "All vehicles",
       main_storage: "Main Storage",
       no_items_in: "No items in",
       no_low_stock: "No low stock alerts in Main Storage.",
@@ -996,6 +1142,26 @@
       filter: "فلتر",
       due: "الاستحقاق",
       odometer: "العداد",
+      maintenance_records: "سجلات الصيانة",
+      maintenance_records_subtitle: "يمكن للسائق تسجيل تاريخ الصيانة والتكلفة ورقم الفاتورة والملاحظات، وتظهر للإدارة.",
+      maintenance_date: "تاريخ الصيانة",
+      next_maintenance_date: "تاريخ الصيانة التالية",
+      maintenance_price: "تكلفة الصيانة (د.ك)",
+      invoice_number: "رقم الفاتورة",
+      invoice_number_short: "فاتورة #",
+      maintenance_place: "الموقع / الورشة (اختياري)",
+      store_name: "المتجر (اختياري)",
+      save_maintenance: "حفظ سجل الصيانة",
+      maintenance_history: "سجل الصيانة",
+      maintenance_history_subtitle: "يظهر للإدارة والسائق المسؤول عن المركبة.",
+      maintenance_summary_title: "ملخص ميزانية الصيانة",
+      maintenance_summary_subtitle: "رشّح حسب التاريخ أو المركبة ثم صدّر النتائج.",
+      maintenance_required_fields: "يجب إدخال المركبة وتاريخ الصيانة والتكلفة ورقم الفاتورة.",
+      no_maintenance_records: "لا توجد سجلات صيانة بعد.",
+      maintenance_saved: "تم حفظ سجل الصيانة.",
+      records_count: "عدد السجلات",
+      maintenance_export: "تصدير ملف الصيانة",
+      all_vehicles: "جميع المركبات",
 
       main_storage: "المخزن الرئيسي",
       no_items_in: "لا توجد أصناف في",
@@ -1184,6 +1350,51 @@
     return v.plate ? `${v.name} (${v.plate})` : v.name;
   }
 
+  function vehicleOptionLabel(vehicle) {
+    if (!vehicle) return "";
+    return vehicle.plate ? `${vehicle.name} (${vehicle.plate})` : vehicle.name;
+  }
+
+  function getDriverVehicleIds(userId) {
+    if (!userId) return [];
+    return (state.carAssignments || [])
+      .filter((a) => a.driverUserId === userId)
+      .map((a) => a.vehicleId);
+  }
+
+  function getVehiclesForCurrentUser() {
+    if (!state.user) return [];
+    if (state.user.role === "admin" || state.user.role === "manager") {
+      return [...(state.vehicles || [])];
+    }
+    const ids = new Set(getDriverVehicleIds(state.user.id));
+    return (state.vehicles || []).filter((v) => ids.has(v.id));
+  }
+
+  function getVisibleMaintenanceEntries() {
+    const list = [...(state.carMaintenances || [])];
+    if (!state.user) return [];
+    if (state.user.role !== "driver") return list;
+    const allowedVehicles = new Set(getDriverVehicleIds(state.user.id));
+    return list.filter(
+      (entry) =>
+        entry.driverUserId === state.user.id ||
+        allowedVehicles.has(entry.vehicleId)
+    );
+  }
+
+  function maintenanceEntryTimestamp(entry) {
+    if (entry.maintenanceDate) {
+      const d = new Date(entry.maintenanceDate + "T00:00:00");
+      if (!Number.isNaN(d.getTime())) return d.getTime();
+    }
+    if (entry.createdAt) {
+      const d = new Date(entry.createdAt);
+      if (!Number.isNaN(d.getTime())) return d.getTime();
+    }
+    return null;
+  }
+
   // ----- API calls -----
   async function apiLogin(name, password) {
     const res = await fetch(`${API_BASE}/login`, {
@@ -1350,6 +1561,28 @@
     });
     const body = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(body.error || "Delete reminder failed");
+    return body;
+  }
+
+  async function apiCreateMaintenance(data) {
+    const res = await fetch(`${API_BASE}/car-maintenances`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId: state.user.id, ...data })
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(body.error || "Save maintenance failed");
+    return body;
+  }
+
+  async function apiMaintenanceSummary(params = {}) {
+    const query = new URLSearchParams({ userId: state.user.id });
+    if (params.vehicleId) query.set("vehicleId", params.vehicleId);
+    if (params.from) query.set("from", params.from);
+    if (params.to) query.set("to", params.to);
+    const res = await fetch(`${API_BASE}/maintenance-summary?${query.toString()}`);
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(body.error || "Summary failed");
     return body;
   }
 
@@ -1905,6 +2138,7 @@
   }
 
   function renderVehiclesUI() {
+    if (!state.user) return;
     const isAdmin = state.user.role === "admin";
     const isManager = state.user.role === "manager";
     const isDriver = state.user.role === "driver";
@@ -1933,7 +2167,7 @@
       if (addAll) {
         const all = document.createElement("option");
         all.value = "ALL";
-        all.textContent = (currentLang === "ar") ? "كل المركبات" : "All vehicles";
+        all.textContent = t("all_vehicles");
         sel.appendChild(all);
       }
       (state.vehicles || []).forEach((v) => {
@@ -1992,6 +2226,9 @@
 
     renderVehicleAssignmentsTable();
     renderRemindersTable();
+    renderMaintenanceForm();
+    renderMaintenanceHistoryTable();
+    renderMaintenanceSummaryBlock();
   }
 
   function renderVehicleAssignmentsTable() {
@@ -2087,6 +2324,311 @@
       `;
       tbody.appendChild(tr);
     });
+  }
+
+  function renderMaintenanceForm() {
+    const block = document.getElementById("maintenanceFormBlock");
+    if (!block) return;
+    if (!state.user) {
+      block.style.display = "none";
+      return;
+    }
+    const isAdmin = state.user.role === "admin";
+    const isManager = state.user.role === "manager";
+    const isDriver = state.user.role === "driver";
+    const availableVehicles = getVehiclesForCurrentUser();
+    const showForm = isAdmin || isManager || (isDriver && availableVehicles.length);
+    block.style.display = showForm ? "block" : "none";
+
+    const driverField = document.getElementById("maintDriverField");
+    if (driverField) driverField.style.display = (isAdmin || isManager) ? "block" : "none";
+
+    const vehicleSelect = document.getElementById("maintVehicleSelect");
+    if (vehicleSelect) {
+      const prev = vehicleSelect.value;
+      vehicleSelect.innerHTML = "";
+      const placeholder = document.createElement("option");
+      placeholder.value = "";
+      placeholder.textContent = t("select_vehicle_msg");
+      vehicleSelect.appendChild(placeholder);
+      availableVehicles.forEach((v) => {
+        const opt = document.createElement("option");
+        opt.value = v.id;
+        opt.textContent = vehicleOptionLabel(v);
+        vehicleSelect.appendChild(opt);
+      });
+      if (prev && availableVehicles.some((v) => v.id === prev)) {
+        vehicleSelect.value = prev;
+      } else if (availableVehicles.length === 1) {
+        vehicleSelect.value = availableVehicles[0].id;
+      } else {
+        vehicleSelect.value = "";
+      }
+    }
+
+    const driverSelect = document.getElementById("maintDriverSelect");
+    if (driverSelect) {
+      if (isAdmin || isManager) {
+        const prev = driverSelect.value;
+        driverSelect.innerHTML = "";
+        const placeholder = document.createElement("option");
+        placeholder.value = "";
+        placeholder.textContent = t("select_driver_msg");
+        driverSelect.appendChild(placeholder);
+        (state.users || [])
+          .filter((u) => u.role === "driver")
+          .sort((a, b) => a.name.localeCompare(b.name))
+          .forEach((driver) => {
+            const opt = document.createElement("option");
+            opt.value = driver.id;
+            opt.textContent = driver.name;
+            driverSelect.appendChild(opt);
+          });
+        if (prev && driverSelect.querySelector(`option[value="${prev}"]`)) {
+          driverSelect.value = prev;
+        } else {
+          driverSelect.value = "";
+        }
+      } else {
+        driverSelect.innerHTML = "";
+        const opt = document.createElement("option");
+        opt.value = state.user.id;
+        opt.textContent = state.user.name;
+        driverSelect.appendChild(opt);
+        driverSelect.value = state.user.id;
+      }
+    }
+  }
+
+  function renderMaintenanceHistoryTable() {
+    const tbody = document.getElementById("maintenanceTableBody");
+    if (!tbody) return;
+    tbody.innerHTML = "";
+    if (!state.user) return;
+
+    const filterSelect = document.getElementById("maintenanceHistoryVehicleSelect");
+    if (filterSelect) {
+      const prev = filterSelect.value;
+      filterSelect.innerHTML = "";
+      const allOpt = document.createElement("option");
+      allOpt.value = "ALL";
+      allOpt.textContent = t("all_vehicles");
+      filterSelect.appendChild(allOpt);
+      getVehiclesForCurrentUser().forEach((v) => {
+        const opt = document.createElement("option");
+        opt.value = v.id;
+        opt.textContent = vehicleOptionLabel(v);
+        filterSelect.appendChild(opt);
+      });
+      if (prev && filterSelect.querySelector(`option[value="${prev}"]`)) {
+        filterSelect.value = prev;
+      } else {
+        filterSelect.value = "ALL";
+      }
+    }
+
+    const filterValue = filterSelect ? filterSelect.value : "ALL";
+    let list = getVisibleMaintenanceEntries();
+    if (filterValue && filterValue !== "ALL") {
+      list = list.filter((entry) => entry.vehicleId === filterValue);
+    }
+
+    list.sort((a, b) => {
+      const aTime = maintenanceEntryTimestamp(a) || 0;
+      const bTime = maintenanceEntryTimestamp(b) || 0;
+      return bTime - aTime;
+    });
+
+    if (!list.length) {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td colspan="8" class="text-muted">${t("no_maintenance_records")}</td>`;
+      tbody.appendChild(tr);
+      return;
+    }
+
+    list.forEach((entry) => {
+      const noteParts = [];
+      if (entry.note) noteParts.push(entry.note);
+      if (entry.storeName) noteParts.push(entry.storeName);
+      if (entry.place) noteParts.push(entry.place);
+      const noteText = noteParts.join(" • ");
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${escapeHtml(entry.maintenanceDate || "")}</td>
+        <td>${escapeHtml(vehicleNameById(entry.vehicleId))}</td>
+        <td>${escapeHtml(getUserName(entry.driverUserId))}</td>
+        <td>${Number(entry.price || 0).toFixed(3)}</td>
+        <td>${escapeHtml(entry.invoiceNo || "")}</td>
+        <td>${escapeHtml(entry.nextMaintenanceDate || "")}</td>
+        <td>${escapeHtml(noteText)}</td>
+        <td>${escapeHtml(formatDateTime(entry.createdAt))}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function renderMaintenanceSummaryBlock() {
+    const block = document.getElementById("maintenanceSummaryBlock");
+    if (!block) return;
+    const canSee = state.user && (state.user.role === "admin" || state.user.role === "manager");
+    block.style.display = canSee ? "block" : "none";
+    if (!canSee) return;
+
+    const select = document.getElementById("maintenanceSummaryVehicleSelect");
+    if (select) {
+      const prev = select.value;
+      select.innerHTML = "";
+      const allOpt = document.createElement("option");
+      allOpt.value = "ALL";
+      allOpt.textContent = t("all_vehicles");
+      select.appendChild(allOpt);
+      (state.vehicles || []).forEach((v) => {
+        const opt = document.createElement("option");
+        opt.value = v.id;
+        opt.textContent = vehicleOptionLabel(v);
+        select.appendChild(opt);
+      });
+      if (prev && select.querySelector(`option[value="${prev}"]`)) {
+        select.value = prev;
+      } else {
+        select.value = "ALL";
+      }
+    }
+    refreshMaintenanceSummary();
+  }
+
+  async function refreshMaintenanceSummary() {
+    if (!state.user || (state.user.role !== "admin" && state.user.role !== "manager")) return;
+    const totalEl = document.getElementById("maintenanceSummaryTotal");
+    const countEl = document.getElementById("maintenanceSummaryCount");
+    const tbody = document.getElementById("maintenanceSummaryTableBody");
+    if (tbody) tbody.innerHTML = "";
+    if (totalEl) totalEl.textContent = "...";
+    if (countEl) countEl.textContent = "...";
+
+    const fromInput = document.getElementById("maintenanceSummaryFrom");
+    const toInput = document.getElementById("maintenanceSummaryTo");
+    const vehicleSelect = document.getElementById("maintenanceSummaryVehicleSelect");
+    const vehicleId = vehicleSelect && vehicleSelect.value !== "ALL" ? vehicleSelect.value : undefined;
+
+    try {
+      const summary = await apiMaintenanceSummary({
+        from: fromInput && fromInput.value ? fromInput.value : undefined,
+        to: toInput && toInput.value ? toInput.value : undefined,
+        vehicleId
+      });
+
+      if (totalEl) totalEl.textContent = Number(summary.total || 0).toFixed(3);
+      if (countEl) countEl.textContent = summary.count || 0;
+
+      if (tbody) {
+        const entries = Object.entries(summary.byCar || {});
+        if (!entries.length) {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `<td colspan="2" class="text-muted">${t("no_maintenance_records")}</td>`;
+          tbody.appendChild(tr);
+        } else {
+          entries
+            .sort((a, b) => Number(b[1]) - Number(a[1]))
+            .forEach(([vehicleIdKey, total]) => {
+              const tr = document.createElement("tr");
+              tr.innerHTML = `
+                <td>${escapeHtml(vehicleNameById(vehicleIdKey))}</td>
+                <td>${Number(total || 0).toFixed(3)}</td>
+              `;
+              tbody.appendChild(tr);
+            });
+        }
+      }
+    } catch (err) {
+      if (totalEl) totalEl.textContent = "0";
+      if (countEl) countEl.textContent = "0";
+      if (tbody) {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td colspan="2" class="text-muted">${escapeHtml(err.message || "Error")}</td>`;
+        tbody.appendChild(tr);
+      }
+      alert(err.message);
+    }
+  }
+
+  function exportMaintenanceCsv() {
+    if (!state.user || (state.user.role !== "admin" && state.user.role !== "manager")) return;
+    const vehicleSelect = document.getElementById("maintenanceSummaryVehicleSelect");
+    const fromInput = document.getElementById("maintenanceSummaryFrom");
+    const toInput = document.getElementById("maintenanceSummaryTo");
+    const vehicleId = vehicleSelect && vehicleSelect.value !== "ALL" ? vehicleSelect.value : null;
+    const from = fromInput && fromInput.value ? fromInput.value : "";
+    const to = toInput && toInput.value ? toInput.value : "";
+
+    let list = [...(state.carMaintenances || [])];
+    if (vehicleId) list = list.filter((entry) => entry.vehicleId === vehicleId);
+
+    const fromDate = from ? new Date(from + "T00:00:00") : null;
+    const toDate = to ? new Date(to + "T23:59:59") : null;
+
+    list = list.filter((entry) => {
+      const ts = maintenanceEntryTimestamp(entry);
+      if (ts === null) return true;
+      if (fromDate && ts < fromDate.getTime()) return false;
+      if (toDate && ts > toDate.getTime()) return false;
+      return true;
+    });
+
+    if (!list.length) {
+      alert(t("no_maintenance_records"));
+      return;
+    }
+
+    list.sort((a, b) => {
+      const aTime = maintenanceEntryTimestamp(a) || 0;
+      const bTime = maintenanceEntryTimestamp(b) || 0;
+      return aTime - bTime;
+    });
+
+    const header = [
+      t("maintenance_date"),
+      t("vehicle"),
+      t("th_driver"),
+      t("maintenance_price"),
+      t("invoice_number"),
+      t("next_maintenance_date"),
+      t("store_name"),
+      t("maintenance_place"),
+      t("note"),
+      t("th_time")
+    ];
+
+    const rows = [header];
+    list.forEach((entry) => {
+      rows.push([
+        entry.maintenanceDate || "",
+        vehicleNameById(entry.vehicleId),
+        getUserName(entry.driverUserId),
+        Number(entry.price || 0).toFixed(3),
+        entry.invoiceNo || "",
+        entry.nextMaintenanceDate || "",
+        entry.storeName || "",
+        entry.place || "",
+        entry.note || "",
+        formatDateTime(entry.createdAt)
+      ]);
+    });
+
+    const csvContent = rows.map((row) => row.map(csvEscape).join(",")).join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+
+    const nameParts = ["maintenance-report"];
+    if (from) nameParts.push(`from-${from}`);
+    if (to) nameParts.push(`to-${to}`);
+    link.href = url;
+    link.download = `${nameParts.join("-")}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   }
 
   function showApp() {
@@ -2650,6 +3192,95 @@
       }
     }
   });
+
+  const maintenanceHistorySelect = document.getElementById("maintenanceHistoryVehicleSelect");
+  if (maintenanceHistorySelect) {
+    maintenanceHistorySelect.addEventListener("change", renderMaintenanceHistoryTable);
+  }
+
+  const saveMaintenanceBtn = document.getElementById("saveMaintenanceBtn");
+  if (saveMaintenanceBtn) {
+    saveMaintenanceBtn.addEventListener("click", async () => {
+      if (!state.user) return;
+      const vehicleSelect = document.getElementById("maintVehicleSelect");
+      const driverSelect = document.getElementById("maintDriverSelect");
+      const dateInput = document.getElementById("maintDateInput");
+      const nextDateInput = document.getElementById("maintNextDateInput");
+      const priceInput = document.getElementById("maintPriceInput");
+      const invoiceInput = document.getElementById("maintInvoiceInput");
+      const noteInput = document.getElementById("maintNoteInput");
+      const placeInput = document.getElementById("maintPlaceInput");
+      const storeInput = document.getElementById("maintStoreInput");
+
+      const vehicleId = vehicleSelect ? vehicleSelect.value : "";
+      const maintenanceDate = dateInput ? dateInput.value : "";
+      const nextMaintenanceDate = nextDateInput && nextDateInput.value ? nextDateInput.value : null;
+      const invoiceNo = invoiceInput ? invoiceInput.value.trim() : "";
+      const priceRaw = priceInput ? priceInput.value : "";
+      const price = Number(priceRaw);
+      const note = noteInput ? noteInput.value.trim() : "";
+      const place = placeInput ? placeInput.value.trim() : "";
+      const storeName = storeInput ? storeInput.value.trim() : "";
+      const driverUserId = driverSelect ? driverSelect.value : state.user.id;
+
+      if (!vehicleId || !maintenanceDate || !invoiceNo || !Number.isFinite(price)) {
+        alert(t("maintenance_required_fields"));
+        return;
+      }
+
+      try {
+        await apiCreateMaintenance({
+          vehicleId,
+          maintenanceDate,
+          nextMaintenanceDate,
+          price,
+          invoiceNo,
+          place,
+          storeName,
+          note,
+          driverUserId: driverUserId || undefined
+        });
+
+        await refreshAllState();
+        renderVehiclesUI();
+        if (invoiceInput) invoiceInput.value = "";
+        if (priceInput) priceInput.value = "";
+        if (noteInput) noteInput.value = "";
+        if (placeInput) placeInput.value = "";
+        if (storeInput) storeInput.value = "";
+        alert(t("maintenance_saved"));
+      } catch (err) {
+        alert(err.message);
+      }
+    });
+  }
+
+  const maintenanceRefreshBtn = document.getElementById("maintenanceRefreshBtn");
+  if (maintenanceRefreshBtn) {
+    maintenanceRefreshBtn.addEventListener("click", async () => {
+      await refreshAllState();
+      renderVehiclesUI();
+    });
+  }
+
+  const maintenanceSummaryApplyBtn = document.getElementById("maintenanceSummaryApplyBtn");
+  if (maintenanceSummaryApplyBtn) {
+    maintenanceSummaryApplyBtn.addEventListener("click", () => {
+      refreshMaintenanceSummary();
+    });
+  }
+
+  const maintenanceSummaryVehicleSelect = document.getElementById("maintenanceSummaryVehicleSelect");
+  if (maintenanceSummaryVehicleSelect) {
+    maintenanceSummaryVehicleSelect.addEventListener("change", () => {
+      refreshMaintenanceSummary();
+    });
+  }
+
+  const maintenanceExportBtn = document.getElementById("maintenanceExportBtn");
+  if (maintenanceExportBtn) {
+    maintenanceExportBtn.addEventListener("click", exportMaintenanceCsv);
+  }
 
   // initial i18n
   applyTranslations();
