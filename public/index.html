@@ -42,6 +42,8 @@
     .pill-open { background: #fef3c7; color: #92400e; }
     .pill-done { background: #dcfce7; color: #166534; }
     .table-wrapper { width: 100%; overflow-x: auto; margin-top: 0.4rem; }
+    .pagination-controls { display: flex; justify-content: space-between; align-items: center; gap: 0.75rem; flex-wrap: wrap; margin-top: 0.4rem; }
+    .pagination-controls .page-buttons { display: flex; align-items: center; gap: 0.4rem; }
     .danger { color: #b91c1c; font-weight: 700; }
     /* Login card */
     #loginView { max-width: 640px; margin: 2.5rem auto; padding: 0 1rem; }
@@ -149,6 +151,21 @@
         <tbody id="itemsTableBody"></tbody>
       </table>
     </div>
+    <div class="pagination-controls">
+      <div>
+        <label data-i18n="items_per_page">Items per page</label>
+        <select id="inventoryPageSizeSelect">
+          <option value="20">20</option>
+          <option value="40">40</option>
+          <option value="80">80</option>
+        </select>
+      </div>
+      <div class="page-buttons">
+        <button id="inventoryPrevBtn" class="btn btn-secondary btn-sm">&lt;</button>
+        <span id="inventoryPageInfo" class="text-muted"></span>
+        <button id="inventoryNextBtn" class="btn btn-secondary btn-sm">&gt;</button>
+      </div>
+    </div>
 
     <div class="summary-row mt-sm">
       <div class="summary-card">
@@ -178,10 +195,10 @@
     <!-- Add/update items -->
     <div class="panel-section-title mt-md" data-i18n="add_update_items">Add / update items (Admin & Manager)</div>
 
-    <!-- NEW: select existing item to edit -->
+    <!-- select existing item to edit -->
     <div class="grid mt-xs">
       <div>
-        <label>Select item to edit (optional)</label>
+        <label data-i18n="select_item_to_edit">Select item to edit (optional)</label>
         <select id="itemEditSelect"></select>
       </div>
     </div>
@@ -217,7 +234,7 @@
 
     <div class="mt-sm" style="display:flex;gap:0.5rem;flex-wrap:wrap;">
       <button id="addItemBtn" class="btn btn-primary" data-i18n="save_item">Save item</button>
-      <button id="updateItemBtn" class="btn btn-secondary">Update item</button>
+      <button id="updateItemBtn" class="btn btn-secondary" data-i18n="update_item">Update item</button>
     </div>
   </section>
 
@@ -330,6 +347,7 @@
       </div>
       <div>
         <label data-i18n="item_from_storage">Item (from storage)</label>
+        <input id="requestItemSearchInput" placeholder="Type to filter items" style="margin-top:0.25rem;" />
         <select id="requestItemSelect"></select>
       </div>
     </div>
@@ -476,7 +494,10 @@
         <input id="analyticsToDate" type="date" />
       </div>
     </div>
-    <button id="analyticsApplyBtn" class="btn btn-primary mt-sm" data-i18n="apply_filters">Apply filters</button>
+    <div style="display:flex;gap:0.6rem;flex-wrap:wrap;margin-top:0.6rem;">
+      <button id="analyticsApplyBtn" class="btn btn-primary" data-i18n="apply_filters">Apply filters</button>
+      <button id="exportMonthlyReportBtn" class="btn btn-secondary" data-i18n="export_monthly_report">Export monthly report</button>
+    </div>
 
     <div class="summary-row mt-sm">
       <div class="summary-card">
@@ -568,6 +589,44 @@
       </div>
     </div>
 
+    <div class="panel-section-title mt-md" data-i18n="vehicle_assignments">Vehicle assignments</div>
+    <div class="panel-subtitle" data-i18n="vehicle_assignments_subtitle">Assign drivers to vehicles and keep a hand over log.</div>
+    <div class="table-wrapper mt-sm">
+      <table>
+        <thead>
+        <tr>
+          <th data-i18n="vehicle">Vehicle</th>
+          <th data-i18n="th_driver">Driver</th>
+          <th data-i18n="note">Note</th>
+          <th data-i18n="assigned_at">Assigned at</th>
+          <th data-i18n="assigned_by">Assigned by</th>
+        </tr>
+        </thead>
+        <tbody id="vehicleAssignmentsTableBody"></tbody>
+      </table>
+    </div>
+
+    <div id="vehicleAssignFormBlock" class="mt-md" style="display:none;">
+      <div class="panel-section-title" data-i18n="assign_vehicle_title">Assign / hand over vehicle</div>
+      <div class="grid mt-xs">
+        <div>
+          <label data-i18n="vehicle">Vehicle</label>
+          <select id="assignVehicleSelect"></select>
+        </div>
+        <div>
+          <label data-i18n="th_driver">Driver</label>
+          <select id="assignDriverSelect"></select>
+        </div>
+        <div>
+          <label data-i18n="note">Note</label>
+          <input id="assignNoteInput" />
+        </div>
+      </div>
+      <div class="mt-sm" style="display:flex;justify-content:flex-end;">
+        <button id="assignVehicleBtn" class="btn btn-primary" data-i18n="assign_vehicle_btn">Assign vehicle</button>
+      </div>
+    </div>
+
     <div class="panel-section-title mt-md" data-i18n="reminders">Reminders</div>
     <div class="toolbar">
       <div>
@@ -608,7 +667,46 @@
 </main>
 
 <script>
-  const API_BASE = "/api";
+  /**
+   * ✅ UPDATED FOR YOUR NEW BACKEND:
+   * - API_BASE supports both same-origin (/api) AND external backend via ?api=... or localStorage
+   * - item update requires branchId, and edit select uses id::branchId (unique key)
+   * - main storage branch id supports override via ?storage=B001 or localStorage (matches env MAIN_STORAGE_BRANCH_ID)
+   */
+
+  // ---------- API + Main Storage config ----------
+  function normalizeBase(url) {
+    if (!url) return "";
+    return String(url).replace(/\/+$/, "");
+  }
+
+  function getApiBase() {
+    // priority: query string ?api= -> localStorage -> same-origin (/api)
+    const p = new URLSearchParams(location.search);
+    const q = p.get("api");
+    if (q) {
+      const full = normalizeBase(q);
+      localStorage.setItem("API_BASE_OVERRIDE", full);
+      return full;
+    }
+    const saved = localStorage.getItem("API_BASE_OVERRIDE");
+    if (saved) return normalizeBase(saved);
+    return "/api";
+  }
+
+  function getMainStorageOverride() {
+    // priority: query string ?storage= -> localStorage -> fallback "B001"
+    const p = new URLSearchParams(location.search);
+    const q = p.get("storage");
+    if (q) {
+      localStorage.setItem("MAIN_STORAGE_BRANCH_ID", q);
+      return q;
+    }
+    return localStorage.getItem("MAIN_STORAGE_BRANCH_ID") || "B001";
+  }
+
+  const API_BASE = getApiBase();
+  const MAIN_STORAGE_BRANCH_ID = getMainStorageOverride();
 
   // ---------- i18n ----------
   const i18n = {
@@ -651,11 +749,18 @@
       main_storage_value: "Main Storage value (KWD)",
       restock_alerts: "Restock alerts (Main Storage)",
       add_update_items: "Add / update items (Admin & Manager)",
+      select_item_to_edit: "Select item to edit (optional)",
+      update_item: "Update item",
       item_id_auto: "Item ID (auto)",
       item_branch_where: "Branch (where item lives)",
       base_quantity: "Base quantity",
       minimum_quantity: "Minimum quantity (alert)",
       save_item: "Save item",
+      items_per_page: "Items per page",
+      page_word: "Page",
+      of_word: "of",
+      showing: "Showing",
+      no_items: "No items",
 
       users_branches: "Users & branches",
       users_subtitle: "Admin can create, edit and delete users and assign them to branches.",
@@ -675,6 +780,8 @@
       from_storage: "From storage",
       to_branch: "To branch",
       item_from_storage: "Item (from storage)",
+      search_items_placeholder: "Type to filter items",
+      no_items_match_search: "No items match your search.",
       quantity: "Quantity",
       note: "Note",
       create_request: "Create request",
@@ -698,9 +805,19 @@
       delivered_requests: "Delivered requests",
       total_quantity: "Total quantity",
       most_ordered: "Most ordered items (by cost)",
+      export_monthly_report: "Export monthly report",
+      report_date_required: "Select both dates before exporting.",
+      no_orders_in_range: "No delivered orders in this range.",
 
       vehicle_reminders: "Vehicle reminders",
       vehicle_subtitle: "Oil change, meter, yearly renewal. Admin/Manager can add; Driver can mark done.",
+      vehicle_assignments: "Vehicle assignments",
+      vehicle_assignments_subtitle: "Assign drivers or hand over vehicles between drivers.",
+      assign_vehicle_title: "Assign / hand over vehicle",
+      assign_vehicle_btn: "Assign vehicle",
+      assigned_at: "Assigned at",
+      assigned_by: "Assigned by",
+      no_assignments: "No vehicle assignments yet.",
       add_vehicle: "Add vehicle (Admin/Manager)",
       vehicle_name: "Vehicle name",
       plate_optional: "Plate (optional)",
@@ -719,12 +836,10 @@
       no_items_in: "No items in",
       no_low_stock: "No low stock alerts in Main Storage.",
 
-      // statuses / actions
       pending: "pending",
       delivered: "delivered",
       deliver: "Deliver",
 
-      // alerts / validations (JS)
       enter_user_pass: "Enter username and password.",
       login_failed: "Login failed",
       load_state_failed: "Load state failed",
@@ -755,6 +870,12 @@
 
       vehicle_name_required_msg: "Vehicle name required",
       select_vehicle_msg: "Select a vehicle",
+      select_driver_msg: "Select a driver",
+      only_admin_mgr_assign: "Only admins/managers or drivers with the vehicle can assign it.",
+      handover_not_allowed: "Only admin, manager, or the assigned driver can hand over a vehicle.",
+      drivers_only_their_cars: "Drivers can only hand over cars currently assigned to them.",
+      select_other_driver: "Select another driver.",
+      vehicle_assigned_success: "Vehicle assignment saved.",
       no_reminders: "No reminders.",
 
       reopen: "Re-open",
@@ -801,6 +922,8 @@
       main_storage_value: "قيمة المخزن الرئيسي (د.ك)",
       restock_alerts: "تنبيهات إعادة التوريد (المخزن الرئيسي)",
       add_update_items: "إضافة / تعديل الأصناف (مدير/مشرف)",
+      select_item_to_edit: "اختر صنف للتعديل (اختياري)",
+      update_item: "تحديث الصنف",
       item_id_auto: "رقم الصنف (تلقائي)",
       item_branch_where: "الفرع (مكان الصنف)",
       base_quantity: "الكمية الأساسية",
@@ -825,6 +948,8 @@
       from_storage: "من المخزن",
       to_branch: "إلى الفرع",
       item_from_storage: "الصنف (من المخزن)",
+      search_items_placeholder: "اكتب بعض الحروف لتصفية الأصناف",
+      no_items_match_search: "لا توجد أصناف مطابقة لبحثك.",
       quantity: "الكمية",
       note: "ملاحظة",
       create_request: "إنشاء طلب",
@@ -851,6 +976,13 @@
 
       vehicle_reminders: "تنبيهات المركبات",
       vehicle_subtitle: "تغيير زيت، عداد، تجديد سنوي. المدير/المشرف يضيفون؛ السائق يعلّم منجز.",
+      vehicle_assignments: "تسليم المركبات",
+      vehicle_assignments_subtitle: "تعيين السائقين وتسليم المركبات بينهم.",
+      assign_vehicle_title: "تسليم / نقل مركبة",
+      assign_vehicle_btn: "تسليم المركبة",
+      assigned_at: "تاريخ التسليم",
+      assigned_by: "سُلّمت بواسطة",
+      no_assignments: "لا توجد مركبات مسلّمة بعد.",
       add_vehicle: "إضافة مركبة (مدير/مشرف)",
       vehicle_name: "اسم المركبة",
       plate_optional: "اللوحة (اختياري)",
@@ -903,6 +1035,12 @@
 
       vehicle_name_required_msg: "اسم المركبة مطلوب",
       select_vehicle_msg: "اختر مركبة",
+      select_driver_msg: "اختر السائق",
+      only_admin_mgr_assign: "فقط المدير أو المشرف أو السائق المسؤول يمكنه تسليم المركبة.",
+      handover_not_allowed: "لا يمكن تسليم المركبة إلا للمدير أو المشرف أو السائق المعين عليه.",
+      drivers_only_their_cars: "يمكن للسائق تسليم المركبات التي هي تحت عهدته فقط.",
+      select_other_driver: "اختر سائقاً آخر.",
+      vehicle_assigned_success: "تم حفظ تسليم المركبة.",
       no_reminders: "لا توجد تذكيرات.",
 
       reopen: "إعادة فتح",
@@ -927,7 +1065,6 @@
       el.textContent = t(key);
     });
 
-    // keep role options translated visually (optional)
     const roleOptions = [
       { value: "staff", en: "Staff", ar: "موظف" },
       { value: "manager", en: "Manager", ar: "مدير" },
@@ -942,7 +1079,6 @@
       });
     });
 
-    // movement type options (optional)
     const movementTypeSelect = document.getElementById("movementTypeSelect");
     if (movementTypeSelect) {
       const inOpt = movementTypeSelect.querySelector('option[value="IN"]');
@@ -951,7 +1087,6 @@
       if (outOpt) outOpt.textContent = (currentLang === "ar") ? "إخراج (نقص)" : "OUT (remove)";
     }
 
-    // reminders filters (optional)
     const remFilterSelect = document.getElementById("remFilterSelect");
     if (remFilterSelect) {
       const openOpt = remFilterSelect.querySelector('option[value="open"]');
@@ -976,6 +1111,9 @@
 
     const langBtn = document.getElementById("langBtn");
     if (langBtn) langBtn.textContent = (currentLang === "ar") ? "EN" : "AR";
+
+    const requestSearchInput = document.getElementById("requestItemSearchInput");
+    if (requestSearchInput) requestSearchInput.placeholder = t("search_items_placeholder");
   }
   // ---------- end i18n ----------
 
@@ -988,12 +1126,20 @@
     budgets: [],
     requests: [],
     vehicles: [],
-    vehicleReminders: []
+    vehicleReminders: [],
+    carAssignments: [],
+    carMaintenances: [],
+    inventoryPage: 1,
+    inventoryPageSize: 40
   };
 
-  // ----- Helpers -----
   function escapeHtml(s) {
-    return String(s || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
+    return String(s || "")
+      .replace(/&/g,"&amp;")
+      .replace(/</g,"&lt;")
+      .replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;")
+      .replace(/'/g,"&#039;");
   }
 
   function getBranchName(id) {
@@ -1013,11 +1159,16 @@
     if (Number.isNaN(d.getTime())) return iso;
     return d.toLocaleString();
   }
+
+  // ✅ UPDATED: uses MAIN_STORAGE_BRANCH_ID override (matches your server env)
   function getMainStorageId() {
-    const byId = state.branches.find((b) => b.id === "B001");
+    const preferred = MAIN_STORAGE_BRANCH_ID || "B001";
+    const byId = state.branches.find((b) => b.id === preferred);
     if (byId) return byId.id;
+
     const byName = state.branches.find((b) => (b.name || "").toLowerCase().includes("main"));
     if (byName) return byName.id;
+
     return state.branches[0] ? state.branches[0].id : null;
   }
 
@@ -1103,7 +1254,6 @@
     return body;
   }
 
-  // NEW: update item (admin/manager)
   async function apiUpdateItem(id, data) {
     const res = await fetch(`${API_BASE}/items/${encodeURIComponent(id)}`, {
       method: "PATCH",
@@ -1156,6 +1306,17 @@
     });
     const body = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(body.error || "Create vehicle failed");
+    return body;
+  }
+
+  async function apiAssignVehicle(vehicleId, driverUserId, note) {
+    const res = await fetch(`${API_BASE}/car-assignments`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId: state.user.id, vehicleId, driverUserId, note })
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(body.error || "Assign vehicle failed");
     return body;
   }
 
@@ -1234,7 +1395,6 @@
       });
     });
 
-    // inventory viewer select
     const invSel = document.getElementById("inventoryViewBranchSelect");
     if (invSel) {
       invSel.innerHTML = "";
@@ -1253,7 +1413,6 @@
     if (fromLabel) fromLabel.textContent = getBranchName(getMainStorageId());
     if (toLabel && state.user && state.user.branchId) toLabel.textContent = getBranchName(state.user.branchId);
 
-    // Analytics branch select
     const analyticsBranchSelect = document.getElementById("analyticsBranchSelect");
     if (analyticsBranchSelect) {
       analyticsBranchSelect.innerHTML = "";
@@ -1270,7 +1429,7 @@
     }
   }
 
-  // NEW: fill select with all items for editing
+  // ✅ IMPORTANT: value is id::branchId (because update requires branchId + item id not unique across branches)
   function renderItemEditSelect() {
     const sel = document.getElementById("itemEditSelect");
     if (!sel) return;
@@ -1318,12 +1477,32 @@
     if (storageTotalEl) storageTotalEl.textContent = storageTotal.toFixed(3);
 
     const sorted = [...itemsSelected].sort((a,b)=> (a.name||"").localeCompare(b.name||""));
+
+    const pageSize = Number(state.inventoryPageSize) || 40;
+    const pageSizeSelect = document.getElementById("inventoryPageSizeSelect");
+    if (pageSizeSelect) pageSizeSelect.value = String(pageSize);
+
+    let totalPages = Math.max(1, Math.ceil(sorted.length / pageSize || 1));
+    if (!sorted.length) totalPages = 1;
+    if (state.inventoryPage > totalPages) state.inventoryPage = totalPages;
+    if (state.inventoryPage < 1) state.inventoryPage = 1;
+
+    const startIdx = (state.inventoryPage - 1) * pageSize;
+    const paged = sorted.slice(startIdx, startIdx + pageSize);
+
+    const pageInfo = document.getElementById("inventoryPageInfo");
+    const prevBtn = document.getElementById("inventoryPrevBtn");
+    const nextBtn = document.getElementById("inventoryNextBtn");
+
     if (!sorted.length) {
       const tr = document.createElement("tr");
       tr.innerHTML = `<td colspan="7" class="text-muted">${t("no_items_in")} ${escapeHtml(getBranchName(selectedBranchId))}.</td>`;
       tbody.appendChild(tr);
+      if (pageInfo) pageInfo.textContent = t("no_items");
+      if (prevBtn) prevBtn.disabled = true;
+      if (nextBtn) nextBtn.disabled = true;
     } else {
-      sorted.forEach((it) => {
+      paged.forEach((it) => {
         const value = (Number(it.baseQty)||0) * (Number(it.unitCost)||0);
         const low = it.minQty > 0 && Number(it.baseQty||0) <= Number(it.minQty||0);
         const tr = document.createElement("tr");
@@ -1338,9 +1517,15 @@
         `;
         tbody.appendChild(tr);
       });
+      if (pageInfo) {
+        const startNum = startIdx + 1;
+        const endNum = startIdx + paged.length;
+        pageInfo.textContent = `${t("page_word")} ${state.inventoryPage} ${t("of_word")} ${totalPages} • ${t("showing")} ${startNum}-${endNum} ${t("of_word")} ${sorted.length}`;
+      }
+      if (prevBtn) prevBtn.disabled = state.inventoryPage <= 1;
+      if (nextBtn) nextBtn.disabled = state.inventoryPage >= totalPages;
     }
 
-    // Alerts ONLY for Main Storage
     if (alertsBody) {
       const lowItems = itemsMain.filter(it => it.minQty > 0 && Number(it.baseQty||0) <= Number(it.minQty||0));
       if (!lowItems.length) {
@@ -1375,7 +1560,6 @@
       });
     }
 
-    // NEW: update edit-items select when inventory changes
     renderItemEditSelect();
   }
 
@@ -1383,16 +1567,45 @@
     const itemSel = document.getElementById("requestItemSelect");
     if (!itemSel) return;
     const storageId = getMainStorageId();
-    itemSel.innerHTML = "";
+    const searchInput = document.getElementById("requestItemSearchInput");
+    const term = (searchInput?.value || "").trim().toLowerCase();
+    const prev = itemSel.value;
+
     const items = state.items.filter((it) => it.branchId === storageId);
     items.sort((a,b)=>(a.name||"").localeCompare(b.name||""));
-    items.forEach((it, idx) => {
+    const filtered = term
+      ? items.filter((it) => {
+          const hay = `${it.id || ""} ${it.name || ""}`.toLowerCase();
+          return hay.includes(term);
+        })
+      : items;
+
+    itemSel.innerHTML = "";
+
+    if (!filtered.length) {
+      const opt = document.createElement("option");
+      opt.value = "";
+      opt.textContent = items.length ? t("no_items_match_search") : `${t("no_items_in")} ${getBranchName(storageId)}`;
+      opt.disabled = true;
+      opt.selected = true;
+      itemSel.appendChild(opt);
+      return;
+    }
+
+    let selectedValue = "";
+    filtered.forEach((it) => {
       const opt = document.createElement("option");
       opt.value = it.id;
       opt.textContent = `${it.name} (${t("main_storage")})`;
-      if (idx === 0) opt.selected = true;
+      if (it.id === prev) selectedValue = prev;
       itemSel.appendChild(opt);
     });
+
+    if (selectedValue) {
+      itemSel.value = selectedValue;
+    } else {
+      itemSel.value = filtered[0].id;
+    }
   }
 
   function renderUsersTable() {
@@ -1423,38 +1636,51 @@
   }
 
   function renderRequestsTable() {
-    const tbody = document.getElementById("requestsTableBody");
-    tbody.innerHTML = "";
-    const all = [...state.requests].sort((a,b)=> new Date(b.createdAt)-new Date(a.createdAt));
+  const tbody = document.getElementById("requestsTableBody");
+  tbody.innerHTML = "";
+  const all = [...state.requests].sort(
+    (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+  );
 
-    const visible = (state.user.role === "driver")
-      ? all
-      : all.filter((r) => r.toBranchId === state.user.branchId);
+  let visible;
 
-    if (!visible.length) {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `<td colspan="8" class="text-muted">${t("no_requests_yet")}</td>`;
-      tbody.appendChild(tr);
-      return;
-    }
-
-    visible.forEach((r) => {
-      const item = getItemById(r.itemId);
-      const driverName = r.driverUserId ? getUserName(r.driverUserId) : "";
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${escapeHtml(r.id)}</td>
-        <td>${escapeHtml(item ? item.name : r.itemId)}</td>
-        <td>${escapeHtml(r.qty)}</td>
-        <td>${escapeHtml(getBranchName(r.fromBranchId))}</td>
-        <td>${escapeHtml(getBranchName(r.toBranchId))}</td>
-        <td><span class="pill pill-status ${escapeHtml(r.status)}">${t(r.status)}</span></td>
-        <td>${escapeHtml(getUserName(r.createdByUserId))}</td>
-        <td>${escapeHtml(driverName)}</td>
-      `;
-      tbody.appendChild(tr);
-    });
+  if (state.user.role === "driver") {
+    visible = all; // (driver normally uses driver panel, but keep safe)
+  } else if (state.user.role === "admin") {
+    // ✅ Admin sees ALL pending requests from ALL branches
+    visible = all.filter((r) => r.status === "pending");
+  } else {
+    // ✅ Staff/Manager: requests for their own branch (all statuses)
+    visible = all.filter((r) => r.toBranchId === state.user.branchId);
   }
+
+  if (!visible.length) {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td colspan="8" class="text-muted">${
+      state.user.role === "admin" ? t("no_pending_requests") : t("no_requests_yet")
+    }</td>`;
+    tbody.appendChild(tr);
+    return;
+  }
+
+  visible.forEach((r) => {
+    const item = getItemById(r.itemId);
+    const driverName = r.driverUserId ? getUserName(r.driverUserId) : "";
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${escapeHtml(r.id)}</td>
+      <td>${escapeHtml(item ? item.name : r.itemId)}</td>
+      <td>${escapeHtml(r.qty)}</td>
+      <td>${escapeHtml(getBranchName(r.fromBranchId))}</td>
+      <td>${escapeHtml(getBranchName(r.toBranchId))}</td>
+      <td><span class="pill pill-status ${escapeHtml(r.status)}">${t(r.status)}</span></td>
+      <td>${escapeHtml(getUserName(r.createdByUserId))}</td>
+      <td>${escapeHtml(driverName)}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
 
   function renderDriverRequestsTable() {
     const tbody = document.getElementById("driverRequestsTableBody");
@@ -1512,7 +1738,6 @@
     });
   }
 
-  // ----- Analytics: compute from delivered requests -----
   function computeAnalytics() {
     const branchSel = document.getElementById("analyticsBranchSelect");
     const fromInput = document.getElementById("analyticsFromDate");
@@ -1557,8 +1782,98 @@
     });
 
     const itemsArray = Array.from(itemStats.values()).sort((a,b)=> b.cost - a.cost);
-
     return { totalCost, totalQty, totalRequests: delivered.length, items: itemsArray };
+  }
+
+  function csvEscape(value) {
+    const str = String(value ?? "");
+    if (/[",\n]/.test(str)) {
+      return `"${str.replace(/"/g, '""')}"`;
+    }
+    return str;
+  }
+
+  function exportMonthlyReport() {
+    const fromInput = document.getElementById("analyticsFromDate");
+    const toInput = document.getElementById("analyticsToDate");
+    if (!fromInput || !toInput || !fromInput.value || !toInput.value) {
+      alert(t("report_date_required"));
+      return;
+    }
+
+    const fromDate = new Date(fromInput.value + "T00:00:00");
+    const toDate = new Date(toInput.value + "T23:59:59");
+    if (Number.isNaN(fromDate.getTime()) || Number.isNaN(toDate.getTime()) || fromDate > toDate) {
+      alert(t("report_date_required"));
+      return;
+    }
+
+    const storageId = getMainStorageId();
+    const filtered = (state.requests || []).filter((r) => {
+      if (r.status !== "delivered" || !r.createdAt) return false;
+      const created = new Date(r.createdAt);
+      if (Number.isNaN(created.getTime())) return false;
+      return created >= fromDate && created <= toDate;
+    });
+
+    if (!filtered.length) {
+      alert(t("no_orders_in_range"));
+      return;
+    }
+
+    const header = [
+      "Request ID",
+      "Created At",
+      "Delivered At",
+      "Branch",
+      "Item",
+      "Qty",
+      "Unit Cost",
+      "Total Cost",
+      "Driver",
+      "Note"
+    ];
+    const rows = [header];
+
+    let totalQty = 0;
+    let totalCost = 0;
+
+    filtered.forEach((r) => {
+      const branchName = getBranchName(r.toBranchId);
+      const item = state.items.find((it) => it.id === r.itemId && it.branchId === storageId) || getItemById(r.itemId) || {};
+      const unitCost = Number(item.unitCost || 0);
+      const qty = Number(r.qty || 0);
+      const cost = unitCost * qty;
+      totalQty += qty;
+      totalCost += cost;
+
+      rows.push([
+        r.id,
+        formatDateTime(r.createdAt),
+        r.deliveredAt ? formatDateTime(r.deliveredAt) : "",
+        branchName,
+        item.name || r.itemId,
+        qty,
+        unitCost.toFixed(3),
+        cost.toFixed(3),
+        r.driverUserId ? getUserName(r.driverUserId) : "",
+        r.note || ""
+      ]);
+    });
+
+    rows.push([]);
+    rows.push(["Totals", "", "", "", "", totalQty, "", totalCost.toFixed(3), "", ""]);
+
+    const csvContent = rows.map((row) => row.map(csvEscape).join(",")).join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `monthly-orders-${fromInput.value}-to-${toInput.value}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   }
 
   function renderAnalytics() {
@@ -1589,7 +1904,6 @@
     });
   }
 
-  // ----- Vehicle reminders -----
   function renderVehiclesUI() {
     const isAdmin = state.user.role === "admin";
     const isManager = state.user.role === "manager";
@@ -1597,12 +1911,21 @@
 
     const panel = document.getElementById("vehiclePanel");
     const createBlock = document.getElementById("vehicleCreateBlock");
+    const assignForm = document.getElementById("vehicleAssignFormBlock");
 
     if (panel) panel.style.display = (isAdmin || isManager || isDriver) ? "block" : "none";
     if (createBlock) createBlock.style.display = (isAdmin || isManager) ? "block" : "none";
+    if (assignForm) assignForm.style.display = (isAdmin || isManager || isDriver) ? "block" : "none";
 
     const remVehSel = document.getElementById("remVehicleSelect");
     const remVehFilter = document.getElementById("remVehicleFilterSelect");
+    const assignVehicleSelect = document.getElementById("assignVehicleSelect");
+    const assignDriverSelect = document.getElementById("assignDriverSelect");
+    const myVehicleIds = state.user
+      ? (state.carAssignments || [])
+          .filter((a) => a.driverUserId === state.user.id)
+          .map((a) => a.vehicleId)
+      : [];
 
     function fillSelect(sel, addAll) {
       if (!sel) return;
@@ -1625,7 +1948,86 @@
     fillSelect(remVehSel, false);
     fillSelect(remVehFilter, true);
 
+    if (assignVehicleSelect) {
+      const prev = assignVehicleSelect.value;
+      assignVehicleSelect.innerHTML = "";
+      const placeholder = document.createElement("option");
+      placeholder.value = "";
+      placeholder.textContent = t("select_vehicle_msg");
+      assignVehicleSelect.appendChild(placeholder);
+      const availableVehicles = (state.vehicles || []).filter((v) => {
+        if (isAdmin || isManager) return true;
+        return myVehicleIds.includes(v.id);
+      });
+      availableVehicles.forEach((v) => {
+        const opt = document.createElement("option");
+        opt.value = v.id;
+        opt.textContent = v.plate ? `${v.name} (${v.plate})` : v.name;
+        assignVehicleSelect.appendChild(opt);
+      });
+      let nextValue = "";
+      if (availableVehicles.some((v) => v.id === prev)) nextValue = prev;
+      else if (availableVehicles.length === 1) nextValue = availableVehicles[0].id;
+      assignVehicleSelect.value = nextValue;
+    }
+
+    if (assignDriverSelect) {
+      const prevDriver = assignDriverSelect.value;
+      assignDriverSelect.innerHTML = "";
+      const placeholder = document.createElement("option");
+      placeholder.value = "";
+      placeholder.textContent = t("select_driver_msg");
+      assignDriverSelect.appendChild(placeholder);
+      const drivers = (state.users || [])
+        .filter((u) => u.role === "driver" && (!isDriver || u.id !== state.user.id))
+        .sort((a, b) => a.name.localeCompare(b.name));
+      drivers.forEach((driver) => {
+        const opt = document.createElement("option");
+        opt.value = driver.id;
+        opt.textContent = driver.name;
+        assignDriverSelect.appendChild(opt);
+      });
+      assignDriverSelect.value = drivers.some((d) => d.id === prevDriver) ? prevDriver : "";
+    }
+
+    renderVehicleAssignmentsTable();
     renderRemindersTable();
+  }
+
+  function renderVehicleAssignmentsTable() {
+    const tbody = document.getElementById("vehicleAssignmentsTableBody");
+    if (!tbody) return;
+    tbody.innerHTML = "";
+    if (!state.user) return;
+
+    const canSeeAll = state.user.role === "admin" || state.user.role === "manager";
+    let list = state.carAssignments || [];
+    list = canSeeAll ? [...list] : list.filter((a) => a.driverUserId === state.user.id);
+
+    if (!list.length) {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td colspan="5" class="text-muted">${t("no_assignments")}</td>`;
+      tbody.appendChild(tr);
+      return;
+    }
+
+    list.sort((a, b) => {
+      const ad = a.assignedAt ? new Date(a.assignedAt).getTime() : 0;
+      const bd = b.assignedAt ? new Date(b.assignedAt).getTime() : 0;
+      return bd - ad;
+    });
+
+    list.forEach((assign) => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${escapeHtml(vehicleNameById(assign.vehicleId))}</td>
+        <td>${escapeHtml(getUserName(assign.driverUserId))}</td>
+        <td>${escapeHtml(assign.note || "")}</td>
+        <td>${escapeHtml(formatDateTime(assign.assignedAt))}</td>
+        <td>${escapeHtml(getUserName(assign.assignedByUserId))}</td>
+      `;
+      tbody.appendChild(tr);
+    });
   }
 
   function renderRemindersTable() {
@@ -1687,7 +2089,6 @@
     });
   }
 
-  // ----- UI toggling -----
   function showApp() {
     document.getElementById("loginView").style.display = "none";
     document.getElementById("appView").style.display = "block";
@@ -1716,6 +2117,10 @@
     state.requests = [];
     state.vehicles = [];
     state.vehicleReminders = [];
+    state.carAssignments = [];
+    state.carMaintenances = [];
+    state.inventoryPage = 1;
+    state.inventoryPageSize = 40;
     document.getElementById("appView").style.display = "none";
     document.getElementById("loginView").style.display = "block";
     renderHeader();
@@ -1736,6 +2141,8 @@
     state.requests = all.requests || [];
     state.vehicles = all.vehicles || [];
     state.vehicleReminders = all.vehicleReminders || [];
+    state.carAssignments = all.carAssignments || [];
+    state.carMaintenances = all.carMaintenances || [];
   }
 
   async function updateItemIdField() {
@@ -1754,7 +2161,6 @@
     localStorage.setItem("lang", currentLang);
     applyTranslations();
 
-    // Re-render dynamic texts
     renderBranchSelects();
     fillRequestItemsFromStorage();
     renderInventoryViewer();
@@ -1801,7 +2207,6 @@
       renderVehiclesUI();
 
       await updateItemIdField();
-
       showApp();
     } catch (e) {
       errorEl.textContent = e.message;
@@ -1812,11 +2217,17 @@
   document.getElementById("logoutBtn").addEventListener("click", logout);
 
   document.getElementById("inventoryViewBranchSelect").addEventListener("change", () => {
+    state.inventoryPage = 1;
     renderInventoryViewer();
+  });
+
+  document.getElementById("requestItemSearchInput").addEventListener("input", () => {
+    fillRequestItemsFromStorage();
   });
 
   document.getElementById("inventoryRefreshBtn").addEventListener("click", async () => {
     await refreshAllState();
+    state.inventoryPage = 1;
     renderBranchSelects();
     fillRequestItemsFromStorage();
     renderInventoryViewer();
@@ -1826,6 +2237,25 @@
     renderAnalytics();
     renderVehiclesUI();
     await updateItemIdField();
+  });
+
+  document.getElementById("inventoryPrevBtn").addEventListener("click", () => {
+    if (state.inventoryPage > 1) {
+      state.inventoryPage -= 1;
+      renderInventoryViewer();
+    }
+  });
+
+  document.getElementById("inventoryNextBtn").addEventListener("click", () => {
+    state.inventoryPage += 1;
+    renderInventoryViewer();
+  });
+
+  document.getElementById("inventoryPageSizeSelect").addEventListener("change", (e) => {
+    const val = Number(e.target.value) || 40;
+    state.inventoryPageSize = val;
+    state.inventoryPage = 1;
+    renderInventoryViewer();
   });
 
   // create user
@@ -1945,14 +2375,13 @@
       document.getElementById("itemUnitCostInput").value = "0";
 
       await updateItemIdField();
-      // reset select edit
       document.getElementById("itemEditSelect").value = "";
     } catch (e) {
       alert(e.message);
     }
   });
 
-  // NEW: when selecting an item to edit, fill the form
+  // ✅ Updated: selection uses "id::branchId"
   document.getElementById("itemEditSelect").addEventListener("change", async () => {
     const sel = document.getElementById("itemEditSelect");
     const val = sel.value;
@@ -1980,7 +2409,7 @@
     document.getElementById("itemUnitCostInput").value = item.unitCost ?? 0;
   });
 
-  // NEW: update existing item (admin/manager)
+  // ✅ IMPORTANT FIX: PATCH /items/:id requires branchId in body
   document.getElementById("updateItemBtn").addEventListener("click", async () => {
     if (!state.user || (state.user.role !== "admin" && state.user.role !== "manager")) {
       alert(t("only_admin_mgr_create_items"));
@@ -1989,22 +2418,20 @@
 
     const id = document.getElementById("itemIdInput").value.trim();
     const name = document.getElementById("itemNameInput").value.trim();
-    const branchId = document.getElementById("itemBranchSelect").value;
+    const branchId = document.getElementById("itemBranchSelect").value; // ✅ required
     const baseQty = Number(document.getElementById("itemBaseQtyInput").value || "0");
     const minQty = Number(document.getElementById("itemMinQtyInput").value || "0");
     const unitCost = Number(document.getElementById("itemUnitCostInput").value || "0");
 
     if (!id) {
-      alert(currentLang === "ar"
-        ? "اختاري صنف من القائمة أولاً"
-        : "Select an item first");
+      alert(currentLang === "ar" ? "اختاري صنف من القائمة أولاً" : "Select an item first");
       return;
     }
 
     try {
       const updatedItem = await apiUpdateItem(id, {
         userId: state.user.id,
-        branchId,
+        branchId, // ✅ required by backend
         name,
         baseQty,
         minQty,
@@ -2014,9 +2441,7 @@
       const idx = state.items.findIndex(
         (it) => it.id === updatedItem.id && it.branchId === updatedItem.branchId
       );
-      if (idx >= 0) {
-        state.items[idx] = updatedItem;
-      }
+      if (idx >= 0) state.items[idx] = updatedItem;
 
       renderInventoryViewer();
       fillRequestItemsFromStorage();
@@ -2108,6 +2533,7 @@
   document.getElementById("analyticsApplyBtn").addEventListener("click", () => {
     renderAnalytics();
   });
+  document.getElementById("exportMonthlyReportBtn").addEventListener("click", exportMonthlyReport);
 
   document.getElementById("addVehicleBtn").addEventListener("click", async () => {
     const name = document.getElementById("vehNameInput").value.trim();
@@ -2120,6 +2546,46 @@
       renderVehiclesUI();
       document.getElementById("vehNameInput").value = "";
       document.getElementById("vehPlateInput").value = "";
+    } catch (e) {
+      alert(e.message);
+    }
+  });
+
+  document.getElementById("assignVehicleBtn").addEventListener("click", async () => {
+    if (!state.user || !["admin", "manager", "driver"].includes(state.user.role)) {
+      alert(t("handover_not_allowed"));
+      return;
+    }
+    const vehicleId = document.getElementById("assignVehicleSelect").value;
+    const driverUserId = document.getElementById("assignDriverSelect").value;
+    const note = document.getElementById("assignNoteInput").value.trim();
+
+    if (!vehicleId) { alert(t("select_vehicle_msg")); return; }
+    if (!driverUserId) { alert(t("select_driver_msg")); return; }
+
+    if (state.user.role === "driver") {
+      if (driverUserId === state.user.id) {
+        alert(t("select_other_driver"));
+        return;
+      }
+      const ownsVehicle = (state.carAssignments || []).some(
+        (a) => a.vehicleId === vehicleId && a.driverUserId === state.user.id
+      );
+      if (!ownsVehicle) {
+        alert(t("drivers_only_their_cars"));
+        return;
+      }
+    }
+
+    try {
+      const assignment = await apiAssignVehicle(vehicleId, driverUserId, note);
+      state.carAssignments = (state.carAssignments || []).filter(
+        (a) => a.vehicleId !== assignment.vehicleId && a.driverUserId !== assignment.driverUserId
+      );
+      state.carAssignments.push(assignment);
+      document.getElementById("assignNoteInput").value = "";
+      renderVehiclesUI();
+      alert(t("vehicle_assigned_success"));
     } catch (e) {
       alert(e.message);
     }

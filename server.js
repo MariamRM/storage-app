@@ -1,3 +1,4 @@
+// server.js (UPDATED)
 const express = require("express");
 const cors = require("cors");
 const fs = require("fs").promises;
@@ -6,9 +7,7 @@ const path = require("path");
 const app = express();
 const PORT = process.env.PORT || 4000;
 
-// ✅ CHANGE: allow Render persistent disk path via env var
 const DATA_FILE = process.env.DATA_FILE || path.join(__dirname, "data.json");
-
 const MAIN_STORAGE_BRANCH_ID = process.env.MAIN_STORAGE_BRANCH_ID || "B001"; // change if needed
 
 app.use(cors());
@@ -32,9 +31,12 @@ async function loadData() {
     parsed.vehicles ||= [];
     parsed.vehicleReminders ||= [];
 
+    // ✅ NEW (for car handover + maintenance)
+    parsed.carAssignments ||= [];     // { id, vehicleId, driverUserId, assignedByUserId, assignedAt, note? }
+    parsed.carMaintenances ||= [];    // { id, vehicleId, driverUserId, maintenanceDate, nextMaintenanceDate, price, invoiceNo, place?, storeName?, note?, createdAt }
+
     return parsed;
   } catch (e) {
-    // If file missing or broken, create minimal
     const initial = {
       branches: [],
       users: [],
@@ -44,7 +46,9 @@ async function loadData() {
       requests: [],
       trips: [],
       vehicles: [],
-      vehicleReminders: []
+      vehicleReminders: [],
+      carAssignments: [],
+      carMaintenances: []
     };
     await saveData(initial);
     return initial;
@@ -69,8 +73,11 @@ function requireRole(user, roles) {
   return user && roles.includes(user.role);
 }
 
-function parseItmNumber(id) {
-  const m = /^ITM-(\d+)$/.exec(String(id || "").trim());
+// ✅ UPDATED: supports ITEM-001 and ITM-001 (but will generate ITEM-###)
+function parseItemNumberAny(id) {
+  const s = String(id || "").trim();
+  let m = /^ITEM-(\d+)$/i.exec(s);
+  if (!m) m = /^ITM-(\d+)$/i.exec(s);
   if (!m) return null;
   const n = parseInt(m[1], 10);
   return Number.isFinite(n) ? n : null;
@@ -79,11 +86,35 @@ function parseItmNumber(id) {
 function getNextItemId(data) {
   let max = 0;
   for (const it of data.items || []) {
-    const n = parseItmNumber(it.id);
+    const n = parseItemNumberAny(it.id);
     if (n && n > max) max = n;
   }
   const next = max + 1;
-  return "ITM-" + String(next).padStart(3, "0");
+  return "ITEM-" + String(next).padStart(3, "0");
+}
+
+function genId(prefix) {
+  return `${prefix}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+}
+
+function mustBe(user, roles, res) {
+  if (!user) {
+    res.status(400).json({ error: "User not found" });
+    return false;
+  }
+  if (!requireRole(user, roles)) {
+    res.status(403).json({ error: "Unauthorized" });
+    return false;
+  }
+  return true;
+}
+
+// Helper for item multilingual names
+function normalizeItemNames({ name, nameEn, nameAr }) {
+  const n = String(name || "").trim();
+  const en = String(nameEn || n || "").trim();
+  const ar = String(nameAr || "").trim();
+  return { name: n || en || ar || "", nameEn: en || n || "", nameAr: ar || "" };
 }
 
 // ---------- AUTH ----------
@@ -133,7 +164,11 @@ app.get("/api/state", async (req, res) => {
       requests: data.requests || [],
       trips: data.trips || [],
       vehicles: data.vehicles || [],
-      vehicleReminders: data.vehicleReminders || []
+      vehicleReminders: data.vehicleReminders || [],
+
+      // ✅ NEW
+      carAssignments: data.carAssignments || [],
+      carMaintenances: data.carMaintenances || []
     });
   } catch (err) {
     console.error("State error", err);
@@ -236,10 +271,10 @@ app.delete("/api/users/:id", async (req, res) => {
 // ---------- ITEMS (Admin & Manager create item types) ----------
 app.post("/api/items", async (req, res) => {
   try {
-    let { id, name, branchId, minQty, baseQty, unitCost, managerUserId } = req.body;
+    let { id, name, nameEn, nameAr, branchId, minQty, baseQty, unitCost, managerUserId } = req.body;
 
-    if (!name || !branchId) {
-      return res.status(400).json({ error: "name, branchId required" });
+    if (!branchId) {
+      return res.status(400).json({ error: "branchId required" });
     }
 
     const data = await loadData();
@@ -248,19 +283,22 @@ app.post("/api/items", async (req, res) => {
       return res.status(403).json({ error: "Only manager or admin can create items" });
     }
 
-    // auto ID if missing or empty
     if (!id || !String(id).trim()) {
       id = getNextItemId(data);
     }
 
-    // prevent duplicate ID within same branch
-    if (data.items.find((x) => x.id === id && x.branchId === branchId)) {
+    const names = normalizeItemNames({ name, nameEn, nameAr });
+    if (!names.name && !names.nameEn && !names.nameAr) {
+      return res.status(400).json({ error: "name (or nameEn/nameAr) required" });
+    }
+
+    if (data.items.find((x) => x.id === String(id).trim() && x.branchId === branchId)) {
       return res.status(400).json({ error: "Item ID already exists in this branch" });
     }
 
     const newItem = {
       id: String(id).trim(),
-      name: String(name).trim(),
+      ...names,
       branchId: String(branchId).trim(),
       minQty: Number(minQty) || 0,
       baseQty: Number(baseQty) || 0,
@@ -280,7 +318,7 @@ app.post("/api/items", async (req, res) => {
 app.patch("/api/items/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    const { userId, branchId, name, minQty, baseQty, unitCost } = req.body;
+    const { userId, branchId, name, nameEn, nameAr, minQty, baseQty, unitCost } = req.body;
 
     const data = await loadData();
     const user = findUserById(data, userId);
@@ -292,29 +330,26 @@ app.patch("/api/items/:id", async (req, res) => {
       return res.status(400).json({ error: "branchId is required to update item" });
     }
 
-    // find item by id + branch
     const item = data.items.find(
-      (it) =>
-        it.id === String(id).trim() &&
-        it.branchId === String(branchId).trim()
+      (it) => it.id === String(id).trim() && it.branchId === String(branchId).trim()
     );
 
     if (!item) {
       return res.status(404).json({ error: "Item not found for this branch" });
     }
 
-    if (typeof name !== "undefined") {
-      item.name = String(name).trim();
-    }
-    if (typeof minQty !== "undefined") {
-      item.minQty = Number(minQty) || 0;
-    }
-    if (typeof baseQty !== "undefined") {
-      item.baseQty = Number(baseQty) || 0;
-    }
-    if (typeof unitCost !== "undefined") {
-      item.unitCost = Number(unitCost) || 0;
-    }
+    if (typeof name !== "undefined") item.name = String(name).trim();
+    if (typeof nameEn !== "undefined") item.nameEn = String(nameEn || "").trim();
+    if (typeof nameAr !== "undefined") item.nameAr = String(nameAr || "").trim();
+    if (typeof minQty !== "undefined") item.minQty = Number(minQty) || 0;
+    if (typeof baseQty !== "undefined") item.baseQty = Number(baseQty) || 0;
+    if (typeof unitCost !== "undefined") item.unitCost = Number(unitCost) || 0;
+
+    // keep fallback names consistent
+    const names = normalizeItemNames({ name: item.name, nameEn: item.nameEn, nameAr: item.nameAr });
+    item.name = names.name;
+    item.nameEn = names.nameEn;
+    item.nameAr = names.nameAr;
 
     await saveData(data);
     res.json(item);
@@ -345,7 +380,7 @@ app.post("/api/movements", async (req, res) => {
     const movement = {
       id: "MOV-" + Date.now(),
       itemId,
-      type, // "IN" or "OUT"
+      type,
       qty: Number(qty),
       userId,
       branchId: item.branchId,
@@ -353,12 +388,8 @@ app.post("/api/movements", async (req, res) => {
       createdAt: new Date().toISOString()
     };
 
-    // adjust stock
-    if (movement.type === "IN") {
-      item.baseQty += movement.qty;
-    } else if (movement.type === "OUT") {
-      item.baseQty = Math.max(0, item.baseQty - movement.qty);
-    }
+    if (movement.type === "IN") item.baseQty += movement.qty;
+    else if (movement.type === "OUT") item.baseQty = Math.max(0, item.baseQty - movement.qty);
 
     data.movements.push(movement);
     await saveData(data);
@@ -380,19 +411,13 @@ app.post("/api/requests", async (req, res) => {
     const data = await loadData();
     const user = findUserById(data, userId);
     if (!user) return res.status(400).json({ error: "User not found" });
-    if (user.role === "driver") {
-      return res.status(403).json({ error: "Drivers cannot create requests" });
-    }
-    if (!user.branchId) {
-      return res.status(400).json({ error: "User is not assigned to a branch" });
-    }
+    if (user.role === "driver") return res.status(403).json({ error: "Drivers cannot create requests" });
+    if (!user.branchId) return res.status(400).json({ error: "User is not assigned to a branch" });
 
     const storageItem = data.items.find(
       (it) => it.id === itemId && it.branchId === MAIN_STORAGE_BRANCH_ID
     );
-    if (!storageItem) {
-      return res.status(400).json({ error: "Item not found in Main Storage" });
-    }
+    if (!storageItem) return res.status(400).json({ error: "Item not found in Main Storage" });
 
     const request = {
       id: "REQ-" + Date.now(),
@@ -416,7 +441,23 @@ app.post("/api/requests", async (req, res) => {
   }
 });
 
-// ---------- DRIVER DELIVER (OUT storage, IN branch, move stock) ----------
+// ✅ pending requests for admin/manager/driver across ALL branches
+app.get("/api/requests/pending", async (req, res) => {
+  try {
+    const { userId } = req.query;
+    const data = await loadData();
+    const user = findUserById(data, userId);
+    if (!mustBe(user, ["admin", "manager", "driver"], res)) return;
+
+    const pending = (data.requests || []).filter((r) => r.status === "pending");
+    res.json(pending);
+  } catch (err) {
+    console.error("Pending requests error", err);
+    res.status(500).json({ error: "Failed to load pending requests" });
+  }
+});
+
+// ---------- DRIVER DELIVER ----------
 app.post("/api/requests/:id/deliver", async (req, res) => {
   try {
     const { id } = req.params;
@@ -425,29 +466,20 @@ app.post("/api/requests/:id/deliver", async (req, res) => {
 
     const data = await loadData();
     const driver = findUserById(data, driverUserId);
-    if (!requireRole(driver, ["driver"])) {
-      return res.status(403).json({ error: "Only drivers can deliver" });
-    }
+    if (!requireRole(driver, ["driver"])) return res.status(403).json({ error: "Only drivers can deliver" });
 
     const request = data.requests.find((r) => r.id === id);
     if (!request) return res.status(404).json({ error: "Request not found" });
-    if (request.status === "delivered") {
-      return res.status(400).json({ error: "Request already delivered" });
-    }
+    if (request.status === "delivered") return res.status(400).json({ error: "Request already delivered" });
 
     const storageItem = data.items.find(
       (it) => it.id === request.itemId && it.branchId === request.fromBranchId
     );
-    if (!storageItem) {
-      return res.status(400).json({ error: "Item not found in storage branch" });
-    }
+    if (!storageItem) return res.status(400).json({ error: "Item not found in storage branch" });
 
     const qty = Number(request.qty);
-    if (storageItem.baseQty < qty) {
-      return res.status(400).json({ error: "Not enough stock in storage to deliver" });
-    }
+    if (storageItem.baseQty < qty) return res.status(400).json({ error: "Not enough stock in storage to deliver" });
 
-    // OUT movement from storage
     const outMovement = {
       id: "MOV-" + Date.now(),
       itemId: request.itemId,
@@ -460,7 +492,6 @@ app.post("/api/requests/:id/deliver", async (req, res) => {
     };
     storageItem.baseQty -= qty;
 
-    // IN movement to destination branch
     let destItem = data.items.find(
       (it) => it.id === request.itemId && it.branchId === request.toBranchId
     );
@@ -468,6 +499,8 @@ app.post("/api/requests/:id/deliver", async (req, res) => {
       destItem = {
         id: storageItem.id,
         name: storageItem.name,
+        nameEn: storageItem.nameEn || storageItem.name,
+        nameAr: storageItem.nameAr || "",
         branchId: request.toBranchId,
         minQty: 0,
         baseQty: 0,
@@ -491,6 +524,7 @@ app.post("/api/requests/:id/deliver", async (req, res) => {
     data.movements.push(outMovement, inMovement);
     request.status = "delivered";
     request.driverUserId = driverUserId;
+    request.deliveredAt = new Date().toISOString();
 
     await saveData(data);
     res.status(201).json({ request, movements: [outMovement, inMovement] });
@@ -500,27 +534,19 @@ app.post("/api/requests/:id/deliver", async (req, res) => {
   }
 });
 
-// ---------- BUDGET (manual endpoint) ----------
+// ---------- BUDGET ----------
 app.post("/api/budgets", async (req, res) => {
   try {
     const { branchId, month, planned, adminUserId } = req.body;
-    if (!branchId || !month) {
-      return res.status(400).json({ error: "branchId and month are required" });
-    }
+    if (!branchId || !month) return res.status(400).json({ error: "branchId and month are required" });
+
     const data = await loadData();
     const admin = findUserById(data, adminUserId);
-    if (!requireRole(admin, ["admin"])) {
-      return res.status(403).json({ error: "Only admin can set budgets" });
-    }
+    if (!requireRole(admin, ["admin"])) return res.status(403).json({ error: "Only admin can set budgets" });
 
     let budget = data.budgets.find((b) => b.branchId === branchId && b.month === month);
     if (!budget) {
-      budget = {
-        id: `BUD-${month}-${branchId}`,
-        branchId,
-        month,
-        planned: Number(planned) || 0
-      };
+      budget = { id: `BUD-${month}-${branchId}`, branchId, month, planned: Number(planned) || 0 };
       data.budgets.push(budget);
     } else {
       budget.planned = Number(planned) || 0;
@@ -536,9 +562,6 @@ app.post("/api/budgets", async (req, res) => {
 
 /* =========================
    VEHICLES + REMINDERS
-   Visible: admin/manager/driver
-   Create/Edit/Delete: admin/manager
-   Mark Done: admin/manager/driver
 ========================= */
 
 // Vehicles list (read)
@@ -594,19 +617,16 @@ app.post("/api/vehicle-reminders", async (req, res) => {
     if (!requireRole(user, ["admin", "manager"])) {
       return res.status(403).json({ error: "Only admin/manager can create reminders" });
     }
-    if (!vehicleId || !type) {
-      return res.status(400).json({ error: "vehicleId and type required" });
-    }
+    if (!vehicleId || !type) return res.status(400).json({ error: "vehicleId and type required" });
 
     const r = {
       id: "REM-" + Date.now(),
       vehicleId,
-      type, // "OIL_CHANGE" | "METER" | "YEARLY_RENEW" | "OTHER"
-      dueDate: dueDate || null, // YYYY-MM-DD
-      dueOdometer:
-        typeof dueOdometer === "undefined" ? null : Number(dueOdometer),
+      type,
+      dueDate: dueDate || null,
+      dueOdometer: typeof dueOdometer === "undefined" ? null : Number(dueOdometer),
       note: note || "",
-      status: "open", // open | done
+      status: "open",
       createdAt: new Date().toISOString(),
       doneAt: null
     };
@@ -620,7 +640,7 @@ app.post("/api/vehicle-reminders", async (req, res) => {
   }
 });
 
-// Update reminder (status / edit)
+// Update reminder
 app.patch("/api/vehicle-reminders/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -635,7 +655,6 @@ app.patch("/api/vehicle-reminders/:id", async (req, res) => {
     const r = data.vehicleReminders.find((x) => x.id === id);
     if (!r) return res.status(404).json({ error: "Reminder not found" });
 
-    // Driver: allowed only to mark done/open
     const isEditor = requireRole(user, ["admin", "manager"]);
     if (!isEditor) {
       if (typeof status === "undefined") {
@@ -647,10 +666,7 @@ app.patch("/api/vehicle-reminders/:id", async (req, res) => {
       if (typeof vehicleId !== "undefined") r.vehicleId = vehicleId;
       if (typeof type !== "undefined") r.type = type;
       if (typeof dueDate !== "undefined") r.dueDate = dueDate || null;
-      if (typeof dueOdometer !== "undefined") {
-        r.dueOdometer =
-          dueOdometer === null ? null : Number(dueOdometer);
-      }
+      if (typeof dueOdometer !== "undefined") r.dueOdometer = dueOdometer === null ? null : Number(dueOdometer);
       if (typeof note !== "undefined") r.note = note || "";
     }
 
@@ -666,7 +682,7 @@ app.patch("/api/vehicle-reminders/:id", async (req, res) => {
   }
 });
 
-// Delete reminder (admin/manager)
+// Delete reminder
 app.delete("/api/vehicle-reminders/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -689,8 +705,189 @@ app.delete("/api/vehicle-reminders/:id", async (req, res) => {
   }
 });
 
+/* =========================
+   ✅ CAR HANDOVER (ASSIGNMENTS)
+========================= */
+
+// List assignments
+app.get("/api/car-assignments", async (req, res) => {
+  try {
+    const { userId } = req.query;
+    const data = await loadData();
+    const user = findUserById(data, userId);
+    if (!mustBe(user, ["admin", "manager", "driver"], res)) return;
+
+    if (user.role === "driver") {
+      return res.json((data.carAssignments || []).filter(a => a.driverUserId === user.id));
+    }
+    res.json(data.carAssignments || []);
+  } catch (e) {
+    res.status(500).json({ error: "Failed to load car assignments" });
+  }
+});
+
+// Create/replace assignment (admin/manager)
+app.post("/api/car-assignments", async (req, res) => {
+  try {
+    const { userId, vehicleId, driverUserId, note } = req.body;
+    const data = await loadData();
+    const actor = findUserById(data, userId);
+    if (!mustBe(actor, ["admin", "manager", "driver"], res)) return;
+
+    const driver = findUserById(data, driverUserId);
+    if (!driver || driver.role !== "driver") {
+      return res.status(400).json({ error: "driverUserId must be a valid driver" });
+    }
+
+    if (actor.role === "driver" && driverUserId === actor.id) {
+      return res.status(400).json({ error: "Drivers must select another driver" });
+    }
+
+    const vehicle = (data.vehicles || []).find(v => v.id === vehicleId);
+    if (!vehicle) return res.status(400).json({ error: "vehicleId not found" });
+
+    const assignments = data.carAssignments || [];
+    const currentAssignment = assignments.find(a => a.vehicleId === vehicleId);
+    if (actor.role === "driver") {
+      if (!currentAssignment || currentAssignment.driverUserId !== actor.id) {
+        return res.status(403).json({ error: "Drivers can only hand over vehicles assigned to them" });
+      }
+    }
+
+    data.carAssignments = assignments.filter(a => a.vehicleId !== vehicleId);
+    data.carAssignments = data.carAssignments.filter(a => a.driverUserId !== driverUserId);
+
+    const assignment = {
+      id: genId("ASSIGN"),
+      vehicleId,
+      driverUserId,
+      assignedByUserId: actor.id,
+      note: note || "",
+      assignedAt: new Date().toISOString()
+    };
+
+    data.carAssignments.push(assignment);
+    await saveData(data);
+    res.status(201).json(assignment);
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: "Failed to create assignment" });
+  }
+});
+
+/* =========================
+   ✅ MAINTENANCE RECORDS
+========================= */
+
+app.get("/api/car-maintenances", async (req, res) => {
+  try {
+    const { userId } = req.query;
+    const data = await loadData();
+    const user = findUserById(data, userId);
+    if (!mustBe(user, ["admin", "manager", "driver"], res)) return;
+
+    if (user.role === "driver") {
+      return res.json((data.carMaintenances || []).filter(m => m.driverUserId === user.id));
+    }
+    res.json(data.carMaintenances || []);
+  } catch {
+    res.status(500).json({ error: "Failed to load maintenances" });
+  }
+});
+
+app.post("/api/car-maintenances", async (req, res) => {
+  try {
+    const {
+      userId,
+      vehicleId,
+      maintenanceDate,
+      nextMaintenanceDate,
+      price,
+      invoiceNo,
+      place,
+      storeName,
+      note
+    } = req.body;
+
+    const data = await loadData();
+    const user = findUserById(data, userId);
+    if (!mustBe(user, ["driver", "admin", "manager"], res)) return;
+
+    if (!vehicleId || !maintenanceDate || typeof price === "undefined" || !invoiceNo) {
+      return res.status(400).json({
+        error: "vehicleId, maintenanceDate, price, invoiceNo are required"
+      });
+    }
+
+    if (user.role === "driver") {
+      const assign = (data.carAssignments || []).find(a => a.driverUserId === user.id && a.vehicleId === vehicleId);
+      if (!assign) return res.status(403).json({ error: "You are not assigned to this vehicle" });
+    }
+
+    const vehicle = (data.vehicles || []).find(v => v.id === vehicleId);
+    if (!vehicle) return res.status(400).json({ error: "vehicleId not found" });
+
+    const rec = {
+      id: genId("MAINT"),
+      vehicleId,
+      driverUserId: user.role === "driver" ? user.id : (req.body.driverUserId || user.id),
+      maintenanceDate,
+      nextMaintenanceDate: nextMaintenanceDate || null,
+      price: Number(price) || 0,
+      invoiceNo: String(invoiceNo).trim(),
+      place: place ? String(place).trim() : "",
+      storeName: storeName ? String(storeName).trim() : "",
+      note: note ? String(note) : "",
+      createdAt: new Date().toISOString()
+    };
+
+    data.carMaintenances.push(rec);
+    await saveData(data);
+    res.status(201).json(rec);
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: "Failed to save maintenance" });
+  }
+});
+
+// Maintenance budget summary (admin/manager)
+app.get("/api/maintenance-summary", async (req, res) => {
+  try {
+    const { userId, from, to, vehicleId } = req.query;
+    const data = await loadData();
+    const user = findUserById(data, userId);
+    if (!mustBe(user, ["admin", "manager"], res)) return;
+
+    const fromD = from ? new Date(from + "T00:00:00") : null;
+    const toD = to ? new Date(to + "T23:59:59") : null;
+
+    const list = (data.carMaintenances || []).filter(m => {
+      if (vehicleId && m.vehicleId !== vehicleId) return false;
+      const d = new Date((m.maintenanceDate || "") + "T00:00:00");
+      if (fromD && d < fromD) return false;
+      if (toD && d > toD) return false;
+      return true;
+    });
+
+    const total = list.reduce((s, m) => s + Number(m.price || 0), 0);
+
+    const byCar = {};
+    for (const m of list) {
+      byCar[m.vehicleId] = (byCar[m.vehicleId] || 0) + Number(m.price || 0);
+    }
+
+    res.json({
+      total: Number(total.toFixed(3)),
+      count: list.length,
+      byCar
+    });
+  } catch (e) {
+    res.status(500).json({ error: "Failed to compute maintenance summary" });
+  }
+});
+
 // ---------- FRONTEND FALLBACK ----------
-app.get("*", (req, res) => {
+app.get(/^(?!\/api).*/, (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
@@ -700,4 +897,3 @@ app.listen(PORT, () => {
   console.log(`Main Storage Branch ID = ${MAIN_STORAGE_BRANCH_ID}`);
   console.log(`DATA_FILE = ${DATA_FILE}`);
 });
-//server.js ends here

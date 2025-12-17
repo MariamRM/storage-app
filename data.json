@@ -1,13 +1,37 @@
 {
   "branches": [
-    { "id": "B001", "name": "Main Storage" },
-    { "id": "B002", "name": "Yarmouk" },
-    { "id": "B003", "name": "Avenues" },
-    { "id": "B004", "name": "Mishref" },
-    { "id": "B005", "name": "Qurtuba" },
-    { "id": "B006", "name": "Promenade" },
-    { "id": "B007", "name": "Al Hamra" },
-    { "id": "B008", "name": "Zahra" }
+    {
+      "id": "B001",
+      "name": "Main Storage"
+    },
+    {
+      "id": "B002",
+      "name": "Yarmouk"
+    },
+    {
+      "id": "B003",
+      "name": "Avenues"
+    },
+    {
+      "id": "B004",
+      "name": "Mishref"
+    },
+    {
+      "id": "B005",
+      "name": "Qurtuba"
+    },
+    {
+      "id": "B006",
+      "name": "Promenade"
+    },
+    {
+      "id": "B007",
+      "name": "Al Hamra"
+    },
+    {
+      "id": "B008",
+      "name": "Zahra"
+    }
   ],
   "users": [
     {
@@ -46,723 +70,2247 @@
       "branchId": null
     }
   ],
- "items": [
-  {
-    "id": "ITEM-001",
-    "name": "DUBU BOX PIN",
-    "nameEn": "DUBU BOX PIN",
-    "nameAr": "دبابيس دوبو بوكس",
-    "branchId": "B001",
-    "minQty": 36,
-    "baseQty": 72,
-    "unitCost": 2.5
-  },
-  {
-    "id": "ITEM-002",
-    "name": "OPNER",
-    "nameEn": "OPNER",
-    "nameAr": "فتّاحة",
-    "branchId": "B001",
-    "minQty": 0,
-    "baseQty": 52,
-    "unitCost": 7.5
-  },
-  {
-    "id": "ITEM-003",
-    "name": "NEEDLE 7 HAND",
-    "nameEn": "NEEDLE 7 HAND",
-    "nameAr": "إبرة 7 يدوي",
-    "branchId": "B001",
-    "minQty": 10,
-    "baseQty": 24,
-    "unitCost": 2
-  },
-  {
-    "id": "ITEM-004",
-    "name": "CUTTER",
-    "nameEn": "CUTTER",
-    "nameAr": "قطّاعة",
-    "branchId": "B001",
-    "minQty": 12,
-    "baseQty": 20,
-    "unitCost": 2
-  },
-  {
-    "id": "ITEM-005",
-    "name": "METTER 2",
-    "nameEn": "METTER 2",
-    "nameAr": "متر 2",
-    "branchId": "B001",
-    "minQty": 6,
-    "baseQty": 12,
-    "unitCost": 2
-  },
-  {
-    "id": "ITEM-006",
-    "name": "METTER 1.5",
-    "nameEn": "METTER 1.5",
-    "nameAr": "متر 1.5",
-    "branchId": "B001",
-    "minQty": 6,
-    "baseQty": 18,
-    "unitCost": 2
-  },
-  {
-    "id": "ITEM-007",
-    "name": "OIL",
-    "nameEn": "OIL",
-    "nameAr": "زيت",
-    "branchId": "B001",
-    "minQty": 0,
-    "baseQty": 4,
-    "unitCost": 1
-  },
-  {
-    "id": "ITEM-008",
-    "name": "BUST CUP BLACK LARGE",
-    "nameEn": "BUST CUP BLACK LARGE",
-    "nameAr": "كاب صدر أسود كبير",
-    "branchId": "B001",
-    "minQty": 2,
-    "baseQty": 24,
-    "unitCost": 3
-  },
-  {
-    "id": "ITEM-009",
-    "name": "BUST CUP WHITE LARGE",
-    "nameEn": "BUST CUP WHITE LARGE",
-    "nameAr": "كاب صدر أبيض كبير",
-    "branchId": "B001",
-    "minQty": 3,
-    "baseQty": 17,
-    "unitCost": 3
-  },
-  {
-    "id": "ITEM-010",
-    "name": "BUST CUP BLACK MEDIUM",
-    "nameEn": "BUST CUP BLACK MEDIUM",
-    "nameAr": "كاب صدر أسود وسط",
-    "branchId": "B001",
-    "minQty": 2,
-    "baseQty": 15,
-    "unitCost": 3
-  },
-  {
-    "id": "ITEM-011",
-    "name": "BUST CUP WHITE MEDIUM",
-    "nameEn": "BUST CUP WHITE MEDIUM",
-    "nameAr": "كاب صدر أبيض وسط",
-    "branchId": "B001",
-    "minQty": 5,
-    "baseQty": 3,
-    "unitCost": 3
-  },
-  {
-    "id": "ITEM-012",
-    "name": "BUST CUP BLACK SMALL",
-    "nameEn": "BUST CUP BLACK SMALL",
-    "nameAr": "كاب صدر أسود صغير",
-    "branchId": "B001",
-    "minQty": 5,
-    "baseQty": 6,
-    "unitCost": 3
-  },
-  {
-    "id": "ITEM-013",
-    "name": "BUST CUP WHITE SMALL",
-    "nameEn": "BUST CUP WHITE SMALL",
-    "nameAr": "كاب صدر أبيض صغير",
-    "branchId": "B001",
-    "minQty": 5,
-    "baseQty": 13,
-    "unitCost": 3
-  },
-  {
-    "id": "ITEM-014",
-    "name": "BUST CUP BLACK XL",
-    "nameEn": "BUST CUP BLACK XL",
-    "nameAr": "كاب صدر أسود XL",
-    "branchId": "B001",
-    "minQty": 0,
-    "baseQty": 5,
-    "unitCost": 3
-  },
-  {
-    "id": "ITEM-015",
-    "name": "BUST CUP WHITE XL",
-    "nameEn": "BUST CUP WHITE XL",
-    "nameAr": "كاب صدر أبيض XL",
-    "branchId": "B001",
-    "minQty": 0,
-    "baseQty": 5,
-    "unitCost": 3
-  },
-  {
-    "id": "ITEM-016",
-    "name": "DOUBLE FACE 0.55''",
-    "nameEn": "DOUBLE FACE 0.55''",
-    "nameAr": "شريط لاصق وجهين 0.55",
-    "branchId": "B001",
-    "minQty": 12,
-    "baseQty": 26,
-    "unitCost": 2.5
-  },
-  {
-    "id": "ITEM-017",
-    "name": "TRANSPARENT BRA STREP",
-    "nameEn": "TRANSPARENT BRA STREP",
-    "nameAr": "حمالة صدر شفافة",
-    "branchId": "B001",
-    "minQty": 20,
-    "baseQty": 31,
-    "unitCost": 2
-  },
-  {
-    "id": "ITEM-018",
-    "name": "MARKER",
-    "nameEn": "MARKER",
-    "nameAr": "ماركر",
-    "branchId": "B001",
-    "minQty": 3,
-    "baseQty": 24,
-    "unitCost": 2
-  },
-  {
-    "id": "ITEM-019",
-    "name": "NEEDLE DB 11",
-    "nameEn": "NEEDLE DB 11",
-    "nameAr": "إبرة DB 11",
-    "branchId": "B001",
-    "minQty": 10,
-    "baseQty": 35,
-    "unitCost": 4.5
-  },
-  {
-    "id": "ITEM-020",
-    "name": "NEEDLE DB 14",
-    "nameEn": "NEEDLE DB 14",
-    "nameAr": "إبرة DB 14",
-    "branchId": "B001",
-    "minQty": 10,
-    "baseQty": 29,
-    "unitCost": 4.5
-  },
-  {
-    "id": "ITEM-021",
-    "name": "NEEDLE DB 16",
-    "nameEn": "NEEDLE DB 16",
-    "nameAr": "إبرة DB 16",
-    "branchId": "B001",
-    "minQty": 10,
-    "baseQty": 100,
-    "unitCost": 4.5
-  },
-  {
-    "id": "ITEM-022",
-    "name": "NEEDLE DB 18",
-    "nameEn": "NEEDLE DB 18",
-    "nameAr": "إبرة DB 18",
-    "branchId": "B001",
-    "minQty": 0,
-    "baseQty": 49,
-    "unitCost": 4.5
-  },
-  {
-    "id": "ITEM-023",
-    "name": "NEEDLE DC 11",
-    "nameEn": "NEEDLE DC 11",
-    "nameAr": "إبرة DC 11",
-    "branchId": "B001",
-    "minQty": 2,
-    "baseQty": 6,
-    "unitCost": 3
-  },
-  {
-    "id": "ITEM-024",
-    "name": "NEEDLE DC 14",
-    "nameEn": "NEEDLE DC 14",
-    "nameAr": "إبرة DC 14",
-    "branchId": "B001",
-    "minQty": 2,
-    "baseQty": 4,
-    "unitCost": 3
-  },
-  {
-    "id": "ITEM-025",
-    "name": "NEEDLE DC 16",
-    "nameEn": "NEEDLE DC 16",
-    "nameAr": "إبرة DC 16",
-    "branchId": "B001",
-    "minQty": 0,
-    "baseQty": 12,
-    "unitCost": 3
-  },
-  {
-    "id": "ITEM-026",
-    "name": "NEEDLE DC 18",
-    "nameEn": "NEEDLE DC 18",
-    "nameAr": "إبرة DC 18",
-    "branchId": "B001",
-    "minQty": 0,
-    "baseQty": 11,
-    "unitCost": 3
-  },
-  {
-    "id": "ITEM-027",
-    "name": "ZIPPER MAKFI LONG YKK",
-    "nameEn": "ZIPPER MAKFI LONG YKK",
-    "nameAr": "سحاب مخفي طويل YKK",
-    "branchId": "B001",
-    "minQty": 31,
-    "baseQty": 727,
-    "unitCost": 10
-  },
-  {
-    "id": "ITEM-028",
-    "name": "ZIPPER MAKFI SMALL",
-    "nameEn": "ZIPPER MAKFI SMALL",
-    "nameAr": "سحاب مخفي صغير",
-    "branchId": "B001",
-    "minQty": 0,
-    "baseQty": 170,
-    "unitCost": 1
-  },
-  {
-    "id": "ITEM-029",
-    "name": "ZIPPER PANT",
-    "nameEn": "ZIPPER PANT",
-    "nameAr": "سحاب بنطال",
-    "branchId": "B001",
-    "minQty": 12,
-    "baseQty": 272,
-    "unitCost": 0.5
-  },
-  {
-    "id": "ITEM-030",
-    "name": "ZIPPERT JEANS",
-    "nameEn": "ZIPPERT JEANS",
-    "nameAr": "سحاب جينز",
-    "branchId": "B001",
-    "minQty": 14,
-    "baseQty": 31,
-    "unitCost": 1.25
-  },
-  {
-    "id": "ITEM-031",
-    "name": "ZIPPER ADI LONG",
-    "nameEn": "ZIPPER ADI LONG",
-    "nameAr": "سحاب عادي طويل",
-    "branchId": "B001",
-    "minQty": 0,
-    "baseQty": 72,
-    "unitCost": 0.5
-  },
-  {
-    "id": "ITEM-032",
-    "name": "ZIPPER jacket metal",
-    "nameEn": "ZIPPER jacket metal",
-    "nameAr": "سحاب جاكيت معدني",
-    "branchId": "B001",
-    "minQty": 0,
-    "baseQty": 43,
-    "unitCost": 0.133
-  },
-  {
-    "id": "ITEM-033",
-    "name": "zipper plastic jacket",
-    "nameEn": "zipper plastic jacket",
-    "nameAr": "سحاب جاكيت بلاستيك",
-    "branchId": "B001",
-    "minQty": 0,
-    "baseQty": 71,
-    "unitCost": 2.5
-  },
-
-  {
-    "id": "ITEM-034",
-    "name": "tabagi black small",
-    "nameEn": "tabagi black small",
-    "nameAr": "تباجي أسود صغير",
-    "branchId": "B001",
-    "minQty": 216,
-    "baseQty": 1209,
-    "unitCost": 0
-  },
-  {
-    "id": "ITEM-035",
-    "name": "tabagi silver small",
-    "nameEn": "tabagi silver small",
-    "nameAr": "تباجي فضي صغير",
-    "branchId": "B001",
-    "minQty": 216,
-    "baseQty": 538,
-    "unitCost": 0
-  },
-  {
-    "id": "ITEM-036",
-    "name": "TABAGI BLACK MEDIUM",
-    "nameEn": "TABAGI BLACK MEDIUM",
-    "nameAr": "تباجي أسود وسط",
-    "branchId": "B001",
-    "minQty": 216,
-    "baseQty": 522,
-    "unitCost": 0
-  },
-  {
-    "id": "ITEM-037",
-    "name": "TABAGI SILVER MEDIUM",
-    "nameEn": "TABAGI SILVER MEDIUM",
-    "nameAr": "تباجي فضي وسط",
-    "branchId": "B001",
-    "minQty": 216,
-    "baseQty": 929,
-    "unitCost": 0
-  },
-  {
-    "id": "ITEM-038",
-    "name": "TABAGI BLACK LARGE",
-    "nameEn": "TABAGI BLACK LARGE",
-    "nameAr": "تباجي أسود كبير",
-    "branchId": "B001",
-    "minQty": 0,
-    "baseQty": 38,
-    "unitCost": 0
-  },
-  {
-    "id": "ITEM-039",
-    "name": "TABAGI SILVER LARGE",
-    "nameEn": "TABAGI SILVER LARGE",
-    "nameAr": "تباجي فضي كبير",
-    "branchId": "B001",
-    "minQty": 0,
-    "baseQty": 24,
-    "unitCost": 0
-  },
-  {
-    "id": "ITEM-040",
-    "name": "STRETCH VESLINE BLACK",
-    "nameEn": "STRETCH VESLINE BLACK",
-    "nameAr": "فزلين مطاطي أسود",
-    "branchId": "B001",
-    "minQty": 0,
-    "baseQty": 0,
-    "unitCost": 1
-  },
-  {
-    "id": "ITEM-041",
-    "name": "STRETCH VESLINE WHITE",
-    "nameEn": "STRETCH VESLINE WHITE",
-    "nameAr": "فزلين مطاطي أبيض",
-    "branchId": "B001",
-    "minQty": 0,
-    "baseQty": 0,
-    "unitCost": 1
-  },
-  {
-    "id": "ITEM-042",
-    "name": "GOWN HOOK SILVER",
-    "nameEn": "GOWN HOOK SILVER",
-    "nameAr": "هوك فستان فضي",
-    "branchId": "B001",
-    "minQty": 0.5,
-    "baseQty": 0.5,
-    "unitCost": 0.5
-  },
-  {
-    "id": "ITEM-043",
-    "name": "GOWN HOOK BLACK",
-    "nameEn": "GOWN HOOK BLACK",
-    "nameAr": "هوك فستان أسود",
-    "branchId": "B001",
-    "minQty": 0.5,
-    "baseQty": 0.5,
-    "unitCost": 0.5
-  },
-  {
-    "id": "ITEM-044",
-    "name": "GOWN HOOK GOLD",
-    "nameEn": "GOWN HOOK GOLD",
-    "nameAr": "هوك فستان ذهبي",
-    "branchId": "B001",
-    "minQty": 0,
-    "baseQty": 1,
-    "unitCost": 0.5
-  },
-  {
-    "id": "ITEM-045",
-    "name": "PANTS HOOK SILVER",
-    "nameEn": "PANTS HOOK SILVER",
-    "nameAr": "هوك بنطال فضي",
-    "branchId": "B001",
-    "minQty": 0.5,
-    "baseQty": 0.5,
-    "unitCost": 0.285
-  },
-  {
-    "id": "ITEM-046",
-    "name": "PANTS HOOK BLACK",
-    "nameEn": "PANTS HOOK BLACK",
-    "nameAr": "هوك بنطال أسود",
-    "branchId": "B001",
-    "minQty": 0,
-    "baseQty": 1,
-    "unitCost": 0.285
-  },
-  {
-    "id": "ITEM-047",
-    "name": "BHOOT LEFT AND RIGHT",
-    "nameEn": "BHOOT LEFT AND RIGHT",
-    "nameAr": "بوت يسار ويمين",
-    "branchId": "B001",
-    "minQty": 4,
-    "baseQty": 11,
-    "unitCost": 0.75
-  },
-  {
-    "id": "ITEM-048",
-    "name": "BABIN CASE",
-    "nameEn": "BABIN CASE",
-    "nameAr": "علبة بكرة خيط",
-    "branchId": "B001",
-    "minQty": 0,
-    "baseQty": 12,
-    "unitCost": 0.75
-  },
-  {
-    "id": "ITEM-049",
-    "name": "BABIN",
-    "nameEn": "BABIN",
-    "nameAr": "بكرة خيط",
-    "branchId": "B001",
-    "minQty": 0,
-    "baseQty": 16,
-    "unitCost": 0
-  },
-  {
-    "id": "ITEM-050",
-    "name": "PLASTICK TABAGI SMALL",
-    "nameEn": "PLASTICK TABAGI SMALL",
-    "nameAr": "تباجي بلاستيك صغير أبيض",
-    "branchId": "B001",
-    "minQty": 50,
-    "baseQty": 230,
-    "unitCost": 2.5
-  },
-  {
-    "id": "ITEM-051",
-    "name": "PLASTICK TABAGI MEDIUM",
-    "nameEn": "PLASTICK TABAGI MEDIUM",
-    "nameAr": "تباجي بلاستيك وسط أبيض",
-    "branchId": "B001",
-    "minQty": 45,
-    "baseQty": 255,
-    "unitCost": 2.5
-  },
-  {
-    "id": "ITEM-052",
-    "name": "PLASTIC TABAGI LARGE",
-    "nameEn": "PLASTIC TABAGI LARGE",
-    "nameAr": "تباجي بلاستيك كبير أبيض",
-    "branchId": "B001",
-    "minQty": 0,
-    "baseQty": 30,
-    "unitCost": 2.5
-  },
-  {
-    "id": "ITEM-053",
-    "name": "PLASTIC TABAGI SMALL BLACK",
-    "nameEn": "PLASTIC TABAGI SMALL BLACK",
-    "nameAr": "تباجي بلاستيك صغير أسود",
-    "branchId": "B001",
-    "minQty": 50,
-    "baseQty": 95,
-    "unitCost": 2.5
-  },
-  {
-    "id": "ITEM-054",
-    "name": "PLASTIC TABAGI MEDIUM BLACK",
-    "nameEn": "PLASTIC TABAGI MEDIUM BLACK",
-    "nameAr": "تباجي بلاستيك وسط أسود",
-    "branchId": "B001",
-    "minQty": 45,
-    "baseQty": 99,
-    "unitCost": 2.5
-  },
-  {
-    "id": "ITEM-055",
-    "name": "PLASTIC TABAGI LARGE BLACK",
-    "nameEn": "PLASTIC TABAGI LARGE BLACK",
-    "nameAr": "تباجي بلاستيك كبير أسود",
-    "branchId": "B001",
-    "minQty": 0,
-    "baseQty": 57,
-    "unitCost": 2.5
-  },
-  {
-    "id": "ITEM-056",
-    "name": "SHOULDER PAD",
-    "nameEn": "SHOULDER PAD",
-    "nameAr": "حشوة أكتاف",
-    "branchId": "B001",
-    "minQty": 50,
-    "baseQty": 129,
-    "unitCost": 1
-  },
-  {
-    "id": "ITEM-057",
-    "name": "ELASTIC 0.25''",
-    "nameEn": "ELASTIC 0.25''",
-    "nameAr": "مطاط 0.25 إنش",
-    "branchId": "B001",
-    "minQty": 0,
-    "baseQty": 1,
-    "unitCost": 0
-  },
-  {
-    "id": "ITEM-058",
-    "name": "ELASTIC 0.500'' BLACK",
-    "nameEn": "ELASTIC 0.500'' BLACK",
-    "nameAr": "مطاط 0.5 إنش أسود",
-    "branchId": "B001",
-    "minQty": 0,
-    "baseQty": 2,
-    "unitCost": 1.75
-  },
-  {
-    "id": "ITEM-059",
-    "name": "ELASTIC 0.500'' WHITE",
-    "nameEn": "ELASTIC 0.500'' WHITE",
-    "nameAr": "مطاط 0.5 إنش أبيض",
-    "branchId": "B001",
-    "minQty": 0,
-    "baseQty": 1,
-    "unitCost": 1.75
-  },
-  {
-    "id": "ITEM-060",
-    "name": "ELASTIC 1''",
-    "nameEn": "ELASTIC 1''",
-    "nameAr": "مطاط 1 إنش",
-    "branchId": "B001",
-    "minQty": 2,
-    "baseQty": 4,
-    "unitCost": 1.25
-  },
-  {
-    "id": "ITEM-061",
-    "name": "ELASTIC 1.5",
-    "nameEn": "ELASTIC 1.5",
-    "nameAr": "مطاط 1.5 إنش",
-    "branchId": "B001",
-    "minQty": 2,
-    "baseQty": 2,
-    "unitCost": 1.75
-  },
-  {
-    "id": "ITEM-062",
-    "name": "ELASTIC 2 ''",
-    "nameEn": "ELASTIC 2 ''",
-    "nameAr": "مطاط 2 إنش",
-    "branchId": "B001",
-    "minQty": 2,
-    "baseQty": 4,
-    "unitCost": 2.25
-  },
-  {
-    "id": "ITEM-063",
-    "name": "HOOK LOOP 1''",
-    "nameEn": "HOOK LOOP 1''",
-    "nameAr": "هوك آند لوب 1 إنش",
-    "branchId": "B001",
-    "minQty": 0,
-    "baseQty": 2,
-    "unitCost": 0
-  },
-  {
-    "id": "ITEM-064",
-    "name": "HOOK LOOP 1.5''",
-    "nameEn": "HOOK LOOP 1.5''",
-    "nameAr": "هوك آند لوب 1.5 إنش",
-    "branchId": "B001",
-    "minQty": 0,
-    "baseQty": 1,
-    "unitCost": 0
-  },
-  {
-    "id": "ITEM-065",
-    "name": "BUTTONS OFF WHITE",
-    "nameEn": "BUTTONS OFF WHITE",
-    "nameAr": "أزرار أوف وايت",
-    "branchId": "B001",
-    "minQty": 0,
-    "baseQty": 0,
-    "unitCost": 0
-  },
-  {
-    "id": "ITEM-066",
-    "name": "OFF WHITE FABRIC",
-    "nameEn": "OFF WHITE FABRIC",
-    "nameAr": "قماش أوف وايت",
-    "branchId": "B001",
-    "minQty": 1,
-    "baseQty": 3,
-    "unitCost": 2
-  },
-  {
-    "id": "ITEM-067",
-    "name": "BLACK FABRIC",
-    "nameEn": "BLACK FABRIC",
-    "nameAr": "قماش أسود",
-    "branchId": "B001",
-    "minQty": 1,
-    "baseQty": 1,
-    "unitCost": 2
-  },
-  {
-    "id": "ITEM-068",
-    "name": "WHITE FABRIC",
-    "nameEn": "WHITE FABRIC",
-    "nameAr": "قماش أبيض",
-    "branchId": "B001",
-    "minQty": 0,
-    "baseQty": 1,
-    "unitCost": 2
-  },
-  {
-    "id": "ITEM-069",
-    "name": "VASLINE WHITE",
-    "nameEn": "VASLINE WHITE",
-    "nameAr": "فازلين أبيض",
-    "branchId": "B001",
-    "minQty": 0,
-    "baseQty": 1,
-    "unitCost": 6
-  },
-  {
-    "id": "ITEM-070",
-    "name": "VASLINE BLACK",
-    "nameEn": "VASLINE BLACK",
-    "nameAr": "فازلين أسود",
-    "branchId": "B001",
-    "minQty": 0,
-    "baseQty": 1,
-    "unitCost": 6.5
-  },
-  {
-    "id": "ITEM-071",
-    "name": "IRON CLOTH",
-    "nameEn": "IRON CLOTH",
-    "nameAr": "قماش مكواة",
-    "branchId": "B001",
-    "minQty": 0,
-    "baseQty": 1,
-    "unitCost": 20
-  }
-],
-  "movements": [],
+  "items": [
+    {
+      "id": "ITEM-001",
+      "name": "DUBU BOX PIN",
+      "nameEn": "DUBU BOX PIN",
+      "nameAr": "\u062f\u0628\u0627\u0628\u064a\u0633 \u062f\u0648\u0628\u0648 \u0628\u0648\u0643\u0633",
+      "branchId": "B001",
+      "minQty": 36,
+      "baseQty": 72,
+      "unitCost": 2.5
+    },
+    {
+      "id": "ITEM-002",
+      "name": "OPNER",
+      "nameEn": "OPNER",
+      "nameAr": "\u0641\u062a\u0651\u0627\u062d\u0629",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 52,
+      "unitCost": 7.5
+    },
+    {
+      "id": "ITEM-003",
+      "name": "NEEDLE 7 HAND",
+      "nameEn": "NEEDLE 7 HAND",
+      "nameAr": "\u0625\u0628\u0631\u0629 7 \u064a\u062f\u0648\u064a",
+      "branchId": "B001",
+      "minQty": 10,
+      "baseQty": 24,
+      "unitCost": 2
+    },
+    {
+      "id": "ITEM-004",
+      "name": "CUTTER",
+      "nameEn": "CUTTER",
+      "nameAr": "\u0642\u0637\u0651\u0627\u0639\u0629",
+      "branchId": "B001",
+      "minQty": 12,
+      "baseQty": 20,
+      "unitCost": 2
+    },
+    {
+      "id": "ITEM-005",
+      "name": "METTER 2",
+      "nameEn": "METTER 2",
+      "nameAr": "\u0645\u062a\u0631 2",
+      "branchId": "B001",
+      "minQty": 6,
+      "baseQty": 12,
+      "unitCost": 2
+    },
+    {
+      "id": "ITEM-006",
+      "name": "METTER 1.5",
+      "nameEn": "METTER 1.5",
+      "nameAr": "\u0645\u062a\u0631 1.5",
+      "branchId": "B001",
+      "minQty": 6,
+      "baseQty": 18,
+      "unitCost": 2
+    },
+    {
+      "id": "ITEM-007",
+      "name": "OIL",
+      "nameEn": "OIL",
+      "nameAr": "\u0632\u064a\u062a",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 4,
+      "unitCost": 1
+    },
+    {
+      "id": "ITEM-008",
+      "name": "BUST CUP BLACK LARGE",
+      "nameEn": "BUST CUP BLACK LARGE",
+      "nameAr": "\u0643\u0627\u0628 \u0635\u062f\u0631 \u0623\u0633\u0648\u062f \u0643\u0628\u064a\u0631",
+      "branchId": "B001",
+      "minQty": 2,
+      "baseQty": 18,
+      "unitCost": 3
+    },
+    {
+      "id": "ITEM-009",
+      "name": "BUST CUP WHITE LARGE",
+      "nameEn": "BUST CUP WHITE LARGE",
+      "nameAr": "\u0643\u0627\u0628 \u0635\u062f\u0631 \u0623\u0628\u064a\u0636 \u0643\u0628\u064a\u0631",
+      "branchId": "B001",
+      "minQty": 3,
+      "baseQty": 17,
+      "unitCost": 3
+    },
+    {
+      "id": "ITEM-010",
+      "name": "BUST CUP BLACK MEDIUM",
+      "nameEn": "BUST CUP BLACK MEDIUM",
+      "nameAr": "\u0643\u0627\u0628 \u0635\u062f\u0631 \u0623\u0633\u0648\u062f \u0648\u0633\u0637",
+      "branchId": "B001",
+      "minQty": 2,
+      "baseQty": 15,
+      "unitCost": 3
+    },
+    {
+      "id": "ITEM-011",
+      "name": "BUST CUP WHITE MEDIUM",
+      "nameEn": "BUST CUP WHITE MEDIUM",
+      "nameAr": "\u0643\u0627\u0628 \u0635\u062f\u0631 \u0623\u0628\u064a\u0636 \u0648\u0633\u0637",
+      "branchId": "B001",
+      "minQty": 5,
+      "baseQty": 3,
+      "unitCost": 3
+    },
+    {
+      "id": "ITEM-012",
+      "name": "BUST CUP BLACK SMALL",
+      "nameEn": "BUST CUP BLACK SMALL",
+      "nameAr": "\u0643\u0627\u0628 \u0635\u062f\u0631 \u0623\u0633\u0648\u062f \u0635\u063a\u064a\u0631",
+      "branchId": "B001",
+      "minQty": 5,
+      "baseQty": 6,
+      "unitCost": 3
+    },
+    {
+      "id": "ITEM-013",
+      "name": "BUST CUP WHITE SMALL",
+      "nameEn": "BUST CUP WHITE SMALL",
+      "nameAr": "\u0643\u0627\u0628 \u0635\u062f\u0631 \u0623\u0628\u064a\u0636 \u0635\u063a\u064a\u0631",
+      "branchId": "B001",
+      "minQty": 5,
+      "baseQty": 13,
+      "unitCost": 3
+    },
+    {
+      "id": "ITEM-014",
+      "name": "BUST CUP BLACK XL",
+      "nameEn": "BUST CUP BLACK XL",
+      "nameAr": "\u0643\u0627\u0628 \u0635\u062f\u0631 \u0623\u0633\u0648\u062f XL",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 5,
+      "unitCost": 3
+    },
+    {
+      "id": "ITEM-015",
+      "name": "BUST CUP WHITE XL",
+      "nameEn": "BUST CUP WHITE XL",
+      "nameAr": "\u0643\u0627\u0628 \u0635\u062f\u0631 \u0623\u0628\u064a\u0636 XL",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 5,
+      "unitCost": 3
+    },
+    {
+      "id": "ITEM-016",
+      "name": "DOUBLE FACE 0.55''",
+      "nameEn": "DOUBLE FACE 0.55''",
+      "nameAr": "\u0634\u0631\u064a\u0637 \u0644\u0627\u0635\u0642 \u0648\u062c\u0647\u064a\u0646 0.55",
+      "branchId": "B001",
+      "minQty": 12,
+      "baseQty": 26,
+      "unitCost": 2.5
+    },
+    {
+      "id": "ITEM-017",
+      "name": "TRANSPARENT BRA STREP",
+      "nameEn": "TRANSPARENT BRA STREP",
+      "nameAr": "\u062d\u0645\u0627\u0644\u0629 \u0635\u062f\u0631 \u0634\u0641\u0627\u0641\u0629",
+      "branchId": "B001",
+      "minQty": 20,
+      "baseQty": 31,
+      "unitCost": 2
+    },
+    {
+      "id": "ITEM-018",
+      "name": "MARKER",
+      "nameEn": "MARKER",
+      "nameAr": "\u0645\u0627\u0631\u0643\u0631",
+      "branchId": "B001",
+      "minQty": 3,
+      "baseQty": 24,
+      "unitCost": 2
+    },
+    {
+      "id": "ITEM-019",
+      "name": "NEEDLE DB 11",
+      "nameEn": "NEEDLE DB 11",
+      "nameAr": "\u0625\u0628\u0631\u0629 DB 11",
+      "branchId": "B001",
+      "minQty": 10,
+      "baseQty": 35,
+      "unitCost": 4.5
+    },
+    {
+      "id": "ITEM-020",
+      "name": "NEEDLE DB 14",
+      "nameEn": "NEEDLE DB 14",
+      "nameAr": "\u0625\u0628\u0631\u0629 DB 14",
+      "branchId": "B001",
+      "minQty": 10,
+      "baseQty": 29,
+      "unitCost": 4.5
+    },
+    {
+      "id": "ITEM-021",
+      "name": "NEEDLE DB 16",
+      "nameEn": "NEEDLE DB 16",
+      "nameAr": "\u0625\u0628\u0631\u0629 DB 16",
+      "branchId": "B001",
+      "minQty": 10,
+      "baseQty": 100,
+      "unitCost": 4.5
+    },
+    {
+      "id": "ITEM-022",
+      "name": "NEEDLE DB 18",
+      "nameEn": "NEEDLE DB 18",
+      "nameAr": "\u0625\u0628\u0631\u0629 DB 18",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 49,
+      "unitCost": 4.5
+    },
+    {
+      "id": "ITEM-023",
+      "name": "NEEDLE DC 11",
+      "nameEn": "NEEDLE DC 11",
+      "nameAr": "\u0625\u0628\u0631\u0629 DC 11",
+      "branchId": "B001",
+      "minQty": 2,
+      "baseQty": 6,
+      "unitCost": 3
+    },
+    {
+      "id": "ITEM-024",
+      "name": "NEEDLE DC 14",
+      "nameEn": "NEEDLE DC 14",
+      "nameAr": "\u0625\u0628\u0631\u0629 DC 14",
+      "branchId": "B001",
+      "minQty": 2,
+      "baseQty": 4,
+      "unitCost": 3
+    },
+    {
+      "id": "ITEM-025",
+      "name": "NEEDLE DC 16",
+      "nameEn": "NEEDLE DC 16",
+      "nameAr": "\u0625\u0628\u0631\u0629 DC 16",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 12,
+      "unitCost": 3
+    },
+    {
+      "id": "ITEM-026",
+      "name": "NEEDLE DC 18",
+      "nameEn": "NEEDLE DC 18",
+      "nameAr": "\u0625\u0628\u0631\u0629 DC 18",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 11,
+      "unitCost": 3
+    },
+    {
+      "id": "ITEM-027",
+      "name": "ZIPPER MAKFI LONG YKK",
+      "nameEn": "ZIPPER MAKFI LONG YKK",
+      "nameAr": "\u0633\u062d\u0627\u0628 \u0645\u062e\u0641\u064a \u0637\u0648\u064a\u0644 YKK",
+      "branchId": "B001",
+      "minQty": 31,
+      "baseQty": 727,
+      "unitCost": 10
+    },
+    {
+      "id": "ITEM-028",
+      "name": "ZIPPER MAKFI SMALL",
+      "nameEn": "ZIPPER MAKFI SMALL",
+      "nameAr": "\u0633\u062d\u0627\u0628 \u0645\u062e\u0641\u064a \u0635\u063a\u064a\u0631",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 170,
+      "unitCost": 1
+    },
+    {
+      "id": "ITEM-029",
+      "name": "ZIPPER PANT",
+      "nameEn": "ZIPPER PANT",
+      "nameAr": "\u0633\u062d\u0627\u0628 \u0628\u0646\u0637\u0627\u0644",
+      "branchId": "B001",
+      "minQty": 12,
+      "baseQty": 272,
+      "unitCost": 0.5
+    },
+    {
+      "id": "ITEM-030",
+      "name": "ZIPPERT JEANS",
+      "nameEn": "ZIPPERT JEANS",
+      "nameAr": "\u0633\u062d\u0627\u0628 \u062c\u064a\u0646\u0632",
+      "branchId": "B001",
+      "minQty": 14,
+      "baseQty": 31,
+      "unitCost": 1.25
+    },
+    {
+      "id": "ITEM-031",
+      "name": "ZIPPER ADI LONG",
+      "nameEn": "ZIPPER ADI LONG",
+      "nameAr": "\u0633\u062d\u0627\u0628 \u0639\u0627\u062f\u064a \u0637\u0648\u064a\u0644",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 72,
+      "unitCost": 0.5
+    },
+    {
+      "id": "ITEM-032",
+      "name": "ZIPPER jacket metal",
+      "nameEn": "ZIPPER jacket metal",
+      "nameAr": "\u0633\u062d\u0627\u0628 \u062c\u0627\u0643\u064a\u062a \u0645\u0639\u062f\u0646\u064a",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 43,
+      "unitCost": 0.133
+    },
+    {
+      "id": "ITEM-033",
+      "name": "zipper plastic jacket",
+      "nameEn": "zipper plastic jacket",
+      "nameAr": "\u0633\u062d\u0627\u0628 \u062c\u0627\u0643\u064a\u062a \u0628\u0644\u0627\u0633\u062a\u064a\u0643",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 71,
+      "unitCost": 2.5
+    },
+    {
+      "id": "ITEM-034",
+      "name": "tabagi black small",
+      "nameEn": "tabagi black small",
+      "nameAr": "\u062a\u0628\u0627\u062c\u064a \u0623\u0633\u0648\u062f \u0635\u063a\u064a\u0631",
+      "branchId": "B001",
+      "minQty": 216,
+      "baseQty": 1209,
+      "unitCost": 0
+    },
+    {
+      "id": "ITEM-035",
+      "name": "tabagi silver small",
+      "nameEn": "tabagi silver small",
+      "nameAr": "\u062a\u0628\u0627\u062c\u064a \u0641\u0636\u064a \u0635\u063a\u064a\u0631",
+      "branchId": "B001",
+      "minQty": 216,
+      "baseQty": 538,
+      "unitCost": 0
+    },
+    {
+      "id": "ITEM-036",
+      "name": "TABAGI BLACK MEDIUM",
+      "nameEn": "TABAGI BLACK MEDIUM",
+      "nameAr": "\u062a\u0628\u0627\u062c\u064a \u0623\u0633\u0648\u062f \u0648\u0633\u0637",
+      "branchId": "B001",
+      "minQty": 216,
+      "baseQty": 522,
+      "unitCost": 0
+    },
+    {
+      "id": "ITEM-037",
+      "name": "TABAGI SILVER MEDIUM",
+      "nameEn": "TABAGI SILVER MEDIUM",
+      "nameAr": "\u062a\u0628\u0627\u062c\u064a \u0641\u0636\u064a \u0648\u0633\u0637",
+      "branchId": "B001",
+      "minQty": 216,
+      "baseQty": 929,
+      "unitCost": 0
+    },
+    {
+      "id": "ITEM-038",
+      "name": "TABAGI BLACK LARGE",
+      "nameEn": "TABAGI BLACK LARGE",
+      "nameAr": "\u062a\u0628\u0627\u062c\u064a \u0623\u0633\u0648\u062f \u0643\u0628\u064a\u0631",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 38,
+      "unitCost": 0
+    },
+    {
+      "id": "ITEM-039",
+      "name": "TABAGI SILVER LARGE",
+      "nameEn": "TABAGI SILVER LARGE",
+      "nameAr": "\u062a\u0628\u0627\u062c\u064a \u0641\u0636\u064a \u0643\u0628\u064a\u0631",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 24,
+      "unitCost": 0
+    },
+    {
+      "id": "ITEM-040",
+      "name": "STRETCH VESLINE BLACK",
+      "nameEn": "STRETCH VESLINE BLACK",
+      "nameAr": "\u0641\u0632\u0644\u064a\u0646 \u0645\u0637\u0627\u0637\u064a \u0623\u0633\u0648\u062f",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 0,
+      "unitCost": 1
+    },
+    {
+      "id": "ITEM-041",
+      "name": "STRETCH VESLINE WHITE",
+      "nameEn": "STRETCH VESLINE WHITE",
+      "nameAr": "\u0641\u0632\u0644\u064a\u0646 \u0645\u0637\u0627\u0637\u064a \u0623\u0628\u064a\u0636",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 0,
+      "unitCost": 1
+    },
+    {
+      "id": "ITEM-042",
+      "name": "GOWN HOOK SILVER",
+      "nameEn": "GOWN HOOK SILVER",
+      "nameAr": "\u0647\u0648\u0643 \u0641\u0633\u062a\u0627\u0646 \u0641\u0636\u064a",
+      "branchId": "B001",
+      "minQty": 0.5,
+      "baseQty": 0.5,
+      "unitCost": 0.5
+    },
+    {
+      "id": "ITEM-043",
+      "name": "GOWN HOOK BLACK",
+      "nameEn": "GOWN HOOK BLACK",
+      "nameAr": "\u0647\u0648\u0643 \u0641\u0633\u062a\u0627\u0646 \u0623\u0633\u0648\u062f",
+      "branchId": "B001",
+      "minQty": 0.5,
+      "baseQty": 0.5,
+      "unitCost": 0.5
+    },
+    {
+      "id": "ITEM-044",
+      "name": "GOWN HOOK GOLD",
+      "nameEn": "GOWN HOOK GOLD",
+      "nameAr": "\u0647\u0648\u0643 \u0641\u0633\u062a\u0627\u0646 \u0630\u0647\u0628\u064a",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 1,
+      "unitCost": 0.5
+    },
+    {
+      "id": "ITEM-045",
+      "name": "PANTS HOOK SILVER",
+      "nameEn": "PANTS HOOK SILVER",
+      "nameAr": "\u0647\u0648\u0643 \u0628\u0646\u0637\u0627\u0644 \u0641\u0636\u064a",
+      "branchId": "B001",
+      "minQty": 0.5,
+      "baseQty": 0.5,
+      "unitCost": 0.285
+    },
+    {
+      "id": "ITEM-046",
+      "name": "PANTS HOOK BLACK",
+      "nameEn": "PANTS HOOK BLACK",
+      "nameAr": "\u0647\u0648\u0643 \u0628\u0646\u0637\u0627\u0644 \u0623\u0633\u0648\u062f",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 1,
+      "unitCost": 0.285
+    },
+    {
+      "id": "ITEM-047",
+      "name": "BHOOT LEFT AND RIGHT",
+      "nameEn": "BHOOT LEFT AND RIGHT",
+      "nameAr": "\u0628\u0648\u062a \u064a\u0633\u0627\u0631 \u0648\u064a\u0645\u064a\u0646",
+      "branchId": "B001",
+      "minQty": 4,
+      "baseQty": 11,
+      "unitCost": 0.75
+    },
+    {
+      "id": "ITEM-048",
+      "name": "BABIN CASE",
+      "nameEn": "BABIN CASE",
+      "nameAr": "\u0639\u0644\u0628\u0629 \u0628\u0643\u0631\u0629 \u062e\u064a\u0637",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 12,
+      "unitCost": 0.75
+    },
+    {
+      "id": "ITEM-049",
+      "name": "BABIN",
+      "nameEn": "BABIN",
+      "nameAr": "\u0628\u0643\u0631\u0629 \u062e\u064a\u0637",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 16,
+      "unitCost": 0
+    },
+    {
+      "id": "ITEM-050",
+      "name": "PLASTICK TABAGI SMALL",
+      "nameEn": "PLASTICK TABAGI SMALL",
+      "nameAr": "\u062a\u0628\u0627\u062c\u064a \u0628\u0644\u0627\u0633\u062a\u064a\u0643 \u0635\u063a\u064a\u0631 \u0623\u0628\u064a\u0636",
+      "branchId": "B001",
+      "minQty": 50,
+      "baseQty": 230,
+      "unitCost": 2.5
+    },
+    {
+      "id": "ITEM-051",
+      "name": "PLASTICK TABAGI MEDIUM",
+      "nameEn": "PLASTICK TABAGI MEDIUM",
+      "nameAr": "\u062a\u0628\u0627\u062c\u064a \u0628\u0644\u0627\u0633\u062a\u064a\u0643 \u0648\u0633\u0637 \u0623\u0628\u064a\u0636",
+      "branchId": "B001",
+      "minQty": 45,
+      "baseQty": 255,
+      "unitCost": 2.5
+    },
+    {
+      "id": "ITEM-052",
+      "name": "PLASTIC TABAGI LARGE",
+      "nameEn": "PLASTIC TABAGI LARGE",
+      "nameAr": "\u062a\u0628\u0627\u062c\u064a \u0628\u0644\u0627\u0633\u062a\u064a\u0643 \u0643\u0628\u064a\u0631 \u0623\u0628\u064a\u0636",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 30,
+      "unitCost": 2.5
+    },
+    {
+      "id": "ITEM-053",
+      "name": "PLASTIC TABAGI SMALL BLACK",
+      "nameEn": "PLASTIC TABAGI SMALL BLACK",
+      "nameAr": "\u062a\u0628\u0627\u062c\u064a \u0628\u0644\u0627\u0633\u062a\u064a\u0643 \u0635\u063a\u064a\u0631 \u0623\u0633\u0648\u062f",
+      "branchId": "B001",
+      "minQty": 50,
+      "baseQty": 95,
+      "unitCost": 2.5
+    },
+    {
+      "id": "ITEM-054",
+      "name": "PLASTIC TABAGI MEDIUM BLACK",
+      "nameEn": "PLASTIC TABAGI MEDIUM BLACK",
+      "nameAr": "\u062a\u0628\u0627\u062c\u064a \u0628\u0644\u0627\u0633\u062a\u064a\u0643 \u0648\u0633\u0637 \u0623\u0633\u0648\u062f",
+      "branchId": "B001",
+      "minQty": 45,
+      "baseQty": 99,
+      "unitCost": 2.5
+    },
+    {
+      "id": "ITEM-055",
+      "name": "PLASTIC TABAGI LARGE BLACK",
+      "nameEn": "PLASTIC TABAGI LARGE BLACK",
+      "nameAr": "\u062a\u0628\u0627\u062c\u064a \u0628\u0644\u0627\u0633\u062a\u064a\u0643 \u0643\u0628\u064a\u0631 \u0623\u0633\u0648\u062f",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 57,
+      "unitCost": 2.5
+    },
+    {
+      "id": "ITEM-056",
+      "name": "SHOULDER PAD",
+      "nameEn": "SHOULDER PAD",
+      "nameAr": "\u062d\u0634\u0648\u0629 \u0623\u0643\u062a\u0627\u0641",
+      "branchId": "B001",
+      "minQty": 50,
+      "baseQty": 129,
+      "unitCost": 1
+    },
+    {
+      "id": "ITEM-057",
+      "name": "ELASTIC 0.25''",
+      "nameEn": "ELASTIC 0.25''",
+      "nameAr": "\u0645\u0637\u0627\u0637 0.25 \u0625\u0646\u0634",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 1,
+      "unitCost": 0
+    },
+    {
+      "id": "ITEM-058",
+      "name": "ELASTIC 0.500'' BLACK",
+      "nameEn": "ELASTIC 0.500'' BLACK",
+      "nameAr": "\u0645\u0637\u0627\u0637 0.5 \u0625\u0646\u0634 \u0623\u0633\u0648\u062f",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 2,
+      "unitCost": 1.75
+    },
+    {
+      "id": "ITEM-059",
+      "name": "ELASTIC 0.500'' WHITE",
+      "nameEn": "ELASTIC 0.500'' WHITE",
+      "nameAr": "\u0645\u0637\u0627\u0637 0.5 \u0625\u0646\u0634 \u0623\u0628\u064a\u0636",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 1,
+      "unitCost": 1.75
+    },
+    {
+      "id": "ITEM-060",
+      "name": "ELASTIC 1''",
+      "nameEn": "ELASTIC 1''",
+      "nameAr": "\u0645\u0637\u0627\u0637 1 \u0625\u0646\u0634",
+      "branchId": "B001",
+      "minQty": 2,
+      "baseQty": 4,
+      "unitCost": 1.25
+    },
+    {
+      "id": "ITEM-061",
+      "name": "ELASTIC 1.5",
+      "nameEn": "ELASTIC 1.5",
+      "nameAr": "\u0645\u0637\u0627\u0637 1.5 \u0625\u0646\u0634",
+      "branchId": "B001",
+      "minQty": 2,
+      "baseQty": 2,
+      "unitCost": 1.75
+    },
+    {
+      "id": "ITEM-062",
+      "name": "ELASTIC 2 ''",
+      "nameEn": "ELASTIC 2 ''",
+      "nameAr": "\u0645\u0637\u0627\u0637 2 \u0625\u0646\u0634",
+      "branchId": "B001",
+      "minQty": 2,
+      "baseQty": 4,
+      "unitCost": 2.25
+    },
+    {
+      "id": "ITEM-063",
+      "name": "HOOK LOOP 1''",
+      "nameEn": "HOOK LOOP 1''",
+      "nameAr": "\u0647\u0648\u0643 \u0622\u0646\u062f \u0644\u0648\u0628 1 \u0625\u0646\u0634",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 2,
+      "unitCost": 0
+    },
+    {
+      "id": "ITEM-064",
+      "name": "HOOK LOOP 1.5''",
+      "nameEn": "HOOK LOOP 1.5''",
+      "nameAr": "\u0647\u0648\u0643 \u0622\u0646\u062f \u0644\u0648\u0628 1.5 \u0625\u0646\u0634",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 1,
+      "unitCost": 0
+    },
+    {
+      "id": "ITEM-065",
+      "name": "BUTTONS OFF WHITE",
+      "nameEn": "BUTTONS OFF WHITE",
+      "nameAr": "\u0623\u0632\u0631\u0627\u0631 \u0623\u0648\u0641 \u0648\u0627\u064a\u062a",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 0,
+      "unitCost": 0
+    },
+    {
+      "id": "ITEM-066",
+      "name": "OFF WHITE FABRIC",
+      "nameEn": "OFF WHITE FABRIC",
+      "nameAr": "\u0642\u0645\u0627\u0634 \u0623\u0648\u0641 \u0648\u0627\u064a\u062a",
+      "branchId": "B001",
+      "minQty": 1,
+      "baseQty": 3,
+      "unitCost": 2
+    },
+    {
+      "id": "ITEM-067",
+      "name": "BLACK FABRIC",
+      "nameEn": "BLACK FABRIC",
+      "nameAr": "\u0642\u0645\u0627\u0634 \u0623\u0633\u0648\u062f",
+      "branchId": "B001",
+      "minQty": 1,
+      "baseQty": 1,
+      "unitCost": 2
+    },
+    {
+      "id": "ITEM-068",
+      "name": "WHITE FABRIC",
+      "nameEn": "WHITE FABRIC",
+      "nameAr": "\u0642\u0645\u0627\u0634 \u0623\u0628\u064a\u0636",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 1,
+      "unitCost": 2
+    },
+    {
+      "id": "ITEM-069",
+      "name": "VASLINE WHITE",
+      "nameEn": "VASLINE WHITE",
+      "nameAr": "\u0641\u0627\u0632\u0644\u064a\u0646 \u0623\u0628\u064a\u0636",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 1,
+      "unitCost": 6
+    },
+    {
+      "id": "ITEM-070",
+      "name": "VASLINE BLACK",
+      "nameEn": "VASLINE BLACK",
+      "nameAr": "\u0641\u0627\u0632\u0644\u064a\u0646 \u0623\u0633\u0648\u062f",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 1,
+      "unitCost": 6.5
+    },
+    {
+      "id": "ITEM-071",
+      "name": "IRON CLOTH",
+      "nameEn": "IRON CLOTH",
+      "nameAr": "\u0642\u0645\u0627\u0634 \u0645\u0643\u0648\u0627\u0629",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 1,
+      "unitCost": 20
+    },
+    {
+      "id": "ITEM-008",
+      "name": "BUST CUP BLACK LARGE",
+      "nameEn": "BUST CUP BLACK LARGE",
+      "nameAr": "\u0643\u0627\u0628 \u0635\u062f\u0631 \u0623\u0633\u0648\u062f \u0643\u0628\u064a\u0631",
+      "branchId": "B008",
+      "minQty": 0,
+      "baseQty": 6,
+      "unitCost": 3
+    },
+    {
+      "id": "THR-50",
+      "name": "THREAD (Color 50)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 4,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-51",
+      "name": "THREAD (Color 51)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 18,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-98",
+      "name": "THREAD (Color 98)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 3,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-101",
+      "name": "THREAD (Color 101)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 7,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-104",
+      "name": "THREAD (Color 104)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 9,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-110",
+      "name": "THREAD (Color 110)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 5,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-111",
+      "name": "THREAD (Color 111)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 44,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-122",
+      "name": "THREAD (Color 122)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 6,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-134",
+      "name": "THREAD (Color 134)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 7,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-141",
+      "name": "THREAD (Color 141)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 2,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-144",
+      "name": "THREAD (Color 144)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 7,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-148",
+      "name": "THREAD (Color 148)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 11,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-149",
+      "name": "THREAD (Color 149)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 10,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-153",
+      "name": "THREAD (Color 153)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 5,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-165",
+      "name": "THREAD (Color 165)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 4,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-170",
+      "name": "THREAD (Color 170)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 3,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-171",
+      "name": "THREAD (Color 171)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 2,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-174",
+      "name": "THREAD (Color 174)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 2,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-178",
+      "name": "THREAD (Color 178)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 7,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-185",
+      "name": "THREAD (Color 185)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 10,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-186",
+      "name": "THREAD (Color 186)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 5,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-187",
+      "name": "THREAD (Color 187)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 8,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-188",
+      "name": "THREAD (Color 188)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 8,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-192",
+      "name": "THREAD (Color 192)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 11,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-195",
+      "name": "THREAD (Color 195)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 9,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-201",
+      "name": "THREAD (Color 201)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 13,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-205",
+      "name": "THREAD (Color 205)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 5,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-206",
+      "name": "THREAD (Color 206)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 7,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-207",
+      "name": "THREAD (Color 207)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 5,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-220",
+      "name": "THREAD (Color 220)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 23,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-223",
+      "name": "THREAD (Color 223)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 25,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-226",
+      "name": "THREAD (Color 226)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 9,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-228",
+      "name": "THREAD (Color 228)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 9,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-234",
+      "name": "THREAD (Color 234)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 5,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-238",
+      "name": "THREAD (Color 238)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 5,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-247",
+      "name": "THREAD (Color 247)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 4,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-248",
+      "name": "THREAD (Color 248)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 1,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-250",
+      "name": "THREAD (Color 250)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 3,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-252",
+      "name": "THREAD (Color 252)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 9,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-254",
+      "name": "THREAD (Color 254)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 9,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-257",
+      "name": "THREAD (Color 257)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 6,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-290",
+      "name": "THREAD (Color 290)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 1,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-295",
+      "name": "THREAD (Color 295)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 14,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-310",
+      "name": "THREAD (Color 310)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 6,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-333",
+      "name": "THREAD (Color 333)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 10,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-344",
+      "name": "THREAD (Color 344)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 1,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-351",
+      "name": "THREAD (Color 351)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 2,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-359",
+      "name": "THREAD (Color 359)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 4,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-377",
+      "name": "THREAD (Color 377)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 11,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-378",
+      "name": "THREAD (Color 378)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 3,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-382",
+      "name": "THREAD (Color 382)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 10,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-386",
+      "name": "THREAD (Color 386)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 10,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-387",
+      "name": "THREAD (Color 387)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 1,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-390",
+      "name": "THREAD (Color 390)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 16,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-392",
+      "name": "THREAD (Color 392)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 1,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-394",
+      "name": "THREAD (Color 394)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 1,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-395",
+      "name": "THREAD (Color 395)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 2,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-400",
+      "name": "THREAD (Color 400)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 2,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-407",
+      "name": "THREAD (Color 407)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 5,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-410",
+      "name": "THREAD (Color 410)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 9,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-411",
+      "name": "THREAD (Color 411)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 4,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-414",
+      "name": "THREAD (Color 414)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 4,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-415",
+      "name": "THREAD (Color 415)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 1,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-419",
+      "name": "THREAD (Color 419)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 19,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-426",
+      "name": "THREAD (Color 426)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 1,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-433",
+      "name": "THREAD (Color 433)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 5,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-440",
+      "name": "THREAD (Color 440)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 6,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-445",
+      "name": "THREAD (Color 445)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 19,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-451",
+      "name": "THREAD (Color 451)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 5,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-456",
+      "name": "THREAD (Color 456)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 1,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-461",
+      "name": "THREAD (Color 461)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 1,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-468",
+      "name": "THREAD (Color 468)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 1,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-471",
+      "name": "THREAD (Color 471)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 9,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-483",
+      "name": "THREAD (Color 483)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 2,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-488",
+      "name": "THREAD (Color 488)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 4,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-502",
+      "name": "THREAD (Color 502)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 2,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-504",
+      "name": "THREAD (Color 504)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 1,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-517",
+      "name": "THREAD (Color 517)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 20,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-520",
+      "name": "THREAD (Color 520)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 8,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-524",
+      "name": "THREAD (Color 524)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 1,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-527",
+      "name": "THREAD (Color 527)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 12,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-538",
+      "name": "THREAD (Color 538)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 12,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-539",
+      "name": "THREAD (Color 539)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 13,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-542",
+      "name": "THREAD (Color 542)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 5,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-544",
+      "name": "THREAD (Color 544)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 8,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-547",
+      "name": "THREAD (Color 547)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 12,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-552",
+      "name": "THREAD (Color 552)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 7,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-553",
+      "name": "THREAD (Color 553)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 1,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-554",
+      "name": "THREAD (Color 554)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 2,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-559",
+      "name": "THREAD (Color 559)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 7,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-571",
+      "name": "THREAD (Color 571)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 3,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-579",
+      "name": "THREAD (Color 579)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 2,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-602",
+      "name": "THREAD (Color 602)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 1,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-607",
+      "name": "THREAD (Color 607)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 5,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-628",
+      "name": "THREAD (Color 628)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 10,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-631",
+      "name": "THREAD (Color 631)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 1,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-638",
+      "name": "THREAD (Color 638)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 8,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-655",
+      "name": "THREAD (Color 655)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 2,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-656",
+      "name": "THREAD (Color 656)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 3,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-658",
+      "name": "THREAD (Color 658)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 7,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-660",
+      "name": "THREAD (Color 660)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 1,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-662",
+      "name": "THREAD (Color 662)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 7,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-663",
+      "name": "THREAD (Color 663)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 8,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-668",
+      "name": "THREAD (Color 668)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 7,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-677",
+      "name": "THREAD (Color 677)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 4,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-715",
+      "name": "THREAD (Color 715)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 13,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-723",
+      "name": "THREAD (Color 723)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 6,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-726",
+      "name": "THREAD (Color 726)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 6,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-731",
+      "name": "THREAD (Color 731)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 2,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-762",
+      "name": "THREAD (Color 762)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 1,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-766",
+      "name": "THREAD (Color 766)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 5,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-773",
+      "name": "THREAD (Color 773)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 3,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-777",
+      "name": "THREAD (Color 777)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 7,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-779",
+      "name": "THREAD (Color 779)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 13,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-782",
+      "name": "THREAD (Color 782)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 13,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-803",
+      "name": "THREAD (Color 803)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 2,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-804",
+      "name": "THREAD (Color 804)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 5,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-815",
+      "name": "THREAD (Color 815)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 1,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-820",
+      "name": "THREAD (Color 820)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 7,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-822",
+      "name": "THREAD (Color 822)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 77,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-830",
+      "name": "THREAD (Color 830)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 5,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-831",
+      "name": "THREAD (Color 831)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 1,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-832",
+      "name": "THREAD (Color 832)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 1,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-850",
+      "name": "THREAD (Color 850)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 16,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-854",
+      "name": "THREAD (Color 854)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 11,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-855",
+      "name": "THREAD (Color 855)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 1,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-859",
+      "name": "THREAD (Color 859)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 5,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-868",
+      "name": "THREAD (Color 868)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 2,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-880",
+      "name": "THREAD (Color 880)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 10,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-884",
+      "name": "THREAD (Color 884)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 3,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-891",
+      "name": "THREAD (Color 891)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 6,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-895",
+      "name": "THREAD (Color 895)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 10,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-902",
+      "name": "THREAD (Color 902)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 7,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-904",
+      "name": "THREAD (Color 904)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 0,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-909",
+      "name": "THREAD (Color 909)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 6,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-910",
+      "name": "THREAD (Color 910)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 9,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-912",
+      "name": "THREAD (Color 912)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 17,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-945",
+      "name": "THREAD (Color 945)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 2,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-960",
+      "name": "THREAD (Color 960)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 8,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-962",
+      "name": "THREAD (Color 962)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 8,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-963",
+      "name": "THREAD (Color 963)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 9,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-970",
+      "name": "THREAD (Color 970)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 7,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-976",
+      "name": "THREAD (Color 976)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 4,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-978",
+      "name": "THREAD (Color 978)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 6,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-985",
+      "name": "THREAD (Color 985)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 2,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-995",
+      "name": "THREAD (Color 995)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 5,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-996",
+      "name": "THREAD (Color 996)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 8,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-1010",
+      "name": "THREAD (Color 1010)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 3,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-1011",
+      "name": "THREAD (Color 1011)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 13,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-1015",
+      "name": "THREAD (Color 1015)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 11,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-1017",
+      "name": "THREAD (Color 1017)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 1,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-1018",
+      "name": "THREAD (Color 1018)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 6,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-1022",
+      "name": "THREAD (Color 1022)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 8,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-1031",
+      "name": "THREAD (Color 1031)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 1,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-1041",
+      "name": "THREAD (Color 1041)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 8,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-1090",
+      "name": "THREAD (Color 1090)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 14,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-1101",
+      "name": "THREAD (Color 1101)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 9,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-1102",
+      "name": "THREAD (Color 1102)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 11,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-1103",
+      "name": "THREAD (Color 1103)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 8,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-1121",
+      "name": "THREAD (Color 1121)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 8,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-1123",
+      "name": "THREAD (Color 1123)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 8,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-1125",
+      "name": "THREAD (Color 1125)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 12,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-1133",
+      "name": "THREAD (Color 1133)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 5,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-1137",
+      "name": "THREAD (Color 1137)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 2,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-1176",
+      "name": "THREAD (Color 1176)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 5,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-1182",
+      "name": "THREAD (Color 1182)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 9,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-1186",
+      "name": "THREAD (Color 1186)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 6,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-1206",
+      "name": "THREAD (Color 1206)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 1,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-1273",
+      "name": "THREAD (Color 1273)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 2,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-1281",
+      "name": "THREAD (Color 1281)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 4,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-1305",
+      "name": "THREAD (Color 1305)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 22,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-1312",
+      "name": "THREAD (Color 1312)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 2,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-1316",
+      "name": "THREAD (Color 1316)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 4,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-1320",
+      "name": "THREAD (Color 1320)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 3,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-1356",
+      "name": "THREAD (Color 1356)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 1,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-1424",
+      "name": "THREAD (Color 1424)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 1,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-1708",
+      "name": "THREAD (Color 1708)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 1,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-BLACK",
+      "name": "THREAD (Color BLACK)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 60,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-OFF_WHITE",
+      "name": "THREAD (Color OFF WHITE)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 77,
+      "unitCost": 0.166
+    },
+    {
+      "id": "THR-WHITE",
+      "name": "THREAD (Color WHITE)",
+      "branchId": "B001",
+      "minQty": 0,
+      "baseQty": 81,
+      "unitCost": 0.166
+    }
+  ],
+  "movements": [
+    {
+      "id": "MOV-1765980898985",
+      "itemId": "ITEM-008",
+      "type": "OUT",
+      "qty": 6,
+      "userId": "u_driver",
+      "branchId": "B001",
+      "note": "Delivery OUT for request REQ-1765973068553",
+      "createdAt": "2025-12-17T14:14:58.985Z"
+    },
+    {
+      "id": "MOV-1765980898986",
+      "itemId": "ITEM-008",
+      "type": "IN",
+      "qty": 6,
+      "userId": "u_driver",
+      "branchId": "B008",
+      "note": "Delivery IN for request REQ-1765973068553",
+      "createdAt": "2025-12-17T14:14:58.985Z"
+    }
+  ],
   "budgets": [],
-  "requests": [],
+  "requests": [
+    {
+      "id": "REQ-1765973068553",
+      "itemId": "ITEM-008",
+      "qty": 6,
+      "fromBranchId": "B001",
+      "toBranchId": "B008",
+      "createdByUserId": "u_staff_zahra",
+      "note": "",
+      "status": "delivered",
+      "driverUserId": "u_driver",
+      "createdAt": "2025-12-17T12:04:28.553Z"
+    },
+    {
+      "id": "REQ-1765973073990",
+      "itemId": "ITEM-011",
+      "qty": 1,
+      "fromBranchId": "B001",
+      "toBranchId": "B008",
+      "createdByUserId": "u_staff_zahra",
+      "note": "",
+      "status": "pending",
+      "driverUserId": null,
+      "createdAt": "2025-12-17T12:04:33.990Z"
+    },
+    {
+      "id": "REQ-1765973076457",
+      "itemId": "ITEM-049",
+      "qty": 1,
+      "fromBranchId": "B001",
+      "toBranchId": "B008",
+      "createdByUserId": "u_staff_zahra",
+      "note": "",
+      "status": "pending",
+      "driverUserId": null,
+      "createdAt": "2025-12-17T12:04:36.457Z"
+    }
+  ],
   "trips": [],
-  "vehicles": [],
-  "vehicleReminders": []
+  "vehicles": [
+    {
+      "id": "CAR-1765972984160",
+      "name": "Camery",
+      "plate": "KKU-2501"
+    }
+  ],
+  "vehicleReminders": [],
+  "carAssignments": [
+    {
+      "id": "ASSIGN-1765979963369-469",
+      "vehicleId": "CAR-1765972984160",
+      "driverUserId": "u_driver",
+      "assignedByUserId": "u_admin",
+      "note": "",
+      "assignedAt": "2025-12-17T13:59:23.369Z"
+    }
+  ],
+  "carMaintenances": []
 }
