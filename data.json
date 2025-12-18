@@ -2294,23 +2294,8 @@
     }
   ],
   "trips": [],
-  "vehicles": [
-    {
-      "id": "CAR-1765972984160",
-      "name": "Camery",
-      "plate": "KKU-2501"
-    }
-  ],
+  "vehicles": [],
   "vehicleReminders": [],
-  "carAssignments": [
-    {
-      "id": "ASSIGN-1765979963369-469",
-      "vehicleId": "CAR-1765972984160",
-      "driverUserId": "u_driver",
-      "assignedByUserId": "u_admin",
-      "note": "",
-      "assignedAt": "2025-12-17T13:59:23.369Z"
-    }
-  ],
+  "carAssignments": [],
   "carMaintenances": []
 }

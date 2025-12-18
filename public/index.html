@@ -1879,18 +1879,18 @@
 
   if (state.user.role === "driver") {
     visible = all; // (driver normally uses driver panel, but keep safe)
-  } else if (state.user.role === "admin") {
-    // ✅ Admin sees ALL pending requests from ALL branches
+  } else if (state.user.role === "admin" || state.user.role === "manager") {
+    // ✅ Admin & Manager see ALL pending requests from ALL branches
     visible = all.filter((r) => r.status === "pending");
   } else {
-    // ✅ Staff/Manager: requests for their own branch (all statuses)
+    // ✅ Staff: requests for their own branch (all statuses)
     visible = all.filter((r) => r.toBranchId === state.user.branchId);
   }
 
   if (!visible.length) {
     const tr = document.createElement("tr");
     tr.innerHTML = `<td colspan="8" class="text-muted">${
-      state.user.role === "admin" ? t("no_pending_requests") : t("no_requests_yet")
+      ["admin", "manager"].includes(state.user.role) ? t("no_pending_requests") : t("no_requests_yet")
     }</td>`;
     tbody.appendChild(tr);
     return;
