@@ -534,6 +534,34 @@ app.post("/api/requests/:id/deliver", async (req, res) => {
   }
 });
 
+// Delete pending request (admin/manager)
+app.delete("/api/requests/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { userId } = req.body || {};
+
+    const data = await loadData();
+    const user = findUserById(data, userId);
+    if (!requireRole(user, ["admin", "manager"])) {
+      return res.status(403).json({ error: "Only admin/manager can delete requests" });
+    }
+
+    const idx = (data.requests || []).findIndex((r) => r.id === id);
+    if (idx === -1) return res.status(404).json({ error: "Request not found" });
+
+    if (data.requests[idx].status !== "pending") {
+      return res.status(400).json({ error: "Only pending requests can be deleted" });
+    }
+
+    data.requests.splice(idx, 1);
+    await saveData(data);
+    res.json({ ok: true });
+  } catch (err) {
+    console.error("Delete request error", err);
+    res.status(500).json({ error: "Failed to delete request" });
+  }
+});
+
 // ---------- BUDGET ----------
 app.post("/api/budgets", async (req, res) => {
   try {
@@ -595,6 +623,67 @@ app.post("/api/vehicles", async (req, res) => {
     res.status(201).json(vehicle);
   } catch {
     res.status(500).json({ error: "Failed to create vehicle" });
+  }
+});
+
+// Update vehicle (admin/manager)
+app.patch("/api/vehicles/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { userId, name, plate } = req.body || {};
+    const data = await loadData();
+    const user = findUserById(data, userId);
+    if (!requireRole(user, ["admin", "manager"])) {
+      return res.status(403).json({ error: "Only admin/manager can update vehicles" });
+    }
+
+    const vehicle = (data.vehicles || []).find((v) => v.id === id);
+    if (!vehicle) return res.status(404).json({ error: "Vehicle not found" });
+
+    if (typeof name !== "undefined") {
+      const trimmed = String(name || "").trim();
+      if (!trimmed) return res.status(400).json({ error: "Vehicle name required" });
+      vehicle.name = trimmed;
+    }
+    if (typeof plate !== "undefined") {
+      vehicle.plate = String(plate || "").trim();
+    }
+
+    await saveData(data);
+    res.json(vehicle);
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: "Failed to update vehicle" });
+  }
+});
+
+// Delete vehicle (admin/manager)
+app.delete("/api/vehicles/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { userId } = req.body || {};
+    const data = await loadData();
+    const user = findUserById(data, userId);
+    if (!requireRole(user, ["admin", "manager"])) {
+      return res.status(403).json({ error: "Only admin/manager can delete vehicles" });
+    }
+
+    const vehicles = data.vehicles || [];
+    const idx = vehicles.findIndex((v) => v.id === id);
+    if (idx === -1) return res.status(404).json({ error: "Vehicle not found" });
+
+    const vehicleId = vehicles[idx].id;
+    vehicles.splice(idx, 1);
+
+    data.carAssignments = (data.carAssignments || []).filter((a) => a.vehicleId !== vehicleId);
+    data.vehicleReminders = (data.vehicleReminders || []).filter((r) => r.vehicleId !== vehicleId);
+    data.carMaintenances = (data.carMaintenances || []).filter((m) => m.vehicleId !== vehicleId);
+
+    await saveData(data);
+    res.json({ ok: true });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: "Failed to delete vehicle" });
   }
 });
 

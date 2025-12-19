@@ -379,6 +379,7 @@
           <th data-i18n="th_status">Status</th>
           <th data-i18n="th_by">By</th>
           <th data-i18n="th_driver">Driver</th>
+          <th data-i18n="th_action">Action</th>
         </tr>
         </thead>
         <tbody id="requestsTableBody"></tbody>
@@ -551,6 +552,30 @@
         </div>
         <div style="display:flex;align-items:flex-end;">
           <button id="addVehicleBtn" class="btn btn-primary" style="width:100%;" data-i18n="add_vehicle_btn">Add vehicle</button>
+        </div>
+      </div>
+
+      <div id="vehicleManageBlock" class="mt-md" style="display:none;">
+        <div class="panel-section-title" data-i18n="manage_vehicles_title">Edit / delete vehicles (Admin/Manager)</div>
+        <div class="grid mt-xs">
+          <div>
+            <label data-i18n="select_vehicle_edit">Select vehicle</label>
+            <select id="vehicleEditSelect"></select>
+          </div>
+        </div>
+        <div class="grid mt-xs">
+          <div>
+            <label data-i18n="vehicle_name">Vehicle name</label>
+            <input id="vehEditNameInput" />
+          </div>
+          <div>
+            <label data-i18n="plate_optional">Plate (optional)</label>
+            <input id="vehEditPlateInput" />
+          </div>
+        </div>
+        <div class="mt-sm" style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+          <button id="updateVehicleBtn" class="btn btn-primary" data-i18n="update_vehicle_btn">Update vehicle</button>
+          <button id="deleteVehicleBtn" class="btn btn-secondary danger" data-i18n="delete_vehicle_btn">Delete vehicle</button>
         </div>
       </div>
 
@@ -949,6 +974,10 @@
       vehicle_name: "Vehicle name",
       plate_optional: "Plate (optional)",
       add_vehicle_btn: "Add vehicle",
+      manage_vehicles_title: "Edit / delete vehicles (Admin/Manager)",
+      select_vehicle_edit: "Select vehicle",
+      update_vehicle_btn: "Update vehicle",
+      delete_vehicle_btn: "Delete vehicle",
       add_reminder: "Add reminder (Admin/Manager)",
       vehicle: "Vehicle",
       due_date: "Due date",
@@ -1010,6 +1039,8 @@
       mark_delivered_confirm: "Mark this request as delivered?",
       no_requests_yet: "No requests yet.",
       no_pending_requests: "No pending requests.",
+      delete_request: "Delete request",
+      delete_request_confirm: "Delete this pending request?",
 
       no_movements: "No movements recorded.",
       no_delivered_period: "No delivered requests in this period.",
@@ -1023,6 +1054,9 @@
       select_other_driver: "Select another driver.",
       vehicle_assigned_success: "Vehicle assignment saved.",
       no_reminders: "No reminders.",
+      delete_vehicle_confirm: "Delete this vehicle? Assignments, reminders and maintenance records will be removed.",
+      vehicle_updated: "Vehicle updated.",
+      vehicle_deleted: "Vehicle deleted.",
 
       reopen: "Re-open",
       done: "Done",
@@ -1133,6 +1167,10 @@
       vehicle_name: "اسم المركبة",
       plate_optional: "اللوحة (اختياري)",
       add_vehicle_btn: "إضافة مركبة",
+      manage_vehicles_title: "تعديل / حذف المركبات (مدير/مشرف)",
+      select_vehicle_edit: "اختر مركبة",
+      update_vehicle_btn: "تحديث المركبة",
+      delete_vehicle_btn: "حذف المركبة",
       add_reminder: "إضافة تذكير (مدير/مشرف)",
       vehicle: "المركبة",
       due_date: "تاريخ الاستحقاق",
@@ -1195,6 +1233,8 @@
       mark_delivered_confirm: "تأكيد تسليم هذا الطلب؟",
       no_requests_yet: "لا توجد طلبات بعد.",
       no_pending_requests: "لا توجد طلبات معلّقة.",
+      delete_request: "حذف الطلب",
+      delete_request_confirm: "هل تريد حذف هذا الطلب المعلّق؟",
 
       no_movements: "لا توجد حركات مسجلة.",
       no_delivered_period: "لا توجد طلبات مسلّمة في هذه الفترة.",
@@ -1208,6 +1248,9 @@
       select_other_driver: "اختر سائقاً آخر.",
       vehicle_assigned_success: "تم حفظ تسليم المركبة.",
       no_reminders: "لا توجد تذكيرات.",
+      delete_vehicle_confirm: "حذف هذه المركبة؟ سيتم حذف التسليمات والتنبيهات وسجلات الصيانة المرتبطة بها.",
+      vehicle_updated: "تم تحديث المركبة.",
+      vehicle_deleted: "تم حذف المركبة.",
 
       reopen: "إعادة فتح",
       done: "تم",
@@ -1353,6 +1396,20 @@
   function vehicleOptionLabel(vehicle) {
     if (!vehicle) return "";
     return vehicle.plate ? `${vehicle.name} (${vehicle.plate})` : vehicle.name;
+  }
+
+  function setVehicleEditInputs(vehicleId) {
+    const nameInput = document.getElementById("vehEditNameInput");
+    const plateInput = document.getElementById("vehEditPlateInput");
+    if (!nameInput || !plateInput) return;
+    const vehicle = (state.vehicles || []).find((v) => v.id === vehicleId);
+    if (vehicle) {
+      nameInput.value = vehicle.name || "";
+      plateInput.value = vehicle.plate || "";
+    } else {
+      nameInput.value = "";
+      plateInput.value = "";
+    }
   }
 
   function getDriverVehicleIds(userId) {
@@ -1509,6 +1566,17 @@
     return body;
   }
 
+  async function apiDeleteRequest(id) {
+    const res = await fetch(`${API_BASE}/requests/${id}`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId: state.user.id })
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(body.error || "Delete request failed");
+    return body;
+  }
+
   async function apiCreateVehicle(name, plate) {
     const res = await fetch(`${API_BASE}/vehicles`, {
       method: "POST",
@@ -1517,6 +1585,28 @@
     });
     const body = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(body.error || "Create vehicle failed");
+    return body;
+  }
+
+  async function apiUpdateVehicle(id, data) {
+    const res = await fetch(`${API_BASE}/vehicles/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId: state.user.id, ...data })
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(body.error || "Update vehicle failed");
+    return body;
+  }
+
+  async function apiDeleteVehicle(id) {
+    const res = await fetch(`${API_BASE}/vehicles/${id}`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId: state.user.id })
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(body.error || "Delete vehicle failed");
     return body;
   }
 
@@ -1887,9 +1977,11 @@
     visible = all.filter((r) => r.toBranchId === state.user.branchId);
   }
 
+  const canDelete = state.user.role === "admin" || state.user.role === "manager";
+
   if (!visible.length) {
     const tr = document.createElement("tr");
-    tr.innerHTML = `<td colspan="8" class="text-muted">${
+    tr.innerHTML = `<td colspan="9" class="text-muted">${
       ["admin", "manager"].includes(state.user.role) ? t("no_pending_requests") : t("no_requests_yet")
     }</td>`;
     tbody.appendChild(tr);
@@ -1899,6 +1991,9 @@
   visible.forEach((r) => {
     const item = getItemById(r.itemId);
     const driverName = r.driverUserId ? getUserName(r.driverUserId) : "";
+    const actionBtns = (canDelete && r.status === "pending")
+      ? `<button class="btn btn-secondary btn-sm" data-delete-request="${escapeHtml(r.id)}">${t("delete_request")}</button>`
+      : "";
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td>${escapeHtml(r.id)}</td>
@@ -1909,10 +2004,11 @@
       <td><span class="pill pill-status ${escapeHtml(r.status)}">${t(r.status)}</span></td>
       <td>${escapeHtml(getUserName(r.createdByUserId))}</td>
       <td>${escapeHtml(driverName)}</td>
+      <td>${actionBtns}</td>
     `;
     tbody.appendChild(tr);
   });
-}
+  }
 
 
   function renderDriverRequestsTable() {
@@ -2146,10 +2242,12 @@
     const panel = document.getElementById("vehiclePanel");
     const createBlock = document.getElementById("vehicleCreateBlock");
     const assignForm = document.getElementById("vehicleAssignFormBlock");
+    const manageBlock = document.getElementById("vehicleManageBlock");
 
     if (panel) panel.style.display = (isAdmin || isManager || isDriver) ? "block" : "none";
     if (createBlock) createBlock.style.display = (isAdmin || isManager) ? "block" : "none";
     if (assignForm) assignForm.style.display = (isAdmin || isManager || isDriver) ? "block" : "none";
+    if (manageBlock) manageBlock.style.display = (isAdmin || isManager) ? "block" : "none";
 
     const remVehSel = document.getElementById("remVehicleSelect");
     const remVehFilter = document.getElementById("remVehicleFilterSelect");
@@ -2177,6 +2275,30 @@
         sel.appendChild(opt);
       });
       if (addAll) sel.value = "ALL";
+    }
+
+    const vehicleEditSelect = document.getElementById("vehicleEditSelect");
+    if (vehicleEditSelect) {
+      const prev = vehicleEditSelect.value;
+      vehicleEditSelect.innerHTML = "";
+      const placeholder = document.createElement("option");
+      placeholder.value = "";
+      placeholder.textContent = t("select_vehicle_msg");
+      vehicleEditSelect.appendChild(placeholder);
+      (state.vehicles || []).forEach((v) => {
+        const opt = document.createElement("option");
+        opt.value = v.id;
+        opt.textContent = vehicleOptionLabel(v);
+        vehicleEditSelect.appendChild(opt);
+      });
+      let next = "";
+      if (prev && (state.vehicles || []).some((v) => v.id === prev)) {
+        next = prev;
+      }
+      vehicleEditSelect.value = next;
+      setVehicleEditInputs(next);
+    } else {
+      setVehicleEditInputs("");
     }
 
     fillSelect(remVehSel, false);
@@ -3072,6 +3194,27 @@
     }
   });
 
+  document.getElementById("requestsTableBody").addEventListener("click", async (e) => {
+    const btn = e.target.closest("button[data-delete-request]");
+    if (!btn) return;
+    const id = btn.getAttribute("data-delete-request");
+    if (!confirm(t("delete_request_confirm"))) return;
+    try {
+      await apiDeleteRequest(id);
+      await refreshAllState();
+
+      renderBranchSelects();
+      fillRequestItemsFromStorage();
+      renderInventoryViewer();
+      renderRequestsTable();
+      renderDriverRequestsTable();
+      renderMovementsTable();
+      renderAnalytics();
+    } catch (err) {
+      alert(err.message);
+    }
+  });
+
   document.getElementById("analyticsApplyBtn").addEventListener("click", () => {
     renderAnalytics();
   });
@@ -3088,6 +3231,47 @@
       renderVehiclesUI();
       document.getElementById("vehNameInput").value = "";
       document.getElementById("vehPlateInput").value = "";
+    } catch (e) {
+      alert(e.message);
+    }
+  });
+
+  const vehicleEditSelectEl = document.getElementById("vehicleEditSelect");
+  if (vehicleEditSelectEl) {
+    vehicleEditSelectEl.addEventListener("change", () => {
+      setVehicleEditInputs(vehicleEditSelectEl.value);
+    });
+  }
+
+  document.getElementById("updateVehicleBtn").addEventListener("click", async () => {
+    if (!state.user || !["admin", "manager"].includes(state.user.role)) return;
+    const id = document.getElementById("vehicleEditSelect").value;
+    if (!id) { alert(t("select_vehicle_msg")); return; }
+    const name = document.getElementById("vehEditNameInput").value.trim();
+    const plate = document.getElementById("vehEditPlateInput").value.trim();
+    if (!name) { alert(t("vehicle_name_required_msg")); return; }
+
+    try {
+      await apiUpdateVehicle(id, { name, plate });
+      await refreshAllState();
+      renderVehiclesUI();
+      alert(t("vehicle_updated"));
+    } catch (e) {
+      alert(e.message);
+    }
+  });
+
+  document.getElementById("deleteVehicleBtn").addEventListener("click", async () => {
+    if (!state.user || !["admin", "manager"].includes(state.user.role)) return;
+    const id = document.getElementById("vehicleEditSelect").value;
+    if (!id) { alert(t("select_vehicle_msg")); return; }
+    if (!confirm(t("delete_vehicle_confirm"))) return;
+
+    try {
+      await apiDeleteVehicle(id);
+      await refreshAllState();
+      renderVehiclesUI();
+      alert(t("vehicle_deleted"));
     } catch (e) {
       alert(e.message);
     }
