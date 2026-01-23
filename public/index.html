@@ -198,6 +198,10 @@
     <!-- select existing item to edit -->
     <div class="grid mt-xs">
       <div>
+        <label data-i18n="search_item_to_edit">Search item to edit</label>
+        <input id="itemEditSearchInput" />
+      </div>
+      <div>
         <label data-i18n="select_item_to_edit">Select item to edit (optional)</label>
         <select id="itemEditSelect"></select>
       </div>
@@ -205,9 +209,18 @@
 
     <div class="grid mt-xs">
       <div>
-        <label data-i18n="item_id_auto">Item ID (auto)</label>
-        <input id="itemIdInput" placeholder="ITM-001" readonly />
+        <label data-i18n="item_type">Item type</label>
+        <select id="itemTypeSelect">
+          <option value="ITEM" data-i18n="item_type_regular">Regular (ITEM)</option>
+          <option value="THR" data-i18n="item_type_thread">Thread (THR)</option>
+        </select>
       </div>
+      <div>
+        <label data-i18n="item_id_auto">Item ID (auto)</label>
+        <input id="itemIdInput" placeholder="ITEM-001" readonly />
+      </div>
+    </div>
+    <div class="grid mt-xs">
       <div>
         <label data-i18n="th_name">Name</label>
         <input id="itemNameInput" />
@@ -901,8 +914,12 @@
       main_storage_value: "Main Storage value (KWD)",
       restock_alerts: "Restock alerts (Main Storage)",
       add_update_items: "Add / update items (Admin & Manager)",
+      search_item_to_edit: "Search item to edit",
       select_item_to_edit: "Select item to edit (optional)",
       update_item: "Update item",
+      item_type: "Item type",
+      item_type_regular: "Regular (ITEM)",
+      item_type_thread: "Thread (THR)",
       item_id_auto: "Item ID (auto)",
       item_branch_where: "Branch (where item lives)",
       base_quantity: "Base quantity",
@@ -933,14 +950,15 @@
       to_branch: "To branch",
       item_from_storage: "Item (from storage)",
       search_items_placeholder: "Type to filter items",
+      search_item_edit_placeholder: "Type to search items",
       no_items_match_search: "No items match your search.",
       quantity: "Quantity",
       note: "Note",
       create_request: "Create request",
       requests_for_my_branch: "Requests for my branch",
 
-      driver_deliveries: "Driver deliveries",
-      driver_subtitle: "Drivers see all pending requests and mark them as delivered.",
+      driver_deliveries: "Driver requests",
+      driver_subtitle: "Drivers see pending requests (staff confirm receipt).",
 
       manual_movements: "Manual stock movements",
       movements_subtitle: "Only Admin & Manager can record IN / OUT movements that change stock.",
@@ -1013,7 +1031,7 @@
 
       pending: "pending",
       delivered: "delivered",
-      deliver: "Deliver",
+      deliver: "Receive",
 
       enter_user_pass: "Enter username and password.",
       login_failed: "Login failed",
@@ -1036,7 +1054,7 @@
       drivers_cannot_create: "Drivers cannot create requests.",
       user_no_branch: "Your user is not assigned to a branch. Ask admin.",
 
-      mark_delivered_confirm: "Mark this request as delivered?",
+      mark_delivered_confirm: "Confirm receipt of this request?",
       no_requests_yet: "No requests yet.",
       no_pending_requests: "No pending requests.",
       delete_request: "Delete request",
@@ -1102,8 +1120,12 @@
       main_storage_value: "قيمة المخزن الرئيسي (د.ك)",
       restock_alerts: "تنبيهات إعادة التوريد (المخزن الرئيسي)",
       add_update_items: "إضافة / تعديل الأصناف (مدير/مشرف)",
+      search_item_to_edit: "ابحث عن صنف للتعديل",
       select_item_to_edit: "اختر صنف للتعديل (اختياري)",
       update_item: "تحديث الصنف",
+      item_type: "نوع الصنف",
+      item_type_regular: "عادي (ITEM)",
+      item_type_thread: "خيط (THR)",
       item_id_auto: "رقم الصنف (تلقائي)",
       item_branch_where: "الفرع (مكان الصنف)",
       base_quantity: "الكمية الأساسية",
@@ -1129,14 +1151,15 @@
       to_branch: "إلى الفرع",
       item_from_storage: "الصنف (من المخزن)",
       search_items_placeholder: "اكتب بعض الحروف لتصفية الأصناف",
+      search_item_edit_placeholder: "اكتب للبحث عن الأصناف",
       no_items_match_search: "لا توجد أصناف مطابقة لبحثك.",
       quantity: "الكمية",
       note: "ملاحظة",
       create_request: "إنشاء طلب",
       requests_for_my_branch: "طلبات فرعي",
 
-      driver_deliveries: "تسليمات السائق",
-      driver_subtitle: "السائق يرى الطلبات المعلّقة ويؤكد التسليم.",
+      driver_deliveries: "طلبات السائق",
+      driver_subtitle: "السائق يرى الطلبات المعلّقة (تأكيد الاستلام من الموظف).",
 
       manual_movements: "حركات مخزون يدوية",
       movements_subtitle: "فقط المشرف/المدير يمكنهم تسجيل إدخال/إخراج يؤثر على المخزون.",
@@ -1207,7 +1230,7 @@
 
       pending: "قيد الانتظار",
       delivered: "تم التسليم",
-      deliver: "تسليم",
+      deliver: "استلام",
 
       enter_user_pass: "اكتب اسم المستخدم وكلمة المرور.",
       login_failed: "فشل تسجيل الدخول",
@@ -1230,7 +1253,7 @@
       drivers_cannot_create: "السائق لا يستطيع إنشاء طلب.",
       user_no_branch: "المستخدم غير مرتبط بفرع. اطلب من المشرف.",
 
-      mark_delivered_confirm: "تأكيد تسليم هذا الطلب؟",
+      mark_delivered_confirm: "تأكيد استلام هذا الطلب؟",
       no_requests_yet: "لا توجد طلبات بعد.",
       no_pending_requests: "لا توجد طلبات معلّقة.",
       delete_request: "حذف الطلب",
@@ -1323,6 +1346,9 @@
 
     const requestSearchInput = document.getElementById("requestItemSearchInput");
     if (requestSearchInput) requestSearchInput.placeholder = t("search_items_placeholder");
+
+    const editSearchInput = document.getElementById("itemEditSearchInput");
+    if (editSearchInput) editSearchInput.placeholder = t("search_item_edit_placeholder");
   }
   // ---------- end i18n ----------
 
@@ -1341,6 +1367,49 @@
     inventoryPage: 1,
     inventoryPageSize: 40
   };
+  const SESSION_TTL_MS = 5 * 60 * 1000; // 5 minutes
+  const SESSION_STORAGE_KEY = "APP_SESSION";
+  let sessionLogoutTimer = null;
+
+  function saveSession(user) {
+    const expiresAt = Date.now() + SESSION_TTL_MS;
+    localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify({ user, expiresAt }));
+    scheduleSessionLogout(expiresAt);
+    return expiresAt;
+  }
+
+  function loadSession() {
+    const raw = localStorage.getItem(SESSION_STORAGE_KEY);
+    if (!raw) return null;
+    try {
+      const parsed = JSON.parse(raw);
+      if (!parsed || !parsed.user || !parsed.expiresAt) return null;
+      if (Date.now() > parsed.expiresAt) {
+        localStorage.removeItem(SESSION_STORAGE_KEY);
+        return null;
+      }
+      return parsed;
+    } catch {
+      localStorage.removeItem(SESSION_STORAGE_KEY);
+      return null;
+    }
+  }
+
+  function clearSession() {
+    localStorage.removeItem(SESSION_STORAGE_KEY);
+    if (sessionLogoutTimer) {
+      clearTimeout(sessionLogoutTimer);
+      sessionLogoutTimer = null;
+    }
+  }
+
+  function scheduleSessionLogout(expiresAt) {
+    if (sessionLogoutTimer) clearTimeout(sessionLogoutTimer);
+    const ms = Math.max(0, expiresAt - Date.now());
+    sessionLogoutTimer = setTimeout(() => {
+      logout();
+    }, ms);
+  }
 
   function escapeHtml(s) {
     return String(s || "")
@@ -1361,6 +1430,10 @@
   }
   function getItemById(id) {
     return state.items.find((x) => x.id === id);
+  }
+  function getItemTypeFromId(id) {
+    if (!id) return "ITEM";
+    return String(id).toUpperCase().startsWith("THR-") ? "THR" : "ITEM";
   }
   function formatDateTime(iso) {
     if (!iso) return "";
@@ -1559,7 +1632,7 @@
     const res = await fetch(`${API_BASE}/requests/${id}/deliver`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ driverUserId: state.user.id })
+      body: JSON.stringify({ userId: state.user.id })
     });
     const body = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(body.error || "Deliver failed");
@@ -1756,6 +1829,11 @@
   function renderItemEditSelect() {
     const sel = document.getElementById("itemEditSelect");
     if (!sel) return;
+    const searchInput = document.getElementById("itemEditSearchInput");
+    const query = (searchInput && searchInput.value ? searchInput.value : "")
+      .trim()
+      .toLowerCase();
+    const currentValue = sel.value;
 
     sel.innerHTML = "";
     const placeholder = document.createElement("option");
@@ -1769,12 +1847,79 @@
       (a.name || "").localeCompare(b.name || "")
     );
 
-    all.forEach((it) => {
-      const opt = document.createElement("option");
-      opt.value = `${it.id}::${it.branchId}`;
-      opt.textContent = `${it.name} (${getBranchName(it.branchId)})`;
-      sel.appendChild(opt);
-    });
+    const filtered = query
+      ? all.filter((it) => {
+          const haystack = [
+            it.id,
+            it.name,
+            it.nameEn,
+            it.nameAr
+          ]
+            .map((v) => String(v || "").toLowerCase());
+          return haystack.some((v) => v.includes(query));
+        })
+      : all;
+
+    if (!filtered.length) {
+      const empty = document.createElement("option");
+      empty.value = "";
+      empty.textContent = t("no_items_match_search");
+      empty.disabled = true;
+      sel.appendChild(empty);
+    } else {
+      filtered.forEach((it) => {
+        const opt = document.createElement("option");
+        opt.value = `${it.id}::${it.branchId}`;
+        opt.textContent = `${it.name} (${getBranchName(it.branchId)})`;
+        sel.appendChild(opt);
+      });
+    }
+
+    if (currentValue && filtered.some((it) => `${it.id}::${it.branchId}` === currentValue)) {
+      sel.value = currentValue;
+    } else {
+      sel.value = "";
+    }
+    applyItemEditSelection();
+  }
+
+  function applyItemEditSelection() {
+    const sel = document.getElementById("itemEditSelect");
+    const typeSelect = document.getElementById("itemTypeSelect");
+    const val = sel ? sel.value : "";
+
+    if (!val) {
+      document.getElementById("itemNameInput").value = "";
+      document.getElementById("itemBaseQtyInput").value = "0";
+      document.getElementById("itemMinQtyInput").value = "0";
+      document.getElementById("itemUnitCostInput").value = "0";
+      if (typeSelect) {
+        typeSelect.disabled = false;
+        if (!["ITEM", "THR"].includes(typeSelect.value)) {
+          typeSelect.value = "ITEM";
+        }
+      }
+      updateItemIdField();
+      return;
+    }
+
+    const [id, branchId] = val.split("::");
+    const item = state.items.find(
+      (it) => it.id === id && it.branchId === branchId
+    );
+    if (!item) return;
+
+    document.getElementById("itemIdInput").value = item.id;
+    document.getElementById("itemNameInput").value = item.name || "";
+    document.getElementById("itemBranchSelect").value = item.branchId || "";
+    document.getElementById("itemBaseQtyInput").value = item.baseQty ?? 0;
+    document.getElementById("itemMinQtyInput").value = item.minQty ?? 0;
+    document.getElementById("itemUnitCostInput").value = item.unitCost ?? 0;
+
+    if (typeSelect) {
+      typeSelect.value = getItemTypeFromId(item.id);
+      typeSelect.disabled = true;
+    }
   }
 
   function renderInventoryViewer() {
@@ -1978,6 +2123,7 @@
   }
 
   const canDelete = state.user.role === "admin" || state.user.role === "manager";
+  const canReceive = state.user.role === "staff";
 
   if (!visible.length) {
     const tr = document.createElement("tr");
@@ -1991,9 +2137,14 @@
   visible.forEach((r) => {
     const item = getItemById(r.itemId);
     const driverName = r.driverUserId ? getUserName(r.driverUserId) : "";
-    const actionBtns = (canDelete && r.status === "pending")
-      ? `<button class="btn btn-secondary btn-sm" data-delete-request="${escapeHtml(r.id)}">${t("delete_request")}</button>`
-      : "";
+    const actionParts = [];
+    if (canDelete && r.status === "pending") {
+      actionParts.push(`<button class="btn btn-secondary btn-sm" data-delete-request="${escapeHtml(r.id)}">${t("delete_request")}</button>`);
+    }
+    if (canReceive && r.status === "pending" && r.toBranchId === state.user.branchId) {
+      actionParts.push(`<button class="btn btn-primary btn-sm" data-receive-request="${escapeHtml(r.id)}">${t("deliver")}</button>`);
+    }
+    const actionBtns = actionParts.join(" ");
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td>${escapeHtml(r.id)}</td>
@@ -2033,7 +2184,7 @@
         <td>${escapeHtml(getBranchName(r.toBranchId))}</td>
         <td>${escapeHtml(getUserName(r.createdByUserId))}</td>
         <td><span class="pill pill-status ${escapeHtml(r.status)}">${t(r.status)}</span></td>
-        <td><button class="btn btn-primary btn-sm" data-req-id="${escapeHtml(r.id)}">${t("deliver")}</button></td>
+        <td class="text-muted">-</td>
       `;
       tbody.appendChild(tr);
     });
@@ -2772,6 +2923,7 @@
   }
 
   function logout() {
+    clearSession();
     state.user = null;
     state.branches = [];
     state.users = [];
@@ -2809,13 +2961,65 @@
     state.carMaintenances = all.carMaintenances || [];
   }
 
+  function parseThreadNumber(id) {
+    const m = /^THR-(\d+)$/i.exec(String(id || "").trim());
+    if (!m) return null;
+    const n = parseInt(m[1], 10);
+    return Number.isFinite(n) ? n : null;
+  }
+
+  function getNextThreadId() {
+    let max = 0;
+    for (const it of state.items || []) {
+      const n = parseThreadNumber(it.id);
+      if (n && n > max) max = n;
+    }
+    const next = max + 1;
+    return `THR-${String(next).padStart(3, "0")}`;
+  }
+
   async function updateItemIdField() {
     const idInput = document.getElementById("itemIdInput");
     if (!idInput) return;
+    const editSel = document.getElementById("itemEditSelect");
+    if (editSel && editSel.value) return;
+    const typeSelect = document.getElementById("itemTypeSelect");
+    const type = typeSelect ? typeSelect.value : "ITEM";
+    if (type === "THR") {
+      idInput.value = getNextThreadId();
+      return;
+    }
     try {
       idInput.value = await apiNextItemId();
     } catch {
-      idInput.value = "ITM-001";
+      idInput.value = "ITEM-001";
+    }
+  }
+
+  async function initFromSession() {
+    const session = loadSession();
+    if (!session) return;
+    state.user = session.user;
+    scheduleSessionLogout(session.expiresAt);
+    try {
+      await refreshAllState();
+
+      applyTranslations();
+      renderHeader();
+      renderBranchSelects();
+      fillRequestItemsFromStorage();
+      renderInventoryViewer();
+      renderUsersTable();
+      renderRequestsTable();
+      renderDriverRequestsTable();
+      renderMovementsTable();
+      renderAnalytics();
+      renderVehiclesUI();
+
+      await updateItemIdField();
+      showApp();
+    } catch {
+      logout();
     }
   }
 
@@ -2855,6 +3059,7 @@
     try {
       const user = await apiLogin(name, password);
       state.user = user;
+      saveSession(user);
 
       await refreshAllState();
 
@@ -2887,6 +3092,14 @@
 
   document.getElementById("requestItemSearchInput").addEventListener("input", () => {
     fillRequestItemsFromStorage();
+  });
+
+  document.getElementById("itemEditSearchInput").addEventListener("input", () => {
+    renderItemEditSelect();
+  });
+
+  document.getElementById("itemTypeSelect").addEventListener("change", () => {
+    updateItemIdField();
   });
 
   document.getElementById("inventoryRefreshBtn").addEventListener("click", async () => {
@@ -3046,31 +3259,8 @@
   });
 
   // ✅ Updated: selection uses "id::branchId"
-  document.getElementById("itemEditSelect").addEventListener("change", async () => {
-    const sel = document.getElementById("itemEditSelect");
-    const val = sel.value;
-
-    if (!val) {
-      document.getElementById("itemNameInput").value = "";
-      document.getElementById("itemBaseQtyInput").value = "0";
-      document.getElementById("itemMinQtyInput").value = "0";
-      document.getElementById("itemUnitCostInput").value = "0";
-      await updateItemIdField();
-      return;
-    }
-
-    const [id, branchId] = val.split("::");
-    const item = state.items.find(
-      (it) => it.id === id && it.branchId === branchId
-    );
-    if (!item) return;
-
-    document.getElementById("itemIdInput").value = item.id;
-    document.getElementById("itemNameInput").value = item.name || "";
-    document.getElementById("itemBranchSelect").value = item.branchId || "";
-    document.getElementById("itemBaseQtyInput").value = item.baseQty ?? 0;
-    document.getElementById("itemMinQtyInput").value = item.minQty ?? 0;
-    document.getElementById("itemUnitCostInput").value = item.unitCost ?? 0;
+  document.getElementById("itemEditSelect").addEventListener("change", () => {
+    applyItemEditSelection();
   });
 
   // ✅ IMPORTANT FIX: PATCH /items/:id requires branchId in body
@@ -3171,30 +3361,28 @@
     }
   });
 
-  document.getElementById("driverRequestsTableBody").addEventListener("click", async (e) => {
-    const btn = e.target.closest("button[data-req-id]");
-    if (!btn) return;
-    const id = btn.getAttribute("data-req-id");
-
-    if (!confirm(t("mark_delivered_confirm"))) return;
-
-    try {
-      await apiDeliverRequest(id);
-      await refreshAllState();
-
-      renderBranchSelects();
-      fillRequestItemsFromStorage();
-      renderInventoryViewer();
-      renderDriverRequestsTable();
-      renderRequestsTable();
-      renderMovementsTable();
-      renderAnalytics();
-    } catch (err) {
-      alert(err.message);
-    }
-  });
-
   document.getElementById("requestsTableBody").addEventListener("click", async (e) => {
+    const receiveBtn = e.target.closest("button[data-receive-request]");
+    if (receiveBtn) {
+      const id = receiveBtn.getAttribute("data-receive-request");
+      if (!confirm(t("mark_delivered_confirm"))) return;
+      try {
+        await apiDeliverRequest(id);
+        await refreshAllState();
+
+        renderBranchSelects();
+        fillRequestItemsFromStorage();
+        renderInventoryViewer();
+        renderRequestsTable();
+        renderDriverRequestsTable();
+        renderMovementsTable();
+        renderAnalytics();
+      } catch (err) {
+        alert(err.message);
+      }
+      return;
+    }
+
     const btn = e.target.closest("button[data-delete-request]");
     if (!btn) return;
     const id = btn.getAttribute("data-delete-request");
@@ -3468,6 +3656,7 @@
 
   // initial i18n
   applyTranslations();
+  initFromSession();
 </script>
 </body>
 </html>

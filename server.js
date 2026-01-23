@@ -457,20 +457,27 @@ app.get("/api/requests/pending", async (req, res) => {
   }
 });
 
-// ---------- DRIVER DELIVER ----------
+// ---------- CONFIRM RECEIVE (Staff/Admin/Manager) ----------
 app.post("/api/requests/:id/deliver", async (req, res) => {
   try {
     const { id } = req.params;
-    const { driverUserId } = req.body;
-    if (!driverUserId) return res.status(400).json({ error: "driverUserId required" });
+    const { userId, driverUserId } = req.body;
+    const actorUserId = userId || driverUserId; // backward-compatible
+    if (!actorUserId) return res.status(400).json({ error: "userId required" });
 
     const data = await loadData();
-    const driver = findUserById(data, driverUserId);
-    if (!requireRole(driver, ["driver"])) return res.status(403).json({ error: "Only drivers can deliver" });
+    const actor = findUserById(data, actorUserId);
+    if (!actor) return res.status(400).json({ error: "User not found" });
+    if (!requireRole(actor, ["staff", "admin", "manager"])) {
+      return res.status(403).json({ error: "Only staff/admin/manager can confirm receipt" });
+    }
 
     const request = data.requests.find((r) => r.id === id);
     if (!request) return res.status(404).json({ error: "Request not found" });
     if (request.status === "delivered") return res.status(400).json({ error: "Request already delivered" });
+    if (actor.role === "staff" && actor.branchId !== request.toBranchId) {
+      return res.status(403).json({ error: "Only staff from the destination branch can confirm receipt" });
+    }
 
     const storageItem = data.items.find(
       (it) => it.id === request.itemId && it.branchId === request.fromBranchId
@@ -485,7 +492,7 @@ app.post("/api/requests/:id/deliver", async (req, res) => {
       itemId: request.itemId,
       type: "OUT",
       qty,
-      userId: driverUserId,
+      userId: actorUserId,
       branchId: request.fromBranchId,
       note: `Delivery OUT for request ${request.id}`,
       createdAt: new Date().toISOString()
@@ -515,7 +522,7 @@ app.post("/api/requests/:id/deliver", async (req, res) => {
       itemId: request.itemId,
       type: "IN",
       qty,
-      userId: driverUserId,
+      userId: actorUserId,
       branchId: request.toBranchId,
       note: `Delivery IN for request ${request.id}`,
       createdAt: new Date().toISOString()
@@ -523,7 +530,7 @@ app.post("/api/requests/:id/deliver", async (req, res) => {
 
     data.movements.push(outMovement, inMovement);
     request.status = "delivered";
-    request.driverUserId = driverUserId;
+    request.receivedByUserId = actorUserId;
     request.deliveredAt = new Date().toISOString();
 
     await saveData(data);
