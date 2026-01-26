@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <title>Storage Manage Method</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link id="favicon" rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='18' fill='%23111827'/%3E%3Ctext x='50' y='62' font-size='56' text-anchor='middle' fill='white' font-family='Arial, sans-serif'%3ES%3C/text%3E%3C/svg%3E" />
   <style>
     * { box-sizing: border-box; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
     body { margin: 0; background: #f3f4f6; color: #111827; }
@@ -39,6 +40,9 @@
     .pill-status { background: #e5e7eb; color: #111827; }
     .pill-status.pending { background: #fef3c7; color: #92400e; }
     .pill-status.delivered { background: #dcfce7; color: #166534; }
+    .pill-status.assigned { background: #dbeafe; color: #1e3a8a; }
+    .pill-priority { background: #e5e7eb; color: #111827; }
+    .pill-priority.urgent { background: #fee2e2; color: #991b1b; }
     .pill-open { background: #fef3c7; color: #92400e; }
     .pill-done { background: #dcfce7; color: #166534; }
     .table-wrapper { width: 100%; overflow-x: auto; margin-top: 0.4rem; }
@@ -61,6 +65,23 @@
 
     .toolbar { display:flex; gap:0.6rem; flex-wrap:wrap; align-items:flex-end; }
     .toolbar > div { min-width: 220px; flex: 1 1 220px; }
+
+    .menu { display:flex; gap:0.5rem; flex-wrap:wrap; }
+    .menu .btn { border-radius: 0.6rem; }
+    .menu .btn.active { background: #111827; color: #fff; }
+
+    body.phone-mode .btn { font-size: 1.05rem; padding: 0.8rem 1.2rem; }
+    body.phone-mode table { font-size: 0.95rem; }
+    body.phone-mode th, body.phone-mode td { padding: 0.55rem 0.6rem; }
+    body.phone-mode .panel { padding: 1rem 1.1rem; }
+    body.phone-mode .driver-actions { display: flex; flex-direction: column; gap: 0.5rem; align-items: stretch; }
+    body.phone-mode .driver-actions select,
+    body.phone-mode .driver-actions input,
+    body.phone-mode .driver-actions button { width: 100%; }
+
+    .toast-container { position: fixed; right: 1rem; bottom: 1rem; display: flex; flex-direction: column; gap: 0.5rem; z-index: 9999; }
+    .toast { background: #111827; color: #fff; padding: 0.6rem 0.9rem; border-radius: 0.6rem; font-size: 0.9rem; box-shadow: 0 8px 20px rgba(0,0,0,0.2); animation: toast-in 0.2s ease-out; }
+    @keyframes toast-in { from { transform: translateY(6px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
     @media (max-width: 768px) {
       header { flex-direction: column; align-items: flex-start; gap: 0.25rem; }
@@ -85,10 +106,14 @@
     <span id="headerUserName" class="badge" style="display:none;"></span>
     <span id="headerRole" class="badge" style="display:none;"></span>
 
+    <button id="phoneModeBtn" class="btn btn-secondary btn-sm" style="display:none;"></button>
     <button id="langBtn" class="btn btn-secondary btn-sm">AR</button>
     <button id="logoutBtn" class="btn btn-secondary btn-sm" style="display:none;" data-i18n="logout">Logout</button>
   </div>
 </header>
+
+<nav id="mainMenu" class="panel menu" style="display:none;"></nav>
+<div id="toastContainer" class="toast-container"></div>
 
 <!-- LOGIN VIEW -->
 <section id="loginView">
@@ -119,7 +144,7 @@
     <div class="panel-header">
       <div>
         <div class="panel-title" data-i18n="inventory_title">Inventory</div>
-        <div class="panel-subtitle" data-i18n="inventory_subtitle">Admin & Manager can add items and manage inventory. Viewer lets you choose any branch list.</div>
+        <div class="panel-subtitle" data-i18n="inventory_subtitle">Admin & Manager can add items and manage inventory. Supervisor can view Main Storage.</div>
       </div>
     </div>
 
@@ -129,6 +154,10 @@
       <div>
         <label data-i18n="select_list">Select list</label>
         <select id="inventoryViewBranchSelect"></select>
+      </div>
+      <div>
+        <label data-i18n="search_items">Search items</label>
+        <input id="inventorySearchInput" />
       </div>
       <div>
         <button id="inventoryRefreshBtn" class="btn btn-secondary" data-i18n="refresh">Refresh</button>
@@ -193,6 +222,7 @@
     </div>
 
     <!-- Add/update items -->
+    <div id="inventoryManageBlock">
     <div class="panel-section-title mt-md" data-i18n="add_update_items">Add / update items (Admin & Manager)</div>
 
     <!-- select existing item to edit -->
@@ -249,6 +279,7 @@
       <button id="addItemBtn" class="btn btn-primary" data-i18n="save_item">Save item</button>
       <button id="updateItemBtn" class="btn btn-secondary" data-i18n="update_item">Update item</button>
     </div>
+    </div>
   </section>
 
   <!-- Users (Admin) -->
@@ -274,6 +305,7 @@
         <label data-i18n="role">Role</label>
         <select id="newUserRole">
           <option value="staff">Staff</option>
+          <option value="supervisor">Supervisor</option>
           <option value="manager">Manager</option>
           <option value="driver">Driver</option>
           <option value="admin">Admin</option>
@@ -289,6 +321,28 @@
       <div style="display:flex;align-items:flex-end;">
         <button id="addUserBtn" class="btn btn-primary" style="width:100%;" data-i18n="create_user_btn">Create user</button>
       </div>
+    </div>
+
+    <div class="panel-section-title mt-md" data-i18n="create_branch">Create branch</div>
+    <div class="grid mt-xs">
+      <div>
+        <label data-i18n="branch_name">Branch name</label>
+        <input id="newBranchName" />
+      </div>
+      <div></div>
+      <div style="display:flex;align-items:flex-end;">
+        <button id="addBranchBtn" class="btn btn-primary" style="width:100%;" data-i18n="create_branch_btn">Create branch</button>
+      </div>
+    </div>
+
+    <div class="panel-section-title mt-md" data-i18n="branches_list">Branches list</div>
+    <div class="table-wrapper">
+      <table class="driver-table">
+        <thead>
+        <tr><th data-i18n="th_id">ID</th><th data-i18n="th_name">Name</th></tr>
+        </thead>
+        <tbody id="branchesTableBody"></tbody>
+      </table>
     </div>
 
     <div class="panel-section-title mt-md" data-i18n="users_list">Users list</div>
@@ -321,6 +375,7 @@
         <label data-i18n="role">Role</label>
         <select id="editUserRole">
           <option value="staff">Staff</option>
+          <option value="supervisor">Supervisor</option>
           <option value="manager">Manager</option>
           <option value="driver">Driver</option>
           <option value="admin">Admin</option>
@@ -344,7 +399,7 @@
     <div class="panel-header">
       <div>
         <div class="panel-title" data-i18n="branch_requests">Branch requests</div>
-        <div class="panel-subtitle" data-i18n="requests_subtitle">Staff / Manager / Admin request items from Main Storage to their own branch.</div>
+        <div class="panel-subtitle" data-i18n="requests_subtitle">Staff / Supervisor / Manager / Admin request items from Main Storage to their own branch.</div>
       </div>
     </div>
 
@@ -371,8 +426,26 @@
         <input id="requestQtyInput" type="number" min="1" value="1" />
       </div>
       <div>
+        <label data-i18n="priority">Priority</label>
+        <select id="requestPrioritySelect">
+          <option value="normal" data-i18n="priority_normal">Normal</option>
+          <option value="urgent" data-i18n="priority_urgent_today">Urgent (today)</option>
+        </select>
+      </div>
+      <div>
+        <label data-i18n="urgent_note">Urgent note</label>
+        <input id="requestUrgentNoteInput" />
+      </div>
+    </div>
+
+    <div class="grid mt-xs">
+      <div>
         <label data-i18n="note">Note</label>
         <input id="requestNoteInput" />
+      </div>
+      <div>
+        <label data-i18n="request_image">Request image</label>
+        <input id="requestImageInput" type="file" accept="image/*" />
       </div>
       <div style="display:flex;align-items:flex-end;">
         <button id="createRequestBtn" class="btn btn-primary" style="width:100%;" data-i18n="create_request">Create request</button>
@@ -389,9 +462,13 @@
           <th data-i18n="th_qty">Qty</th>
           <th data-i18n="th_from">From</th>
           <th data-i18n="th_to">To</th>
+          <th data-i18n="th_priority">Priority</th>
+          <th data-i18n="th_eta">ETA</th>
           <th data-i18n="th_status">Status</th>
           <th data-i18n="th_by">By</th>
           <th data-i18n="th_driver">Driver</th>
+          <th data-i18n="th_note">Note</th>
+          <th data-i18n="th_image">Image</th>
           <th data-i18n="th_action">Action</th>
         </tr>
         </thead>
@@ -405,7 +482,8 @@
     <div class="panel-header">
       <div>
         <div class="panel-title" data-i18n="driver_deliveries">Driver deliveries</div>
-        <div class="panel-subtitle" data-i18n="driver_subtitle">Drivers see all pending requests and mark them as delivered.</div>
+        <div class="panel-subtitle" data-i18n="driver_subtitle">Drivers see pending requests, can take any request and set ETA (staff confirm receipt).</div>
+        <div id="driverNotice" class="summary-row mt-xs"></div>
       </div>
     </div>
 
@@ -418,6 +496,11 @@
           <th data-i18n="th_qty">Qty</th>
           <th data-i18n="th_from">From</th>
           <th data-i18n="th_to">To</th>
+          <th data-i18n="th_priority">Priority</th>
+          <th data-i18n="th_eta">ETA</th>
+          <th data-i18n="th_note">Note</th>
+          <th data-i18n="th_image">Image</th>
+          <th data-i18n="th_driver">Driver</th>
           <th data-i18n="th_requested_by">Requested by</th>
           <th data-i18n="th_status">Status</th>
           <th data-i18n="th_action">Action</th>
@@ -670,6 +753,7 @@
       <div>
         <label data-i18n="filter">Filter</label>
         <select id="remFilterSelect">
+          <option value="attention">Attention</option>
           <option value="open">Open</option>
           <option value="all">All</option>
           <option value="done">Done</option>
@@ -885,10 +969,22 @@
       password: "Password",
 
       inventory_title: "Inventory",
-      inventory_subtitle: "Admin & Manager can add items and manage inventory. Viewer lets you choose any branch list.",
+      inventory_subtitle: "Admin & Manager can add items and manage inventory. Supervisor can view Main Storage.",
       view_inventory_list: "View inventory list",
       select_list: "Select list",
+      search_items: "Search items",
       refresh: "Refresh",
+      menu_inventory: "Inventory",
+      menu_requests: "Requests",
+      menu_driver: "Driver",
+      menu_movements: "Movements",
+      menu_analytics: "Analytics",
+      menu_vehicles: "Vehicles",
+      menu_users: "Users",
+      phone_mode_on: "Phone mode",
+      phone_mode_off: "Phone mode off",
+      toast_new_requests: "New requests: {count}",
+      toast_new_assigned: "New assigned to you: {count}",
 
       th_id: "ID",
       th_name: "Name",
@@ -900,9 +996,13 @@
       th_item: "Item",
       th_from: "From",
       th_to: "To",
+      th_priority: "Priority",
+      th_eta: "ETA",
       th_status: "Status",
       th_by: "By",
       th_driver: "Driver",
+      th_note: "Note",
+      th_image: "Image",
       th_action: "Action",
       th_user: "User",
       th_time: "Time",
@@ -934,6 +1034,10 @@
       users_branches: "Users & branches",
       users_subtitle: "Admin can create, edit and delete users and assign them to branches.",
       create_user: "Create user",
+      create_branch: "Create branch",
+      branch_name: "Branch name",
+      create_branch_btn: "Create branch",
+      branches_list: "Branches list",
       role: "Role",
       create_user_btn: "Create user",
       users_list: "Users list",
@@ -944,7 +1048,7 @@
       delete_user: "Delete user",
 
       branch_requests: "Branch requests",
-      requests_subtitle: "Staff / Manager / Admin request items from Main Storage to their own branch.",
+      requests_subtitle: "Staff / Supervisor / Manager / Admin request items from Main Storage to their own branch.",
       new_request: "New request",
       from_storage: "From storage",
       to_branch: "To branch",
@@ -953,12 +1057,32 @@
       search_item_edit_placeholder: "Type to search items",
       no_items_match_search: "No items match your search.",
       quantity: "Quantity",
+      priority: "Priority",
+      priority_normal: "Normal",
+      priority_urgent_today: "Urgent (today)",
+      priority_urgent: "Urgent",
+      urgent_note: "Urgent note",
+      urgent_note_label: "Urgent",
       note: "Note",
+      request_image: "Request image",
+      view_image: "View",
+      no_image: "No image available.",
       create_request: "Create request",
       requests_for_my_branch: "Requests for my branch",
+      assign: "Assign",
+      assigned_to_you: "Assigned to you",
+      unassigned_requests: "Unassigned requests",
+      take_request: "Take request",
+      set_eta: "Set ETA",
+      eta_select: "Select ETA",
+      eta_3h: "3 hours",
+      eta_tomorrow: "Tomorrow",
+      eta_custom: "Custom time",
+      eta_select_msg: "Select a delivery ETA option.",
+      eta_invalid_msg: "Invalid delivery time.",
 
       driver_deliveries: "Driver requests",
-      driver_subtitle: "Drivers see pending requests (staff confirm receipt).",
+      driver_subtitle: "Drivers see pending requests, can take any request and set ETA (staff confirm receipt).",
 
       manual_movements: "Manual stock movements",
       movements_subtitle: "Only Admin & Manager can record IN / OUT movements that change stock.",
@@ -1030,6 +1154,7 @@
       no_low_stock: "No low stock alerts in Main Storage.",
 
       pending: "pending",
+      assigned: "assigned",
       delivered: "delivered",
       deliver: "Receive",
 
@@ -1039,6 +1164,7 @@
       next_item_failed: "Failed to get next item id",
 
       only_admin_create_users: "Only admin can create users.",
+      branch_name_required: "Branch name required.",
       name_password_required: "Name and password required.",
       select_user_first: "Select a user first.",
       delete_user_confirm: "Delete this user?",
@@ -1072,6 +1198,8 @@
       select_other_driver: "Select another driver.",
       vehicle_assigned_success: "Vehicle assignment saved.",
       no_reminders: "No reminders.",
+      due_soon: "Due soon",
+      overdue: "Overdue",
       delete_vehicle_confirm: "Delete this vehicle? Assignments, reminders and maintenance records will be removed.",
       vehicle_updated: "Vehicle updated.",
       vehicle_deleted: "Vehicle deleted.",
@@ -1091,10 +1219,22 @@
       password: "كلمة المرور",
 
       inventory_title: "المخزون",
-      inventory_subtitle: "المدير والمشرف يمكنهم إضافة الأصناف وإدارة المخزون. العرض يسمح باختيار أي قائمة فرع.",
+      inventory_subtitle: "المدير والمشرف يمكنهم إضافة الأصناف وإدارة المخزون. المراقب يمكنه عرض المخزن الرئيسي.",
       view_inventory_list: "عرض قائمة المخزون",
       select_list: "اختر القائمة",
+      search_items: "بحث عن صنف",
       refresh: "تحديث",
+      menu_inventory: "المخزون",
+      menu_requests: "الطلبات",
+      menu_driver: "السائق",
+      menu_movements: "الحركات",
+      menu_analytics: "التقارير",
+      menu_vehicles: "المركبات",
+      menu_users: "المستخدمون",
+      phone_mode_on: "وضع الهاتف",
+      phone_mode_off: "إيقاف وضع الهاتف",
+      toast_new_requests: "طلبات جديدة: {count}",
+      toast_new_assigned: "طلبات جديدة لك: {count}",
 
       th_id: "الرقم",
       th_name: "الاسم",
@@ -1106,9 +1246,13 @@
       th_item: "الصنف",
       th_from: "من",
       th_to: "إلى",
+      th_priority: "الأولوية",
+      th_eta: "وقت التسليم",
       th_status: "الحالة",
       th_by: "بواسطة",
       th_driver: "السائق",
+      th_note: "ملاحظة",
+      th_image: "صورة",
       th_action: "إجراء",
       th_user: "المستخدم",
       th_time: "الوقت",
@@ -1135,6 +1279,10 @@
       users_branches: "المستخدمون والفروع",
       users_subtitle: "المشرف يمكنه إنشاء وتعديل وحذف المستخدمين وربطهم بالفروع.",
       create_user: "إنشاء مستخدم",
+      create_branch: "إنشاء فرع",
+      branch_name: "اسم الفرع",
+      create_branch_btn: "إنشاء فرع",
+      branches_list: "قائمة الفروع",
       role: "الدور",
       create_user_btn: "إنشاء مستخدم",
       users_list: "قائمة المستخدمين",
@@ -1145,7 +1293,7 @@
       delete_user: "حذف المستخدم",
 
       branch_requests: "طلبات الفروع",
-      requests_subtitle: "الموظف/المدير/المشرف يطلبون أصناف من المخزن الرئيسي إلى فرعهم.",
+      requests_subtitle: "الموظف/المدير/المشرف/المراقب يطلبون أصناف من المخزن الرئيسي إلى فرعهم.",
       new_request: "طلب جديد",
       from_storage: "من المخزن",
       to_branch: "إلى الفرع",
@@ -1154,12 +1302,32 @@
       search_item_edit_placeholder: "اكتب للبحث عن الأصناف",
       no_items_match_search: "لا توجد أصناف مطابقة لبحثك.",
       quantity: "الكمية",
+      priority: "الأولوية",
+      priority_normal: "عادية",
+      priority_urgent_today: "عاجل (اليوم)",
+      priority_urgent: "عاجل",
+      urgent_note: "ملاحظة عاجلة",
+      urgent_note_label: "عاجل",
       note: "ملاحظة",
+      request_image: "صورة الطلب",
+      view_image: "عرض",
+      no_image: "لا توجد صورة.",
       create_request: "إنشاء طلب",
       requests_for_my_branch: "طلبات فرعي",
+      assign: "تعيين",
+      assigned_to_you: "مُعيّن لك",
+      unassigned_requests: "غير مُعيّن",
+      take_request: "استلام الطلب",
+      set_eta: "تحديد الوقت",
+      eta_select: "اختر وقت التسليم",
+      eta_3h: "بعد 3 ساعات",
+      eta_tomorrow: "غدًا",
+      eta_custom: "وقت محدد",
+      eta_select_msg: "اختر وقت التسليم.",
+      eta_invalid_msg: "وقت غير صحيح.",
 
       driver_deliveries: "طلبات السائق",
-      driver_subtitle: "السائق يرى الطلبات المعلّقة (تأكيد الاستلام من الموظف).",
+      driver_subtitle: "السائق يرى الطلبات المعلّقة ويمكنه استلام الطلب وتحديد وقت التسليم (تأكيد الاستلام من الموظف).",
 
       manual_movements: "حركات مخزون يدوية",
       movements_subtitle: "فقط المشرف/المدير يمكنهم تسجيل إدخال/إخراج يؤثر على المخزون.",
@@ -1229,6 +1397,7 @@
       no_low_stock: "لا توجد تنبيهات نقص في المخزن الرئيسي.",
 
       pending: "قيد الانتظار",
+      assigned: "تم التعيين",
       delivered: "تم التسليم",
       deliver: "استلام",
 
@@ -1238,6 +1407,7 @@
       next_item_failed: "فشل جلب رقم الصنف التالي",
 
       only_admin_create_users: "فقط المشرف يمكنه إنشاء مستخدمين.",
+      branch_name_required: "اسم الفرع مطلوب.",
       name_password_required: "الاسم وكلمة المرور مطلوبة.",
       select_user_first: "اختر مستخدم أولاً.",
       delete_user_confirm: "حذف هذا المستخدم؟",
@@ -1271,6 +1441,8 @@
       select_other_driver: "اختر سائقاً آخر.",
       vehicle_assigned_success: "تم حفظ تسليم المركبة.",
       no_reminders: "لا توجد تذكيرات.",
+      due_soon: "قريب الاستحقاق",
+      overdue: "متأخر",
       delete_vehicle_confirm: "حذف هذه المركبة؟ سيتم حذف التسليمات والتنبيهات وسجلات الصيانة المرتبطة بها.",
       vehicle_updated: "تم تحديث المركبة.",
       vehicle_deleted: "تم حذف المركبة.",
@@ -1299,6 +1471,7 @@
 
     const roleOptions = [
       { value: "staff", en: "Staff", ar: "موظف" },
+      { value: "supervisor", en: "Supervisor", ar: "مراقب" },
       { value: "manager", en: "Manager", ar: "مدير" },
       { value: "driver", en: "Driver", ar: "سائق" },
       { value: "admin", en: "Admin", ar: "مشرف" }
@@ -1321,9 +1494,11 @@
 
     const remFilterSelect = document.getElementById("remFilterSelect");
     if (remFilterSelect) {
+      const attentionOpt = remFilterSelect.querySelector('option[value="attention"]');
       const openOpt = remFilterSelect.querySelector('option[value="open"]');
       const allOpt = remFilterSelect.querySelector('option[value="all"]');
       const doneOpt = remFilterSelect.querySelector('option[value="done"]');
+      if (attentionOpt) attentionOpt.textContent = (currentLang === "ar") ? "تنبيه" : "Attention";
       if (openOpt) openOpt.textContent = (currentLang === "ar") ? "مفتوح" : "Open";
       if (allOpt) allOpt.textContent = (currentLang === "ar") ? "الكل" : "All";
       if (doneOpt) doneOpt.textContent = (currentLang === "ar") ? "منجز" : "Done";
@@ -1346,6 +1521,8 @@
 
     const requestSearchInput = document.getElementById("requestItemSearchInput");
     if (requestSearchInput) requestSearchInput.placeholder = t("search_items_placeholder");
+    const inventorySearchInput = document.getElementById("inventorySearchInput");
+    if (inventorySearchInput) inventorySearchInput.placeholder = t("search_items_placeholder");
 
     const editSearchInput = document.getElementById("itemEditSearchInput");
     if (editSearchInput) editSearchInput.placeholder = t("search_item_edit_placeholder");
@@ -1365,17 +1542,36 @@
     carAssignments: [],
     carMaintenances: [],
     inventoryPage: 1,
-    inventoryPageSize: 40
+    inventoryPageSize: 40,
+    requestImageData: "",
+    activePageId: "",
+    phoneMode: false,
+    lastNotifiedCount: 0
   };
-  const SESSION_TTL_MS = 5 * 60 * 1000; // 5 minutes
   const SESSION_STORAGE_KEY = "APP_SESSION";
+  const PHONE_MODE_KEY = "PHONE_MODE";
+  const REQ_SEEN_KEY_PREFIX = "REQ_SEEN_AT_";
   let sessionLogoutTimer = null;
+  let audioCtx = null;
+  const POLL_INTERVAL_MS = 10000;
+  let pollTimer = null;
+
+  function applyPhoneMode() {
+    document.body.classList.toggle("phone-mode", !!state.phoneMode);
+    const phoneBtn = document.getElementById("phoneModeBtn");
+    if (phoneBtn && state.user && state.user.role === "driver") {
+      phoneBtn.textContent = state.phoneMode ? t("phone_mode_off") : t("phone_mode_on");
+    }
+    localStorage.setItem(PHONE_MODE_KEY, state.phoneMode ? "1" : "0");
+  }
 
   function saveSession(user) {
-    const expiresAt = Date.now() + SESSION_TTL_MS;
-    localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify({ user, expiresAt }));
-    scheduleSessionLogout(expiresAt);
-    return expiresAt;
+    localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify({ user }));
+    if (sessionLogoutTimer) {
+      clearTimeout(sessionLogoutTimer);
+      sessionLogoutTimer = null;
+    }
+    return null;
   }
 
   function loadSession() {
@@ -1383,12 +1579,8 @@
     if (!raw) return null;
     try {
       const parsed = JSON.parse(raw);
-      if (!parsed || !parsed.user || !parsed.expiresAt) return null;
-      if (Date.now() > parsed.expiresAt) {
-        localStorage.removeItem(SESSION_STORAGE_KEY);
-        return null;
-      }
-      return parsed;
+      if (!parsed || !parsed.user) return null;
+      return { user: parsed.user };
     } catch {
       localStorage.removeItem(SESSION_STORAGE_KEY);
       return null;
@@ -1404,6 +1596,7 @@
   }
 
   function scheduleSessionLogout(expiresAt) {
+    if (!expiresAt) return;
     if (sessionLogoutTimer) clearTimeout(sessionLogoutTimer);
     const ms = Math.max(0, expiresAt - Date.now());
     sessionLogoutTimer = setTimeout(() => {
@@ -1428,6 +1621,16 @@
     const u = state.users.find((x) => x.id === id);
     return u ? u.name : id || "";
   }
+  function getDriverOptionsHtml(selectedId) {
+    const drivers = (state.users || []).filter((u) => u.role === "driver");
+    const placeholder = currentLang === "ar" ? "اختر سائق" : "Select driver";
+    let html = `<option value="">${escapeHtml(placeholder)}</option>`;
+    drivers.forEach((d) => {
+      const sel = d.id === selectedId ? " selected" : "";
+      html += `<option value="${escapeHtml(d.id)}"${sel}>${escapeHtml(d.name)}</option>`;
+    });
+    return html;
+  }
   function getItemById(id) {
     return state.items.find((x) => x.id === id);
   }
@@ -1440,6 +1643,231 @@
     const d = new Date(iso);
     if (Number.isNaN(d.getTime())) return iso;
     return d.toLocaleString();
+  }
+  function formatEta(req) {
+    if (!req) return "";
+    if (req.deliveryEtaLabel) return req.deliveryEtaLabel;
+    if (req.deliveryEta) return formatDateTime(req.deliveryEta);
+    return "";
+  }
+  function priorityText(priority) {
+    return priority === "urgent" ? t("priority_urgent") : t("priority_normal");
+  }
+  function getRequestImageButton(r) {
+    if (!r || !r.imageData) return "";
+    const useIcons = state.phoneMode && state.user && state.user.role === "driver";
+    const label = useIcons ? "🖼" : t("view_image");
+    return `<button class="btn btn-secondary btn-sm" data-view-image="${escapeHtml(r.id)}">${label}</button>`;
+  }
+  function getRelevantRequestsForNotify() {
+    if (!state.user) return [];
+    const role = state.user.role;
+    const list = state.requests || [];
+    if (role === "driver") {
+      return list.filter((r) => (r.status === "pending" || r.status === "assigned") && r.driverUserId === state.user.id);
+    }
+    if (role === "admin" || role === "manager") {
+      return list.filter((r) => r.status === "pending" || r.status === "assigned");
+    }
+    if (role === "staff" || role === "supervisor") {
+      return list.filter((r) => r.toBranchId === state.user.branchId && (r.status === "pending" || r.status === "assigned"));
+    }
+    return [];
+  }
+  function updateFaviconBadge(count) {
+    const favicon = document.getElementById("favicon");
+    if (!favicon) return;
+    const size = 100;
+    const canvas = document.createElement("canvas");
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext("2d");
+    ctx.fillStyle = "#111827";
+    ctx.fillRect(0, 0, size, size);
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "64px Arial";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("S", 50, 58);
+    if (count > 0) {
+      const badgeText = count > 99 ? "99+" : String(count);
+      ctx.fillStyle = "#ef4444";
+      ctx.beginPath();
+      ctx.arc(78, 22, 20, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "18px Arial";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(badgeText, 78, 22);
+    }
+    favicon.href = canvas.toDataURL("image/png");
+  }
+  function showToast(message) {
+    const container = document.getElementById("toastContainer");
+    if (!container) return;
+    const div = document.createElement("div");
+    div.className = "toast";
+    div.textContent = message;
+    container.appendChild(div);
+    setTimeout(() => {
+      div.remove();
+    }, 3500);
+  }
+  function playNotificationSound() {
+    try {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === "suspended") audioCtx.resume().catch(() => {});
+      const o = audioCtx.createOscillator();
+      const g = audioCtx.createGain();
+      o.type = "sine";
+      o.frequency.value = 880;
+      g.gain.value = 0.08;
+      o.connect(g);
+      g.connect(audioCtx.destination);
+      o.start();
+      o.stop(audioCtx.currentTime + 0.15);
+    } catch {}
+  }
+  function formatToastMessage(count) {
+    const key = (state.user && state.user.role === "driver") ? "toast_new_assigned" : "toast_new_requests";
+    return t(key).replace("{count}", String(count));
+  }
+  function updateRequestNotifications(opts = {}) {
+    const notify = opts.notify !== false;
+    if (!state.user) return;
+    const key = REQ_SEEN_KEY_PREFIX + state.user.id;
+    const seenAt = Number(localStorage.getItem(key) || "0");
+    const relevant = getRelevantRequestsForNotify();
+    const newCount = relevant.filter((r) => {
+      const created = r.createdAt ? new Date(r.createdAt).getTime() : 0;
+      return created > seenAt;
+    }).length;
+
+    const baseTitle = t("app_title");
+    document.title = newCount > 0 ? `${baseTitle} (${newCount})` : baseTitle;
+    updateFaviconBadge(newCount);
+
+    if ("setAppBadge" in navigator && typeof navigator.setAppBadge === "function") {
+      if (newCount > 0) navigator.setAppBadge(newCount).catch(() => {});
+      else if (navigator.clearAppBadge) navigator.clearAppBadge().catch(() => {});
+    }
+
+    if (notify && newCount > state.lastNotifiedCount) {
+      const diff = newCount - state.lastNotifiedCount;
+      showToast(formatToastMessage(diff));
+      playNotificationSound();
+    }
+    state.lastNotifiedCount = newCount;
+  }
+  function markRequestsSeen() {
+    if (!state.user) return;
+    const key = REQ_SEEN_KEY_PREFIX + state.user.id;
+    localStorage.setItem(key, String(Date.now()));
+    state.lastNotifiedCount = 0;
+    updateRequestNotifications({ notify: false });
+  }
+  function isPageAllowed(pageId) {
+    if (!state.user) return false;
+    const role = state.user.role;
+    const rules = {
+      inventoryPanel: ["admin", "manager", "supervisor"],
+      requestsPanel: ["staff", "supervisor", "manager", "admin"],
+      driverPanel: ["driver"],
+      movementsPanel: ["admin", "manager"],
+      analyticsPanel: ["admin", "manager"],
+      vehiclePanel: ["admin", "manager", "driver"],
+      usersPanel: ["admin"]
+    };
+    return (rules[pageId] || []).includes(role);
+  }
+  function getDefaultPageForRole(role) {
+    if (role === "driver") return "driverPanel";
+    if (role === "supervisor") return "inventoryPanel";
+    if (role === "staff") return "requestsPanel";
+    return "inventoryPanel";
+  }
+  function setActivePage(pageId) {
+    state.activePageId = pageId;
+    const panelIds = [
+      "inventoryPanel",
+      "requestsPanel",
+      "driverPanel",
+      "movementsPanel",
+      "analyticsPanel",
+      "vehiclePanel",
+      "usersPanel"
+    ];
+    panelIds.forEach((id) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.style.display = (id === pageId && isPageAllowed(id)) ? "block" : "none";
+    });
+    const menu = document.getElementById("mainMenu");
+    if (menu) {
+      menu.querySelectorAll("button[data-page]").forEach((btn) => {
+        btn.classList.toggle("active", btn.getAttribute("data-page") === pageId);
+      });
+    }
+    if (pageId === "requestsPanel" || pageId === "driverPanel") {
+      markRequestsSeen();
+    }
+  }
+  function renderMenu() {
+    const menu = document.getElementById("mainMenu");
+    if (!menu || !state.user) return;
+    const items = [
+      { id: "inventoryPanel", label: "menu_inventory" },
+      { id: "requestsPanel", label: "menu_requests" },
+      { id: "driverPanel", label: "menu_driver" },
+      { id: "movementsPanel", label: "menu_movements" },
+      { id: "analyticsPanel", label: "menu_analytics" },
+      { id: "vehiclePanel", label: "menu_vehicles" },
+      { id: "usersPanel", label: "menu_users" }
+    ];
+    menu.innerHTML = "";
+    let firstAllowed = "";
+    items.forEach((item) => {
+      if (!isPageAllowed(item.id)) return;
+      if (!firstAllowed) firstAllowed = item.id;
+      const btn = document.createElement("button");
+      btn.className = "btn btn-secondary btn-sm";
+      btn.setAttribute("data-page", item.id);
+      btn.textContent = t(item.label);
+      btn.addEventListener("click", () => setActivePage(item.id));
+      menu.appendChild(btn);
+    });
+    menu.style.display = firstAllowed ? "flex" : "none";
+    const target = isPageAllowed(state.activePageId) ? state.activePageId : (firstAllowed || getDefaultPageForRole(state.user.role));
+    if (target) setActivePage(target);
+  }
+  function computeEta(type, customValue) {
+    const now = new Date();
+    if (type === "3h") {
+      const eta = new Date(now.getTime() + 3 * 60 * 60 * 1000);
+      return { iso: eta.toISOString(), label: t("eta_3h") };
+    }
+    if (type === "tomorrow") {
+      const eta = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+      return { iso: eta.toISOString(), label: t("eta_tomorrow") };
+    }
+    if (type === "custom") {
+      if (!customValue) return null;
+      const eta = new Date(customValue);
+      if (Number.isNaN(eta.getTime())) return null;
+      return { iso: eta.toISOString(), label: formatDateTime(eta.toISOString()) };
+    }
+    return null;
+  }
+  function openRequestImageById(id) {
+    const req = (state.requests || []).find((r) => r.id === id);
+    if (!req || !req.imageData) {
+      alert(t("no_image"));
+      return;
+    }
+    const w = window.open();
+    if (!w) return;
+    w.document.write(`<img src="${req.imageData}" style="max-width:100%;height:auto;" />`);
   }
 
   // ✅ UPDATED: uses MAIN_STORAGE_BRANCH_ID override (matches your server env)
@@ -1584,6 +2012,17 @@
     return body;
   }
 
+  async function apiCreateBranch(name) {
+    const res = await fetch(`${API_BASE}/branches`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, adminUserId: state.user.id })
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(body.error || "Create branch failed");
+    return body;
+  }
+
   async function apiCreateItem(data) {
     const res = await fetch(`${API_BASE}/items`, {
       method: "POST",
@@ -1617,14 +2056,47 @@
     return body;
   }
 
-  async function apiCreateRequest(itemId, qty, note) {
+  async function apiCreateRequest(itemId, qty, note, priority, urgentNote, imageData) {
     const res = await fetch(`${API_BASE}/requests`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ itemId, qty, note, userId: state.user.id })
+      body: JSON.stringify({ itemId, qty, note, priority, urgentNote, imageData, userId: state.user.id })
     });
     const body = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(body.error || "Request failed");
+    return body;
+  }
+
+  async function apiAssignRequest(id, driverUserId) {
+    const res = await fetch(`${API_BASE}/requests/${id}/assign`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId: state.user.id, driverUserId })
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(body.error || "Assign request failed");
+    return body;
+  }
+
+  async function apiClaimRequest(id, deliveryEta, deliveryEtaLabel) {
+    const res = await fetch(`${API_BASE}/requests/${id}/claim`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId: state.user.id, deliveryEta, deliveryEtaLabel })
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(body.error || "Claim request failed");
+    return body;
+  }
+
+  async function apiUpdateRequestEta(id, deliveryEta, deliveryEtaLabel) {
+    const res = await fetch(`${API_BASE}/requests/${id}/eta`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId: state.user.id, deliveryEta, deliveryEtaLabel })
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(body.error || "Update ETA failed");
     return body;
   }
 
@@ -1802,6 +2274,11 @@
         invSel.appendChild(opt);
       });
       if (mainId) invSel.value = mainId;
+      if (state.user && state.user.role === "supervisor") {
+        invSel.disabled = true;
+      } else {
+        invSel.disabled = false;
+      }
     }
 
     const fromLabel = document.getElementById("requestFromBranchLabel");
@@ -1928,6 +2405,7 @@
     const storageTotalEl = document.getElementById("storageTotalValue");
     const selectedValueEl = document.getElementById("selectedListValue");
     const invSel = document.getElementById("inventoryViewBranchSelect");
+    const searchInput = document.getElementById("inventorySearchInput");
 
     tbody.innerHTML = "";
     if (alertsBody) alertsBody.innerHTML = "";
@@ -1938,13 +2416,26 @@
     const itemsSelected = (state.items || []).filter(it => it.branchId === selectedBranchId);
     const itemsMain = (state.items || []).filter(it => it.branchId === mainId);
 
+    const query = (searchInput && searchInput.value ? searchInput.value : "").trim().toLowerCase();
+    const filteredSelected = query
+      ? itemsSelected.filter((it) => {
+          const haystack = [
+            it.id,
+            it.name,
+            it.nameEn,
+            it.nameAr
+          ].map((v) => String(v || "").toLowerCase());
+          return haystack.some((v) => v.includes(query));
+        })
+      : itemsSelected;
+
     const selectedTotal = itemsSelected.reduce((sum, it) => sum + (Number(it.baseQty)||0)*(Number(it.unitCost)||0), 0);
     const storageTotal = itemsMain.reduce((sum, it) => sum + (Number(it.baseQty)||0)*(Number(it.unitCost)||0), 0);
 
     if (selectedValueEl) selectedValueEl.textContent = selectedTotal.toFixed(3);
     if (storageTotalEl) storageTotalEl.textContent = storageTotal.toFixed(3);
 
-    const sorted = [...itemsSelected].sort((a,b)=> (a.name||"").localeCompare(b.name||""));
+    const sorted = [...filteredSelected].sort((a,b)=> (a.name||"").localeCompare(b.name||""));
 
     const pageSize = Number(state.inventoryPageSize) || 40;
     const pageSizeSelect = document.getElementById("inventoryPageSizeSelect");
@@ -1964,7 +2455,8 @@
 
     if (!sorted.length) {
       const tr = document.createElement("tr");
-      tr.innerHTML = `<td colspan="7" class="text-muted">${t("no_items_in")} ${escapeHtml(getBranchName(selectedBranchId))}.</td>`;
+      const emptyMsg = query ? t("no_items_match_search") : `${t("no_items_in")} ${escapeHtml(getBranchName(selectedBranchId))}.`;
+      tr.innerHTML = `<td colspan="7" class="text-muted">${emptyMsg}</td>`;
       tbody.appendChild(tr);
       if (pageInfo) pageInfo.textContent = t("no_items");
       if (prevBtn) prevBtn.disabled = true;
@@ -2104,77 +2596,62 @@
   }
 
   function renderRequestsTable() {
-  const tbody = document.getElementById("requestsTableBody");
-  tbody.innerHTML = "";
-  const all = [...state.requests].sort(
-    (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
-  );
-
-  let visible;
-
-  if (state.user.role === "driver") {
-    visible = all; // (driver normally uses driver panel, but keep safe)
-  } else if (state.user.role === "admin" || state.user.role === "manager") {
-    // ✅ Admin & Manager see ALL pending requests from ALL branches
-    visible = all.filter((r) => r.status === "pending");
-  } else {
-    // ✅ Staff: requests for their own branch (all statuses)
-    visible = all.filter((r) => r.toBranchId === state.user.branchId);
-  }
-
-  const canDelete = state.user.role === "admin" || state.user.role === "manager";
-  const canReceive = state.user.role === "staff";
-
-  if (!visible.length) {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `<td colspan="9" class="text-muted">${
-      ["admin", "manager"].includes(state.user.role) ? t("no_pending_requests") : t("no_requests_yet")
-    }</td>`;
-    tbody.appendChild(tr);
-    return;
-  }
-
-  visible.forEach((r) => {
-    const item = getItemById(r.itemId);
-    const driverName = r.driverUserId ? getUserName(r.driverUserId) : "";
-    const actionParts = [];
-    if (canDelete && r.status === "pending") {
-      actionParts.push(`<button class="btn btn-secondary btn-sm" data-delete-request="${escapeHtml(r.id)}">${t("delete_request")}</button>`);
-    }
-    if (canReceive && r.status === "pending" && r.toBranchId === state.user.branchId) {
-      actionParts.push(`<button class="btn btn-primary btn-sm" data-receive-request="${escapeHtml(r.id)}">${t("deliver")}</button>`);
-    }
-    const actionBtns = actionParts.join(" ");
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${escapeHtml(r.id)}</td>
-      <td>${escapeHtml(item ? item.name : r.itemId)}</td>
-      <td>${escapeHtml(r.qty)}</td>
-      <td>${escapeHtml(getBranchName(r.fromBranchId))}</td>
-      <td>${escapeHtml(getBranchName(r.toBranchId))}</td>
-      <td><span class="pill pill-status ${escapeHtml(r.status)}">${t(r.status)}</span></td>
-      <td>${escapeHtml(getUserName(r.createdByUserId))}</td>
-      <td>${escapeHtml(driverName)}</td>
-      <td>${actionBtns}</td>
-    `;
-    tbody.appendChild(tr);
-  });
-  }
-
-
-  function renderDriverRequestsTable() {
-    const tbody = document.getElementById("driverRequestsTableBody");
+    const tbody = document.getElementById("requestsTableBody");
     tbody.innerHTML = "";
-    const pending = state.requests.filter((r) => r.status === "pending");
-    if (!pending.length) {
+    const all = [...state.requests].sort(
+      (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+    );
+
+    let visible;
+
+    if (state.user.role === "driver") {
+      visible = all; // (driver normally uses driver panel, but keep safe)
+    } else if (state.user.role === "admin" || state.user.role === "manager") {
+      // Admin & Manager see all non-delivered requests
+      visible = all.filter((r) => r.status !== "delivered");
+    } else {
+      // Staff/Supervisor: requests for their own branch (all statuses)
+      visible = all.filter((r) => r.toBranchId === state.user.branchId);
+    }
+
+    const canDelete = state.user.role === "admin" || state.user.role === "manager";
+    const canAssign = state.user.role === "admin" || state.user.role === "manager";
+    const canReceive = ["staff", "supervisor"].includes(state.user.role);
+
+    if (!visible.length) {
       const tr = document.createElement("tr");
-      tr.innerHTML = `<td colspan="8" class="text-muted">${t("no_pending_requests")}</td>`;
+      tr.innerHTML = `<td colspan="13" class="text-muted">${
+        ["admin", "manager"].includes(state.user.role) ? t("no_pending_requests") : t("no_requests_yet")
+      }</td>`;
       tbody.appendChild(tr);
       return;
     }
 
-    pending.forEach((r) => {
+    visible.forEach((r) => {
       const item = getItemById(r.itemId);
+      const driverName = r.driverUserId ? getUserName(r.driverUserId) : "";
+      const etaText = formatEta(r);
+      const priority = r.priority === "urgent" ? "urgent" : "normal";
+      const priorityPill = `<span class="pill pill-priority ${priority === "urgent" ? "urgent" : ""}">${escapeHtml(priorityText(priority))}</span>`;
+      const noteText = [r.urgentNote ? `${t("urgent_note_label")}: ${r.urgentNote}` : "", r.note || ""]
+        .filter(Boolean)
+        .join(" | ");
+
+      const actionParts = [];
+      const imageBtn = getRequestImageButton(r);
+      if (canAssign && r.status !== "delivered") {
+        actionParts.push(
+          `<select data-assign-driver="${escapeHtml(r.id)}">${getDriverOptionsHtml(r.driverUserId)}</select>`
+        );
+        actionParts.push(`<button class="btn btn-primary btn-sm" data-assign-request="${escapeHtml(r.id)}">${t("assign")}</button>`);
+      }
+      if (canDelete && r.status === "pending") {
+        actionParts.push(`<button class="btn btn-secondary btn-sm" data-delete-request="${escapeHtml(r.id)}">${t("delete_request")}</button>`);
+      }
+      if (canReceive && r.status !== "delivered" && r.toBranchId === state.user.branchId) {
+        actionParts.push(`<button class="btn btn-primary btn-sm" data-receive-request="${escapeHtml(r.id)}">${t("deliver")}</button>`);
+      }
+      const actionBtns = actionParts.join(" ");
       const tr = document.createElement("tr");
       tr.innerHTML = `
         <td>${escapeHtml(r.id)}</td>
@@ -2182,9 +2659,89 @@
         <td>${escapeHtml(r.qty)}</td>
         <td>${escapeHtml(getBranchName(r.fromBranchId))}</td>
         <td>${escapeHtml(getBranchName(r.toBranchId))}</td>
+        <td>${priorityPill}</td>
+        <td>${escapeHtml(etaText)}</td>
+        <td><span class="pill pill-status ${escapeHtml(r.status)}">${t(r.status)}</span></td>
+        <td>${escapeHtml(getUserName(r.createdByUserId))}</td>
+        <td>${escapeHtml(driverName)}</td>
+        <td>${escapeHtml(noteText)}</td>
+        <td>${imageBtn || "-"}</td>
+        <td>${actionBtns}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+
+  function renderDriverRequestsTable() {
+    const tbody = document.getElementById("driverRequestsTableBody");
+    tbody.innerHTML = "";
+    const pending = state.requests.filter((r) => r.status === "pending" || r.status === "assigned");
+
+    const notice = document.getElementById("driverNotice");
+    if (notice && state.user) {
+      const assignedToMe = pending.filter((r) => r.driverUserId === state.user.id).length;
+      const unassigned = pending.filter((r) => !r.driverUserId).length;
+      notice.innerHTML = `
+        <div class="summary-card">
+          <div class="summary-label">${t("assigned_to_you")}</div>
+          <div class="summary-value">${assignedToMe}</div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-label">${t("unassigned_requests")}</div>
+          <div class="summary-value">${unassigned}</div>
+        </div>
+      `;
+    }
+
+    if (!pending.length) {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td colspan="13" class="text-muted">${t("no_pending_requests")}</td>`;
+      tbody.appendChild(tr);
+      return;
+    }
+
+    pending.forEach((r) => {
+      const item = getItemById(r.itemId);
+      const etaText = formatEta(r);
+      const priority = r.priority === "urgent" ? "urgent" : "normal";
+      const priorityPill = `<span class="pill pill-priority ${priority === "urgent" ? "urgent" : ""}">${escapeHtml(priorityText(priority))}</span>`;
+      const noteText = [r.urgentNote ? `${t("urgent_note_label")}: ${r.urgentNote}` : "", r.note || ""]
+        .filter(Boolean)
+        .join(" | ");
+      const imageBtn = getRequestImageButton(r);
+      const isMine = state.user && r.driverUserId === state.user.id;
+      const canEdit = !r.driverUserId || isMine;
+      const useIcons = state.phoneMode && state.user && state.user.role === "driver";
+      const claimLabel = useIcons ? "🚚" : t("take_request");
+      const etaLabel = useIcons ? "⏱" : t("set_eta");
+      const claimBtn = !r.driverUserId ? `<button class="btn btn-primary btn-sm" data-claim-request="${escapeHtml(r.id)}">${claimLabel}</button>` : "";
+      const etaSelect = `
+        <select data-eta-type="${escapeHtml(r.id)}" ${canEdit ? "" : "disabled"}>
+          <option value="">${t("eta_select")}</option>
+          <option value="3h">${t("eta_3h")}</option>
+          <option value="tomorrow">${t("eta_tomorrow")}</option>
+          <option value="custom">${t("eta_custom")}</option>
+        </select>
+        <input type="datetime-local" data-eta-custom="${escapeHtml(r.id)}" style="display:none;" ${canEdit ? "" : "disabled"} />
+      `;
+      const etaBtn = `<button class="btn btn-secondary btn-sm" data-set-eta="${escapeHtml(r.id)}" ${canEdit ? "" : "disabled"}>${etaLabel}</button>`;
+
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${escapeHtml(r.id)}</td>
+        <td>${escapeHtml(item ? item.name : r.itemId)}</td>
+        <td>${escapeHtml(r.qty)}</td>
+        <td>${escapeHtml(getBranchName(r.fromBranchId))}</td>
+        <td>${escapeHtml(getBranchName(r.toBranchId))}</td>
+        <td>${priorityPill}</td>
+        <td>${escapeHtml(etaText)}</td>
+        <td>${escapeHtml(noteText)}</td>
+        <td>${imageBtn || "-"}</td>
+        <td>${escapeHtml(r.driverUserId ? getUserName(r.driverUserId) : "")}</td>
         <td>${escapeHtml(getUserName(r.createdByUserId))}</td>
         <td><span class="pill pill-status ${escapeHtml(r.status)}">${t(r.status)}</span></td>
-        <td class="text-muted">-</td>
+        <td><div class="driver-actions">${claimBtn} ${etaSelect} ${etaBtn}</div></td>
       `;
       tbody.appendChild(tr);
     });
@@ -2395,7 +2952,7 @@
     const assignForm = document.getElementById("vehicleAssignFormBlock");
     const manageBlock = document.getElementById("vehicleManageBlock");
 
-    if (panel) panel.style.display = (isAdmin || isManager || isDriver) ? "block" : "none";
+    if (panel && !(isAdmin || isManager || isDriver)) panel.style.display = "none";
     if (createBlock) createBlock.style.display = (isAdmin || isManager) ? "block" : "none";
     if (assignForm) assignForm.style.display = (isAdmin || isManager || isDriver) ? "block" : "none";
     if (manageBlock) manageBlock.style.display = (isAdmin || isManager) ? "block" : "none";
@@ -2545,11 +3102,28 @@
     if (!tbody) return;
     tbody.innerHTML = "";
 
-    const filter = document.getElementById("remFilterSelect")?.value || "open";
+    const filter = document.getElementById("remFilterSelect")?.value || "attention";
     const vehFilter = document.getElementById("remVehicleFilterSelect")?.value || "ALL";
 
     let list = [...(state.vehicleReminders || [])];
 
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const soon = new Date(today.getTime());
+    const REMINDER_SOON_DAYS = 7;
+    soon.setDate(soon.getDate() + REMINDER_SOON_DAYS);
+
+    const isAttention = (r) => {
+      if (r.status !== "open") return false;
+      if (r.dueDate) {
+        const due = new Date(r.dueDate + "T00:00:00");
+        if (Number.isNaN(due.getTime())) return false;
+        return due <= soon;
+      }
+      return !!r.dueOdometer;
+    };
+
+    if (filter === "attention") list = list.filter(isAttention);
     if (filter === "open") list = list.filter(r => r.status === "open");
     if (filter === "done") list = list.filter(r => r.status === "done");
     if (vehFilter !== "ALL") list = list.filter(r => r.vehicleId === vehFilter);
@@ -2576,6 +3150,10 @@
         : `<span class="pill pill-open">${currentLang === "ar" ? "مفتوح" : "open"}</span>`;
 
       const dueText = r.dueDate ? r.dueDate : "";
+      const dueDateObj = r.dueDate ? new Date(r.dueDate + "T00:00:00") : null;
+      const isOverdue = dueDateObj && dueDateObj < today;
+      const isSoon = dueDateObj && dueDateObj <= soon;
+      const dueBadge = isOverdue ? t("overdue") : (isSoon ? t("due_soon") : "");
       const odoText = (r.dueOdometer === null || typeof r.dueOdometer === "undefined") ? "" : r.dueOdometer;
 
       const actionBtns = `
@@ -2590,7 +3168,7 @@
         <td>${statusPill}</td>
         <td>${escapeHtml(vehicleNameById(r.vehicleId))}</td>
         <td>${escapeHtml(typeLabel(r.type))}</td>
-        <td>${escapeHtml(dueText)}</td>
+        <td${isOverdue ? ' class="danger"' : ""}>${escapeHtml(dueText)}${dueBadge ? ` <span class="pill pill-priority urgent">${escapeHtml(dueBadge)}</span>` : ""}</td>
         <td>${escapeHtml(odoText)}</td>
         <td>${escapeHtml(r.note || "")}</td>
         <td style="display:flex;gap:0.4rem;align-items:center;flex-wrap:wrap;">${actionBtns}</td>
@@ -2911,15 +3489,20 @@
     const isAdmin = state.user.role === "admin";
     const isManager = state.user.role === "manager";
     const isDriver = state.user.role === "driver";
+    const isSupervisor = state.user.role === "supervisor";
 
-    document.getElementById("usersPanel").style.display = isAdmin ? "block" : "none";
-    document.getElementById("driverPanel").style.display = isDriver ? "block" : "none";
+    const inventoryManageBlock = document.getElementById("inventoryManageBlock");
+    if (inventoryManageBlock) {
+      inventoryManageBlock.style.display = (isAdmin || isManager) ? "block" : "none";
+    }
 
-    document.getElementById("requestsPanel").style.display = isDriver ? "none" : "block";
-    document.getElementById("inventoryPanel").style.display = (isAdmin || isManager) ? "block" : "none";
-    document.getElementById("movementsPanel").style.display = (isAdmin || isManager) ? "block" : "none";
-    document.getElementById("analyticsPanel").style.display = (isAdmin || isManager) ? "block" : "none";
-    document.getElementById("vehiclePanel").style.display = (isAdmin || isManager || isDriver) ? "block" : "none";
+    const phoneBtn = document.getElementById("phoneModeBtn");
+    if (phoneBtn) {
+      phoneBtn.style.display = isDriver ? "inline-flex" : "none";
+      phoneBtn.textContent = state.phoneMode ? t("phone_mode_off") : t("phone_mode_on");
+    }
+
+    renderMenu();
   }
 
   function logout() {
@@ -2937,8 +3520,17 @@
     state.carMaintenances = [];
     state.inventoryPage = 1;
     state.inventoryPageSize = 40;
+    state.phoneMode = false;
+    applyPhoneMode();
+    updateFaviconBadge(0);
+    document.title = t("app_title");
+    if ("clearAppBadge" in navigator && typeof navigator.clearAppBadge === "function") {
+      navigator.clearAppBadge().catch(() => {});
+    }
     document.getElementById("appView").style.display = "none";
     document.getElementById("loginView").style.display = "block";
+    const menu = document.getElementById("mainMenu");
+    if (menu) menu.style.display = "none";
     renderHeader();
     document.getElementById("loginNameInput").value = "";
     document.getElementById("loginPasswordInput").value = "";
@@ -2996,11 +3588,25 @@
     }
   }
 
+  function renderBranchesTable() {
+    const tbody = document.getElementById("branchesTableBody");
+    if (!tbody) return;
+    tbody.innerHTML = "";
+    const branches = [...(state.branches || [])].sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+    branches.forEach((b) => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td>${escapeHtml(b.id)}</td><td>${escapeHtml(b.name)}</td>`;
+      tbody.appendChild(tr);
+    });
+  }
+
   async function initFromSession() {
     const session = loadSession();
     if (!session) return;
     state.user = session.user;
     scheduleSessionLogout(session.expiresAt);
+    state.phoneMode = localStorage.getItem(PHONE_MODE_KEY) === "1";
+    applyPhoneMode();
     try {
       await refreshAllState();
 
@@ -3010,11 +3616,13 @@
       fillRequestItemsFromStorage();
       renderInventoryViewer();
       renderUsersTable();
+      renderBranchesTable();
       renderRequestsTable();
       renderDriverRequestsTable();
       renderMovementsTable();
       renderAnalytics();
       renderVehiclesUI();
+      updateRequestNotifications({ notify: false });
 
       await updateItemIdField();
       showApp();
@@ -3034,12 +3642,15 @@
     renderInventoryViewer();
     if (state.user) {
       renderUsersTable();
+      renderBranchesTable();
       renderRequestsTable();
       renderDriverRequestsTable();
       renderMovementsTable();
       renderAnalytics();
       renderVehiclesUI();
       renderHeader();
+      renderMenu();
+      applyPhoneMode();
     }
   });
 
@@ -3060,6 +3671,8 @@
       const user = await apiLogin(name, password);
       state.user = user;
       saveSession(user);
+      state.phoneMode = localStorage.getItem(PHONE_MODE_KEY) === "1";
+      applyPhoneMode();
 
       await refreshAllState();
 
@@ -3069,11 +3682,13 @@
       fillRequestItemsFromStorage();
       renderInventoryViewer();
       renderUsersTable();
+      renderBranchesTable();
       renderRequestsTable();
       renderDriverRequestsTable();
       renderMovementsTable();
       renderAnalytics();
       renderVehiclesUI();
+      updateRequestNotifications({ notify: false });
 
       await updateItemIdField();
       showApp();
@@ -3084,8 +3699,29 @@
   });
 
   document.getElementById("logoutBtn").addEventListener("click", logout);
+  document.getElementById("phoneModeBtn").addEventListener("click", () => {
+    state.phoneMode = !state.phoneMode;
+    applyPhoneMode();
+    renderDriverRequestsTable();
+  });
+
+  if (pollTimer) clearInterval(pollTimer);
+  pollTimer = setInterval(async () => {
+    if (!state.user) return;
+    try {
+      await refreshAllState();
+      updateRequestNotifications({ notify: true });
+      if (state.activePageId === "requestsPanel") renderRequestsTable();
+      if (state.activePageId === "driverPanel") renderDriverRequestsTable();
+    } catch {}
+  }, POLL_INTERVAL_MS);
 
   document.getElementById("inventoryViewBranchSelect").addEventListener("change", () => {
+    state.inventoryPage = 1;
+    renderInventoryViewer();
+  });
+
+  document.getElementById("inventorySearchInput").addEventListener("input", () => {
     state.inventoryPage = 1;
     renderInventoryViewer();
   });
@@ -3093,6 +3729,29 @@
   document.getElementById("requestItemSearchInput").addEventListener("input", () => {
     fillRequestItemsFromStorage();
   });
+
+  document.getElementById("requestImageInput").addEventListener("change", (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) {
+      state.requestImageData = "";
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      state.requestImageData = String(reader.result || "");
+    };
+    reader.readAsDataURL(file);
+  });
+
+  const prioritySelectEl = document.getElementById("requestPrioritySelect");
+  const urgentNoteEl = document.getElementById("requestUrgentNoteInput");
+  if (prioritySelectEl && urgentNoteEl) {
+    const toggleUrgent = () => {
+      urgentNoteEl.style.display = prioritySelectEl.value === "urgent" ? "block" : "none";
+    };
+    prioritySelectEl.addEventListener("change", toggleUrgent);
+    toggleUrgent();
+  }
 
   document.getElementById("itemEditSearchInput").addEventListener("input", () => {
     renderItemEditSelect();
@@ -3345,23 +4004,71 @@
     const itemId = document.getElementById("requestItemSelect").value;
     const qty = Number(document.getElementById("requestQtyInput").value || "1");
     const note = document.getElementById("requestNoteInput").value.trim();
+    const priority = document.getElementById("requestPrioritySelect").value;
+    const urgentNote = document.getElementById("requestUrgentNoteInput").value.trim();
 
     if (!itemId || !qty || qty <= 0) { alert(t("item_qty_required")); return; }
 
     try {
-      const req = await apiCreateRequest(itemId, qty, note);
+      const req = await apiCreateRequest(itemId, qty, note, priority, urgentNote, state.requestImageData);
       state.requests.push(req);
       renderRequestsTable();
       renderDriverRequestsTable();
       renderAnalytics();
       document.getElementById("requestQtyInput").value = "1";
       document.getElementById("requestNoteInput").value = "";
+      document.getElementById("requestUrgentNoteInput").value = "";
+      document.getElementById("requestPrioritySelect").value = "normal";
+      document.getElementById("requestImageInput").value = "";
+      state.requestImageData = "";
+    } catch (e) {
+      alert(e.message);
+    }
+  });
+
+  document.getElementById("addBranchBtn").addEventListener("click", async () => {
+    if (!state.user || state.user.role !== "admin") {
+      alert(t("only_admin_create_users"));
+      return;
+    }
+    const name = document.getElementById("newBranchName").value.trim();
+    if (!name) { alert(t("branch_name_required")); return; }
+    try {
+      const branch = await apiCreateBranch(name);
+      state.branches.push(branch);
+      renderBranchesTable();
+      renderBranchSelects();
+      document.getElementById("newBranchName").value = "";
     } catch (e) {
       alert(e.message);
     }
   });
 
   document.getElementById("requestsTableBody").addEventListener("click", async (e) => {
+    const viewBtn = e.target.closest("button[data-view-image]");
+    if (viewBtn) {
+      const id = viewBtn.getAttribute("data-view-image");
+      openRequestImageById(id);
+      return;
+    }
+    const assignBtn = e.target.closest("button[data-assign-request]");
+    if (assignBtn) {
+      const id = assignBtn.getAttribute("data-assign-request");
+      const select = document.querySelector(`select[data-assign-driver="${CSS.escape(id)}"]`);
+      const driverUserId = select ? select.value : "";
+      if (!driverUserId) { alert(t("select_driver_msg")); return; }
+      try {
+        const updated = await apiAssignRequest(id, driverUserId);
+        const idx = state.requests.findIndex((r) => r.id === id);
+        if (idx >= 0) state.requests[idx] = updated;
+        renderRequestsTable();
+        renderDriverRequestsTable();
+      } catch (err) {
+        alert(err.message);
+      }
+      return;
+    }
+
     const receiveBtn = e.target.closest("button[data-receive-request]");
     if (receiveBtn) {
       const id = receiveBtn.getAttribute("data-receive-request");
@@ -3400,6 +4107,61 @@
       renderAnalytics();
     } catch (err) {
       alert(err.message);
+    }
+  });
+
+  document.getElementById("driverRequestsTableBody").addEventListener("change", (e) => {
+    const sel = e.target.closest("select[data-eta-type]");
+    if (!sel) return;
+    const id = sel.getAttribute("data-eta-type");
+    const input = document.querySelector(`input[data-eta-custom="${CSS.escape(id)}"]`);
+    if (!input) return;
+    input.style.display = sel.value === "custom" ? "inline-flex" : "none";
+  });
+
+  document.getElementById("driverRequestsTableBody").addEventListener("click", async (e) => {
+    const viewBtn = e.target.closest("button[data-view-image]");
+    if (viewBtn) {
+      const id = viewBtn.getAttribute("data-view-image");
+      openRequestImageById(id);
+      return;
+    }
+    const claimBtn = e.target.closest("button[data-claim-request]");
+    if (claimBtn) {
+      const id = claimBtn.getAttribute("data-claim-request");
+      try {
+        const updated = await apiClaimRequest(id);
+        const idx = state.requests.findIndex((r) => r.id === id);
+        if (idx >= 0) state.requests[idx] = updated;
+        renderRequestsTable();
+        renderDriverRequestsTable();
+      } catch (err) {
+        alert(err.message);
+      }
+      return;
+    }
+
+    const etaBtn = e.target.closest("button[data-set-eta]");
+    if (etaBtn) {
+      const id = etaBtn.getAttribute("data-set-eta");
+      const typeSel = document.querySelector(`select[data-eta-type="${CSS.escape(id)}"]`);
+      const customInput = document.querySelector(`input[data-eta-custom="${CSS.escape(id)}"]`);
+      const type = typeSel ? typeSel.value : "";
+      const customValue = customInput ? customInput.value : "";
+      if (!type) { alert(t("eta_select_msg")); return; }
+
+      const eta = computeEta(type, customValue);
+      if (!eta) { alert(t("eta_invalid_msg")); return; }
+
+      try {
+        const updated = await apiUpdateRequestEta(id, eta.iso, eta.label);
+        const idx = state.requests.findIndex((r) => r.id === id);
+        if (idx >= 0) state.requests[idx] = updated;
+        renderRequestsTable();
+        renderDriverRequestsTable();
+      } catch (err) {
+        alert(err.message);
+      }
     }
   });
 

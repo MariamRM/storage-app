@@ -93,6 +93,19 @@ function getNextItemId(data) {
   return "ITEM-" + String(next).padStart(3, "0");
 }
 
+function getNextBranchId(data) {
+  let max = 0;
+  for (const b of data.branches || []) {
+    const m = /^B(\d+)$/i.exec(String(b.id || "").trim());
+    if (m) {
+      const n = parseInt(m[1], 10);
+      if (Number.isFinite(n) && n > max) max = n;
+    }
+  }
+  const next = max + 1;
+  return "B" + String(next).padStart(3, "0");
+}
+
 function genId(prefix) {
   return `${prefix}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 }
@@ -173,6 +186,58 @@ app.get("/api/state", async (req, res) => {
   } catch (err) {
     console.error("State error", err);
     res.status(500).json({ error: "Failed to load data" });
+  }
+});
+
+// ---------- BRANCHES (Admin create) ----------
+app.post("/api/branches", async (req, res) => {
+  try {
+    const { name, id, adminUserId } = req.body || {};
+    if (!name || !String(name).trim()) {
+      return res.status(400).json({ error: "name is required" });
+    }
+    const data = await loadData();
+    const admin = findUserById(data, adminUserId);
+    if (!requireRole(admin, ["admin"])) {
+      return res.status(403).json({ error: "Only admin can create branches" });
+    }
+
+    const branchName = String(name).trim();
+    if ((data.branches || []).some((b) => String(b.name || "").toLowerCase() === branchName.toLowerCase())) {
+      return res.status(400).json({ error: "Branch name already exists" });
+    }
+
+    let branchId = id ? String(id).trim() : "";
+    if (!branchId) {
+      branchId = getNextBranchId(data);
+    }
+    if ((data.branches || []).some((b) => String(b.id || "").toLowerCase() === branchId.toLowerCase())) {
+      return res.status(400).json({ error: "Branch ID already exists" });
+    }
+
+    const newBranch = { id: branchId, name: branchName };
+    data.branches.push(newBranch);
+    await saveData(data);
+    res.status(201).json(newBranch);
+  } catch (err) {
+    console.error("Create branch error", err);
+    res.status(500).json({ error: "Failed to create branch" });
+  }
+});
+
+// ---------- FULL STATE EXPORT (admin-only, temporary) ----------
+app.get("/api/state-full", async (req, res) => {
+  try {
+    const key = process.env.ADMIN_EXPORT_KEY;
+    if (!key || req.query.key !== key) {
+      return res.status(403).json({ error: "Unauthorized" });
+    }
+    const raw = await fs.readFile(DATA_FILE, "utf-8");
+    res.setHeader("Content-Type", "application/json");
+    res.send(raw);
+  } catch (err) {
+    console.error("State-full error", err);
+    res.status(500).json({ error: "Failed to load full data" });
   }
 });
 
@@ -400,10 +465,10 @@ app.post("/api/movements", async (req, res) => {
   }
 });
 
-// ---------- REQUESTS (staff/manager/admin; Storage → user branch) ----------
+// ---------- REQUESTS (staff/manager/admin/supervisor; Storage → user branch) ----------
 app.post("/api/requests", async (req, res) => {
   try {
-    const { itemId, qty, userId, note } = req.body;
+    const { itemId, qty, userId, note, priority, urgentNote, imageData } = req.body;
     if (!itemId || !qty || !userId) {
       return res.status(400).json({ error: "itemId, qty, userId are required" });
     }
@@ -427,8 +492,15 @@ app.post("/api/requests", async (req, res) => {
       toBranchId: user.branchId,
       createdByUserId: userId,
       note: note || "",
+      priority: priority === "urgent" ? "urgent" : "normal",
+      urgentNote: urgentNote || "",
+      imageData: imageData || "",
       status: "pending",
       driverUserId: null,
+      assignedAt: null,
+      assignedByUserId: null,
+      deliveryEta: null,
+      deliveryEtaLabel: "",
       createdAt: new Date().toISOString()
     };
 
@@ -457,6 +529,111 @@ app.get("/api/requests/pending", async (req, res) => {
   }
 });
 
+// ---------- ASSIGN REQUEST TO DRIVER (admin/manager) ----------
+app.post("/api/requests/:id/assign", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { userId, driverUserId, deliveryEta, deliveryEtaLabel } = req.body || {};
+
+    const data = await loadData();
+    const actor = findUserById(data, userId);
+    if (!mustBe(actor, ["admin", "manager"], res)) return;
+
+    const request = (data.requests || []).find((r) => r.id === id);
+    if (!request) return res.status(404).json({ error: "Request not found" });
+    if (request.status === "delivered") return res.status(400).json({ error: "Request already delivered" });
+
+    const driver = findUserById(data, driverUserId);
+    if (!driver || driver.role !== "driver") {
+      return res.status(400).json({ error: "driverUserId must be a valid driver" });
+    }
+
+    request.driverUserId = driverUserId;
+    request.assignedAt = new Date().toISOString();
+    request.assignedByUserId = actor.id;
+    request.status = "assigned";
+
+    if (typeof deliveryEta !== "undefined") request.deliveryEta = deliveryEta || null;
+    if (typeof deliveryEtaLabel !== "undefined") request.deliveryEtaLabel = deliveryEtaLabel || "";
+
+    await saveData(data);
+    res.json(request);
+  } catch (err) {
+    console.error("Assign request error", err);
+    res.status(500).json({ error: "Failed to assign request" });
+  }
+});
+
+// ---------- CLAIM REQUEST (driver can take unassigned) ----------
+app.post("/api/requests/:id/claim", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { userId, deliveryEta, deliveryEtaLabel } = req.body || {};
+
+    const data = await loadData();
+    const driver = findUserById(data, userId);
+    if (!mustBe(driver, ["driver"], res)) return;
+
+    const request = (data.requests || []).find((r) => r.id === id);
+    if (!request) return res.status(404).json({ error: "Request not found" });
+    if (request.status === "delivered") return res.status(400).json({ error: "Request already delivered" });
+
+    if (request.driverUserId && request.driverUserId !== driver.id) {
+      return res.status(403).json({ error: "Request already assigned to another driver" });
+    }
+
+    request.driverUserId = driver.id;
+    request.assignedAt = new Date().toISOString();
+    request.assignedByUserId = driver.id;
+    request.status = "assigned";
+
+    if (typeof deliveryEta !== "undefined") request.deliveryEta = deliveryEta || null;
+    if (typeof deliveryEtaLabel !== "undefined") request.deliveryEtaLabel = deliveryEtaLabel || "";
+
+    await saveData(data);
+    res.json(request);
+  } catch (err) {
+    console.error("Claim request error", err);
+    res.status(500).json({ error: "Failed to claim request" });
+  }
+});
+
+// ---------- UPDATE ETA (driver/admin/manager) ----------
+app.post("/api/requests/:id/eta", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { userId, deliveryEta, deliveryEtaLabel } = req.body || {};
+
+    const data = await loadData();
+    const actor = findUserById(data, userId);
+    if (!mustBe(actor, ["admin", "manager", "driver"], res)) return;
+
+    const request = (data.requests || []).find((r) => r.id === id);
+    if (!request) return res.status(404).json({ error: "Request not found" });
+    if (request.status === "delivered") return res.status(400).json({ error: "Request already delivered" });
+
+    if (actor.role === "driver" && request.driverUserId && request.driverUserId !== actor.id) {
+      return res.status(403).json({ error: "Drivers can only update ETA for their own request" });
+    }
+
+    if (actor.role === "driver" && !request.driverUserId) {
+      request.driverUserId = actor.id;
+      request.assignedAt = new Date().toISOString();
+      request.assignedByUserId = actor.id;
+      request.status = "assigned";
+    }
+
+    request.deliveryEta = deliveryEta || null;
+    request.deliveryEtaLabel = deliveryEtaLabel || "";
+
+    await saveData(data);
+    res.json(request);
+  } catch (err) {
+    console.error("ETA update error", err);
+    res.status(500).json({ error: "Failed to update ETA" });
+  }
+});
+
 // ---------- CONFIRM RECEIVE (Staff/Admin/Manager) ----------
 app.post("/api/requests/:id/deliver", async (req, res) => {
   try {
@@ -468,14 +645,14 @@ app.post("/api/requests/:id/deliver", async (req, res) => {
     const data = await loadData();
     const actor = findUserById(data, actorUserId);
     if (!actor) return res.status(400).json({ error: "User not found" });
-    if (!requireRole(actor, ["staff", "admin", "manager"])) {
-      return res.status(403).json({ error: "Only staff/admin/manager can confirm receipt" });
+    if (!requireRole(actor, ["staff", "supervisor", "admin", "manager"])) {
+      return res.status(403).json({ error: "Only staff/supervisor/admin/manager can confirm receipt" });
     }
 
     const request = data.requests.find((r) => r.id === id);
     if (!request) return res.status(404).json({ error: "Request not found" });
     if (request.status === "delivered") return res.status(400).json({ error: "Request already delivered" });
-    if (actor.role === "staff" && actor.branchId !== request.toBranchId) {
+    if (["staff", "supervisor"].includes(actor.role) && actor.branchId !== request.toBranchId) {
       return res.status(403).json({ error: "Only staff from the destination branch can confirm receipt" });
     }
 
