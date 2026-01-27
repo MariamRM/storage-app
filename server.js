@@ -106,6 +106,17 @@ function getNextBranchId(data) {
   return "B" + String(next).padStart(3, "0");
 }
 
+function getNextRequestOrderNo(data, toBranchId) {
+  const list = (data.requests || []).filter((r) => r.toBranchId === toBranchId);
+  let max = 0;
+  for (const r of list) {
+    const n = Number(r.orderNo);
+    if (Number.isFinite(n) && n > max) max = n;
+  }
+  if (max > 0) return max + 1;
+  return list.length + 1;
+}
+
 function genId(prefix) {
   return `${prefix}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 }
@@ -486,6 +497,7 @@ app.post("/api/requests", async (req, res) => {
 
     const request = {
       id: "REQ-" + Date.now(),
+      orderNo: getNextRequestOrderNo(data, user.branchId),
       itemId,
       qty: Number(qty),
       fromBranchId: MAIN_STORAGE_BRANCH_ID,

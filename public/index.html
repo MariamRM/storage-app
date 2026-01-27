@@ -457,7 +457,8 @@
       <table>
         <thead>
         <tr>
-          <th data-i18n="th_id">ID</th>
+          <th data-i18n="th_order">Order #</th>
+          <th data-i18n="th_created_at">Created</th>
           <th data-i18n="th_item">Item</th>
           <th data-i18n="th_qty">Qty</th>
           <th data-i18n="th_from">From</th>
@@ -491,7 +492,8 @@
       <table>
         <thead>
         <tr>
-          <th data-i18n="th_id">ID</th>
+          <th data-i18n="th_order">Order #</th>
+          <th data-i18n="th_created_at">Created</th>
           <th data-i18n="th_item">Item</th>
           <th data-i18n="th_qty">Qty</th>
           <th data-i18n="th_from">From</th>
@@ -987,6 +989,8 @@
       toast_new_assigned: "New assigned to you: {count}",
 
       th_id: "ID",
+      th_order: "Order #",
+      th_created_at: "Created",
       th_name: "Name",
       th_branch: "Branch",
       th_qty: "Qty",
@@ -1097,6 +1101,7 @@
       apply_filters: "Apply filters",
       total_spent: "Total spent (KWD)",
       delivered_requests: "Delivered requests",
+      order_prefix: "Order #",
       total_quantity: "Total quantity",
       most_ordered: "Most ordered items (by cost)",
       export_monthly_report: "Export monthly report",
@@ -1237,6 +1242,8 @@
       toast_new_assigned: "طلبات جديدة لك: {count}",
 
       th_id: "الرقم",
+      th_order: "رقم الطلب",
+      th_created_at: "تاريخ الإنشاء",
       th_name: "الاسم",
       th_branch: "الفرع",
       th_qty: "الكمية",
@@ -1342,6 +1349,7 @@
       apply_filters: "تطبيق الفلاتر",
       total_spent: "إجمالي الصرف (د.ك)",
       delivered_requests: "الطلبات المسلّمة",
+      order_prefix: "طلب #",
       total_quantity: "إجمالي الكمية",
       most_ordered: "الأكثر طلبًا (حسب التكلفة)",
 
@@ -1643,6 +1651,27 @@
     const d = new Date(iso);
     if (Number.isNaN(d.getTime())) return iso;
     return d.toLocaleString();
+  }
+  function buildRequestOrderMap(requests) {
+    const map = new Map();
+    const byBranch = new Map();
+    (requests || []).forEach((r) => {
+      const key = r.toBranchId || "";
+      if (!byBranch.has(key)) byBranch.set(key, []);
+      byBranch.get(key).push(r);
+    });
+    byBranch.forEach((list) => {
+      list.sort((a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0));
+      list.forEach((r, idx) => {
+        map.set(r.id, idx + 1);
+      });
+    });
+    return map;
+  }
+  function getRequestOrderLabel(req, orderMap) {
+    const n = Number.isFinite(Number(req.orderNo)) ? Number(req.orderNo) : (orderMap ? orderMap.get(req.id) : null);
+    if (!n) return req.id ? String(req.id) : "";
+    return `${t("order_prefix")}${n}`;
   }
   function formatEta(req) {
     if (!req) return "";
@@ -2598,8 +2627,9 @@
   function renderRequestsTable() {
     const tbody = document.getElementById("requestsTableBody");
     tbody.innerHTML = "";
+    const orderMap = buildRequestOrderMap(state.requests || []);
     const all = [...state.requests].sort(
-      (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+      (a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0)
     );
 
     let visible;
@@ -2620,7 +2650,7 @@
 
     if (!visible.length) {
       const tr = document.createElement("tr");
-      tr.innerHTML = `<td colspan="13" class="text-muted">${
+      tr.innerHTML = `<td colspan="14" class="text-muted">${
         ["admin", "manager"].includes(state.user.role) ? t("no_pending_requests") : t("no_requests_yet")
       }</td>`;
       tbody.appendChild(tr);
@@ -2631,6 +2661,7 @@
       const item = getItemById(r.itemId);
       const driverName = r.driverUserId ? getUserName(r.driverUserId) : "";
       const etaText = formatEta(r);
+      const orderLabel = getRequestOrderLabel(r, orderMap);
       const priority = r.priority === "urgent" ? "urgent" : "normal";
       const priorityPill = `<span class="pill pill-priority ${priority === "urgent" ? "urgent" : ""}">${escapeHtml(priorityText(priority))}</span>`;
       const noteText = [r.urgentNote ? `${t("urgent_note_label")}: ${r.urgentNote}` : "", r.note || ""]
@@ -2654,7 +2685,8 @@
       const actionBtns = actionParts.join(" ");
       const tr = document.createElement("tr");
       tr.innerHTML = `
-        <td>${escapeHtml(r.id)}</td>
+        <td title="${escapeHtml(r.id)}">${escapeHtml(orderLabel)}</td>
+        <td>${escapeHtml(formatDateTime(r.createdAt))}</td>
         <td>${escapeHtml(item ? item.name : r.itemId)}</td>
         <td>${escapeHtml(r.qty)}</td>
         <td>${escapeHtml(getBranchName(r.fromBranchId))}</td>
@@ -2676,7 +2708,10 @@
   function renderDriverRequestsTable() {
     const tbody = document.getElementById("driverRequestsTableBody");
     tbody.innerHTML = "";
-    const pending = state.requests.filter((r) => r.status === "pending" || r.status === "assigned");
+    const orderMap = buildRequestOrderMap(state.requests || []);
+    const pending = state.requests
+      .filter((r) => r.status === "pending" || r.status === "assigned")
+      .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
 
     const notice = document.getElementById("driverNotice");
     if (notice && state.user) {
@@ -2696,7 +2731,7 @@
 
     if (!pending.length) {
       const tr = document.createElement("tr");
-      tr.innerHTML = `<td colspan="13" class="text-muted">${t("no_pending_requests")}</td>`;
+      tr.innerHTML = `<td colspan="14" class="text-muted">${t("no_pending_requests")}</td>`;
       tbody.appendChild(tr);
       return;
     }
@@ -2704,6 +2739,7 @@
     pending.forEach((r) => {
       const item = getItemById(r.itemId);
       const etaText = formatEta(r);
+      const orderLabel = getRequestOrderLabel(r, orderMap);
       const priority = r.priority === "urgent" ? "urgent" : "normal";
       const priorityPill = `<span class="pill pill-priority ${priority === "urgent" ? "urgent" : ""}">${escapeHtml(priorityText(priority))}</span>`;
       const noteText = [r.urgentNote ? `${t("urgent_note_label")}: ${r.urgentNote}` : "", r.note || ""]
@@ -2729,7 +2765,8 @@
 
       const tr = document.createElement("tr");
       tr.innerHTML = `
-        <td>${escapeHtml(r.id)}</td>
+        <td title="${escapeHtml(r.id)}">${escapeHtml(orderLabel)}</td>
+        <td>${escapeHtml(formatDateTime(r.createdAt))}</td>
         <td>${escapeHtml(item ? item.name : r.itemId)}</td>
         <td>${escapeHtml(r.qty)}</td>
         <td>${escapeHtml(getBranchName(r.fromBranchId))}</td>
