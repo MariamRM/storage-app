@@ -921,27 +921,18 @@ app.patch("/api/vehicle-reminders/:id", async (req, res) => {
 
     const data = await loadData();
     const user = findUserById(data, userId);
-    if (!requireRole(user, ["admin", "manager", "driver"])) {
-      return res.status(403).json({ error: "Unauthorized" });
+    if (!requireRole(user, ["admin", "manager"])) {
+      return res.status(403).json({ error: "Only admin/manager can update reminders" });
     }
 
     const r = data.vehicleReminders.find((x) => x.id === id);
     if (!r) return res.status(404).json({ error: "Reminder not found" });
 
-    const isEditor = requireRole(user, ["admin", "manager"]);
-    if (!isEditor) {
-      if (typeof status === "undefined") {
-        return res.status(403).json({ error: "Drivers can only change status" });
-      }
-    }
-
-    if (isEditor) {
-      if (typeof vehicleId !== "undefined") r.vehicleId = vehicleId;
-      if (typeof type !== "undefined") r.type = type;
-      if (typeof dueDate !== "undefined") r.dueDate = dueDate || null;
-      if (typeof dueOdometer !== "undefined") r.dueOdometer = dueOdometer === null ? null : Number(dueOdometer);
-      if (typeof note !== "undefined") r.note = note || "";
-    }
+    if (typeof vehicleId !== "undefined") r.vehicleId = vehicleId;
+    if (typeof type !== "undefined") r.type = type;
+    if (typeof dueDate !== "undefined") r.dueDate = dueDate || null;
+    if (typeof dueOdometer !== "undefined") r.dueOdometer = dueOdometer === null ? null : Number(dueOdometer);
+    if (typeof note !== "undefined") r.note = note || "";
 
     if (typeof status !== "undefined") {
       r.status = status === "done" ? "done" : "open";
@@ -1084,17 +1075,12 @@ app.post("/api/car-maintenances", async (req, res) => {
 
     const data = await loadData();
     const user = findUserById(data, userId);
-    if (!mustBe(user, ["driver", "admin", "manager"], res)) return;
+    if (!mustBe(user, ["admin", "manager"], res)) return;
 
     if (!vehicleId || !maintenanceDate || typeof price === "undefined" || !invoiceNo) {
       return res.status(400).json({
         error: "vehicleId, maintenanceDate, price, invoiceNo are required"
       });
-    }
-
-    if (user.role === "driver") {
-      const assign = (data.carAssignments || []).find(a => a.driverUserId === user.id && a.vehicleId === vehicleId);
-      if (!assign) return res.status(403).json({ error: "You are not assigned to this vehicle" });
     }
 
     const vehicle = (data.vehicles || []).find(v => v.id === vehicleId);
@@ -1103,7 +1089,7 @@ app.post("/api/car-maintenances", async (req, res) => {
     const rec = {
       id: genId("MAINT"),
       vehicleId,
-      driverUserId: user.role === "driver" ? user.id : (req.body.driverUserId || user.id),
+      driverUserId: req.body.driverUserId || user.id,
       maintenanceDate,
       nextMaintenanceDate: nextMaintenanceDate || null,
       price: Number(price) || 0,

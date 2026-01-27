@@ -1130,7 +1130,7 @@
       due: "Due",
       odometer: "Odometer",
       maintenance_records: "Maintenance records",
-      maintenance_records_subtitle: "Drivers log date, invoice, price and notes. Admin/Manager can review them all.",
+      maintenance_records_subtitle: "Admin/Manager record maintenance details. Drivers can view only.",
       maintenance_date: "Maintenance date",
       next_maintenance_date: "Next maintenance date",
       maintenance_price: "Maintenance cost (KWD)",
@@ -1140,7 +1140,7 @@
       store_name: "Store (optional)",
       save_maintenance: "Save maintenance record",
       maintenance_history: "Maintenance history",
-      maintenance_history_subtitle: "Visible to Admin/Manager and to each assigned driver.",
+      maintenance_history_subtitle: "Visible to Admin/Manager and assigned drivers (view only).",
       maintenance_summary_title: "Maintenance budget summary",
       maintenance_summary_subtitle: "Filter by date or vehicle and export totals.",
       maintenance_required_fields: "Vehicle, maintenance date, price and invoice are required.",
@@ -1372,7 +1372,7 @@
       due: "الاستحقاق",
       odometer: "العداد",
       maintenance_records: "سجلات الصيانة",
-      maintenance_records_subtitle: "يمكن للسائق تسجيل تاريخ الصيانة والتكلفة ورقم الفاتورة والملاحظات، وتظهر للإدارة.",
+      maintenance_records_subtitle: "تسجل الإدارة تفاصيل الصيانة، والسائق للعرض فقط.",
       maintenance_date: "تاريخ الصيانة",
       next_maintenance_date: "تاريخ الصيانة التالية",
       maintenance_price: "تكلفة الصيانة (د.ك)",
@@ -1382,7 +1382,7 @@
       store_name: "المتجر (اختياري)",
       save_maintenance: "حفظ سجل الصيانة",
       maintenance_history: "سجل الصيانة",
-      maintenance_history_subtitle: "يظهر للإدارة والسائق المسؤول عن المركبة.",
+      maintenance_history_subtitle: "يظهر للإدارة وللسائق المسؤول عن المركبة (عرض فقط).",
       maintenance_summary_title: "ملخص ميزانية الصيانة",
       maintenance_summary_subtitle: "رشّح حسب التاريخ أو المركبة ثم صدّر النتائج.",
       maintenance_required_fields: "يجب إدخال المركبة وتاريخ الصيانة والتكلفة ورقم الفاتورة.",
@@ -3142,7 +3142,7 @@
       return;
     }
 
-    const isEditor = state.user.role === "admin" || state.user.role === "manager";
+    const isEditor = state.user?.role === "admin" || state.user?.role === "manager";
 
     list.forEach((r) => {
       const statusPill = r.status === "done"
@@ -3156,12 +3156,12 @@
       const dueBadge = isOverdue ? t("overdue") : (isSoon ? t("due_soon") : "");
       const odoText = (r.dueOdometer === null || typeof r.dueOdometer === "undefined") ? "" : r.dueOdometer;
 
-      const actionBtns = `
+      const actionBtns = isEditor ? `
         <button class="btn btn-primary btn-sm" data-rem-done="${escapeHtml(r.id)}">
           ${r.status === "done" ? t("reopen") : t("done")}
         </button>
-        ${isEditor ? `<button class="btn btn-secondary btn-sm" data-rem-del="${escapeHtml(r.id)}">${t("delete_reminder")}</button>` : ""}
-      `;
+        <button class="btn btn-secondary btn-sm" data-rem-del="${escapeHtml(r.id)}">${t("delete_reminder")}</button>
+      ` : "";
 
       const tr = document.createElement("tr");
       tr.innerHTML = `
@@ -3188,7 +3188,7 @@
     const isManager = state.user.role === "manager";
     const isDriver = state.user.role === "driver";
     const availableVehicles = getVehiclesForCurrentUser();
-    const showForm = isAdmin || isManager || (isDriver && availableVehicles.length);
+    const showForm = isAdmin || isManager;
     block.style.display = showForm ? "block" : "none";
 
     const driverField = document.getElementById("maintDriverField");
@@ -3242,11 +3242,6 @@
         }
       } else {
         driverSelect.innerHTML = "";
-        const opt = document.createElement("option");
-        opt.value = state.user.id;
-        opt.textContent = state.user.name;
-        driverSelect.appendChild(opt);
-        driverSelect.value = state.user.id;
       }
     }
   }
