@@ -2192,6 +2192,35 @@
     w.document.write(`<img src="${imageData}" style="max-width:100%;height:auto;" />`);
   }
 
+  async function compressImageToDataUrl(file, maxDim = 1280, quality = 0.7) {
+    const dataUrl = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result || ""));
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+
+    const img = await new Promise((resolve, reject) => {
+      const image = new Image();
+      image.onload = () => resolve(image);
+      image.onerror = reject;
+      image.src = dataUrl;
+    });
+
+    const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+    const w = Math.round(img.width * scale);
+    const h = Math.round(img.height * scale);
+
+    const canvas = document.createElement("canvas");
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return dataUrl;
+    ctx.drawImage(img, 0, 0, w, h);
+
+    return canvas.toDataURL("image/jpeg", quality);
+  }
+
   // ✅ UPDATED: uses MAIN_STORAGE_BRANCH_ID override (matches your server env)
   function getMainStorageId() {
     const preferred = MAIN_STORAGE_BRANCH_ID || "B001";
@@ -4507,32 +4536,32 @@
     fillRequestItemsFromStorage();
   });
 
-  document.getElementById("requestImageInput").addEventListener("change", (e) => {
+  document.getElementById("requestImageInput").addEventListener("change", async (e) => {
     const file = e.target.files && e.target.files[0];
     if (!file) {
       state.requestImageData = "";
       return;
     }
-    const reader = new FileReader();
-    reader.onload = () => {
-      state.requestImageData = String(reader.result || "");
-    };
-    reader.readAsDataURL(file);
+    try {
+      state.requestImageData = await compressImageToDataUrl(file, 1280, 0.7);
+    } catch {
+      state.requestImageData = "";
+    }
   });
 
   const transferImageInput = document.getElementById("transferImageInput");
   if (transferImageInput) {
-    transferImageInput.addEventListener("change", (e) => {
+    transferImageInput.addEventListener("change", async (e) => {
       const file = e.target.files && e.target.files[0];
       if (!file) {
         state.transferImageData = "";
         return;
       }
-      const reader = new FileReader();
-      reader.onload = () => {
-        state.transferImageData = String(reader.result || "");
-      };
-      reader.readAsDataURL(file);
+      try {
+        state.transferImageData = await compressImageToDataUrl(file, 1280, 0.7);
+      } catch {
+        state.transferImageData = "";
+      }
     });
   }
 
