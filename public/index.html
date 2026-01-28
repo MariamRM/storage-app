@@ -44,6 +44,10 @@
     .pill-status.delivered { background: #dcfce7; color: #166534; }
     .pill-status.assigned { background: #dbeafe; color: #1e3a8a; }
     .pill-status.in_transit { background: #fde68a; color: #92400e; }
+    .pill-status.delivered_to_destination { background: #e0f2fe; color: #075985; }
+    .pill-status.ready { background: #dcfce7; color: #166534; }
+    .pill-status.in_transit_back { background: #bbf7d0; color: #166534; }
+    .pill-status.delivered_back { background: #bbf7d0; color: #166534; }
     .pill-priority { background: #e5e7eb; color: #111827; }
     .pill-priority.urgent { background: #fee2e2; color: #991b1b; }
     .pill-open { background: #fef3c7; color: #92400e; }
@@ -1331,6 +1335,10 @@
       pending: "pending",
       assigned: "assigned",
       in_transit: "in transit",
+      delivered_to_destination: "delivered to destination",
+      ready: "ready",
+      in_transit_back: "returning",
+      delivered_back: "delivered back",
       delivered: "delivered",
       deliver: "Receive",
 
@@ -1366,6 +1374,9 @@
       no_transfer_history: "No transfer history yet.",
       ready: "Ready",
       not_ready: "Not ready",
+      deliver_destination: "Deliver to destination",
+      pickup_back: "Pickup back",
+      deliver_back: "Deliver back",
 
       no_movements: "No movements recorded.",
       no_delivered_period: "No delivered requests in this period.",
@@ -1607,6 +1618,10 @@
       pending: "قيد الانتظار",
       assigned: "تم التعيين",
       in_transit: "في الطريق",
+      delivered_to_destination: "تم التسليم للفرع",
+      ready: "جاهز",
+      in_transit_back: "في طريق العودة",
+      delivered_back: "تم التسليم للفرع الأصلي",
       delivered: "تم التسليم",
       deliver: "استلام",
 
@@ -1642,6 +1657,9 @@
       no_transfer_history: "لا يوجد سجل نقل بعد.",
       ready: "جاهز",
       not_ready: "غير جاهز",
+      deliver_destination: "تسليم للفرع",
+      pickup_back: "استلام للعودة",
+      deliver_back: "تسليم للفرع الأصلي",
 
       no_movements: "لا توجد حركات مسجلة.",
       no_delivered_period: "لا توجد طلبات مسلّمة في هذه الفترة.",
@@ -1954,9 +1972,15 @@
     return map;
   }
   function getRequestOrderLabel(req, orderMap) {
-    const n = Number.isFinite(Number(req.orderNo)) ? Number(req.orderNo) : (orderMap ? orderMap.get(req.id) : null);
+    const raw = String(req.orderNo || "");
+    if (/^\d+$/.test(raw)) {
+      const padded = raw.length >= 6 ? raw : raw.padStart(6, "0");
+      return `${t("order_prefix")}${padded}`;
+    }
+    const n = orderMap ? orderMap.get(req.id) : null;
     if (!n) return req.id ? String(req.id) : "";
-    return `${t("order_prefix")}${n}`;
+    const padded = String(n).padStart(6, "0");
+    return `${t("order_prefix")}${padded}`;
   }
   function formatEta(req) {
     if (!req) return "";
@@ -2472,14 +2496,36 @@
     return body;
   }
 
-  async function apiDeliverTransfer(id) {
-    const res = await fetch(`${API_BASE}/transfers/${id}/deliver`, {
+  async function apiDeliverTransferDestination(id) {
+    const res = await fetch(`${API_BASE}/transfers/${id}/deliver-destination`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ userId: state.user.id })
     });
     const body = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(body.error || "Deliver transfer failed");
+    return body;
+  }
+
+  async function apiPickupTransferBack(id) {
+    const res = await fetch(`${API_BASE}/transfers/${id}/pickup-back`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId: state.user.id })
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(body.error || "Pickup back failed");
+    return body;
+  }
+
+  async function apiDeliverTransferBack(id) {
+    const res = await fetch(`${API_BASE}/transfers/${id}/deliver-back`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId: state.user.id })
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(body.error || "Deliver back failed");
     return body;
   }
 
@@ -3319,7 +3365,7 @@
     if (!state.user) return;
 
     const all = [...(state.transfers || [])];
-    const active = all.filter((t) => t.status !== "delivered");
+    const active = all.filter((trf) => trf.status !== "delivered_back");
     const visible = getVisibleTransfersForUser(active);
 
     if (!visible.length) {
@@ -3331,42 +3377,42 @@
 
     visible.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
 
-    visible.forEach((t) => {
+    visible.forEach((trf) => {
       const canAssign = ["admin", "manager", "supervisor"].includes(state.user.role);
       const canReady = ["admin", "manager", "supervisor", "staff"].includes(state.user.role)
-        && t.status === "delivered"
-        && t.toBranchId
-        && (state.user.branchId === t.toBranchId || ["admin", "manager"].includes(state.user.role));
+        && (trf.status === "delivered_to_destination" || trf.status === "ready")
+        && trf.toBranchId
+        && (state.user.branchId === trf.toBranchId || ["admin", "manager"].includes(state.user.role));
 
-      const assignSelect = canAssign && t.status === "pending"
-        ? `<select data-transfer-assign="${escapeHtml(t.id)}">${getBranchOptionsHtml(t.toBranchId)}</select>`
-        : `<span>${escapeHtml(getBranchName(t.toBranchId))}</span>`;
+      const assignSelect = canAssign && trf.status === "pending"
+        ? `<select data-transfer-assign="${escapeHtml(trf.id)}">${getBranchOptionsHtml(trf.toBranchId)}</select>`
+        : `<span>${escapeHtml(getBranchName(trf.toBranchId))}</span>`;
 
-      const readyLabel = t.readyStatus === "ready" ? t("ready") : t("not_ready");
+      const readyLabel = trf.readyStatus === "ready" ? t("ready") : t("not_ready");
       const readyBtn = canReady
-        ? `<button class="btn btn-secondary btn-sm" data-transfer-ready="${escapeHtml(t.id)}">${t.readyStatus === "ready" ? t("not_ready") : t("ready")}</button>`
+        ? `<button class="btn btn-secondary btn-sm" data-transfer-ready="${escapeHtml(trf.id)}">${trf.readyStatus === "ready" ? t("not_ready") : t("ready")}</button>`
         : "";
 
       const actionParts = [];
-      if (canAssign && t.status === "pending") {
-        actionParts.push(`<button class="btn btn-primary btn-sm" data-transfer-assign-btn="${escapeHtml(t.id)}">${t("assign")}</button>`);
+      if (canAssign && trf.status === "pending") {
+        actionParts.push(`<button class="btn btn-primary btn-sm" data-transfer-assign-btn="${escapeHtml(trf.id)}">${t("assign")}</button>`);
       }
       if (readyBtn) actionParts.push(readyBtn);
       const actionBtns = actionParts.join(" ");
 
-      const imageBtn = getRequestImageButton(t);
+      const imageBtn = getRequestImageButton(trf);
       const tr = document.createElement("tr");
       tr.innerHTML = `
-        <td>${escapeHtml(t.id)}</td>
-        <td>${escapeHtml(formatDateTime(t.createdAt))}</td>
-        <td>${escapeHtml(t.qty)}</td>
-        <td>${escapeHtml(getBranchName(t.fromBranchId))}</td>
+        <td>${escapeHtml(trf.id)}</td>
+        <td>${escapeHtml(formatDateTime(trf.createdAt))}</td>
+        <td>${escapeHtml(trf.qty)}</td>
+        <td>${escapeHtml(getBranchName(trf.fromBranchId))}</td>
         <td>${assignSelect}</td>
-        <td><span class="pill pill-status ${escapeHtml(t.status)}">${t(t.status)}</span></td>
+        <td><span class="pill pill-status ${escapeHtml(trf.status)}">${t(trf.status)}</span></td>
         <td>${escapeHtml(readyLabel)}</td>
-        <td>${escapeHtml(getUserName(t.createdByUserId))}</td>
-        <td>${escapeHtml(t.driverUserId ? getUserName(t.driverUserId) : "")}</td>
-        <td>${escapeHtml(t.note || "")}</td>
+        <td>${escapeHtml(getUserName(trf.createdByUserId))}</td>
+        <td>${escapeHtml(trf.driverUserId ? getUserName(trf.driverUserId) : "")}</td>
+        <td>${escapeHtml(trf.note || "")}</td>
         <td>${imageBtn || "-"}</td>
         <td>${actionBtns || "-"}</td>
       `;
@@ -3380,7 +3426,7 @@
     tbody.innerHTML = "";
     if (!state.user) return;
 
-    const history = (state.transfers || []).filter((t) => t.status === "delivered");
+    const history = (state.transfers || []).filter((trf) => trf.status === "delivered_back");
     const visible = getVisibleTransfersForUser(history);
 
     if (!visible.length) {
@@ -3390,22 +3436,22 @@
       return;
     }
 
-    visible.sort((a, b) => new Date(b.deliveredAt || b.createdAt || 0) - new Date(a.deliveredAt || a.createdAt || 0));
+    visible.sort((a, b) => new Date(b.deliveredBackAt || b.createdAt || 0) - new Date(a.deliveredBackAt || a.createdAt || 0));
 
-    visible.forEach((t) => {
-      const readyLabel = t.readyStatus === "ready" ? t("ready") : t("not_ready");
-      const imageBtn = getRequestImageButton(t);
+    visible.forEach((trf) => {
+      const readyLabel = trf.readyStatus === "ready" ? t("ready") : t("not_ready");
+      const imageBtn = getRequestImageButton(trf);
       const tr = document.createElement("tr");
       tr.innerHTML = `
-        <td>${escapeHtml(t.id)}</td>
-        <td>${escapeHtml(formatDateTime(t.createdAt))}</td>
-        <td>${escapeHtml(formatDateTime(t.deliveredAt))}</td>
-        <td>${escapeHtml(t.qty)}</td>
-        <td>${escapeHtml(getBranchName(t.fromBranchId))}</td>
-        <td>${escapeHtml(getBranchName(t.toBranchId))}</td>
+        <td>${escapeHtml(trf.id)}</td>
+        <td>${escapeHtml(formatDateTime(trf.createdAt))}</td>
+        <td>${escapeHtml(formatDateTime(trf.deliveredBackAt))}</td>
+        <td>${escapeHtml(trf.qty)}</td>
+        <td>${escapeHtml(getBranchName(trf.fromBranchId))}</td>
+        <td>${escapeHtml(getBranchName(trf.toBranchId))}</td>
         <td>${escapeHtml(readyLabel)}</td>
-        <td>${escapeHtml(t.driverUserId ? getUserName(t.driverUserId) : "")}</td>
-        <td>${escapeHtml(t.note || "")}</td>
+        <td>${escapeHtml(trf.driverUserId ? getUserName(trf.driverUserId) : "")}</td>
+        <td>${escapeHtml(trf.note || "")}</td>
         <td>${imageBtn || "-"}</td>
       `;
       tbody.appendChild(tr);
@@ -3499,9 +3545,9 @@
     tbody.innerHTML = "";
     if (!state.user) return;
 
-    const list = (state.transfers || []).filter((t) => {
-      if (t.status === "assigned" || t.status === "in_transit") return true;
-      if (t.status === "delivered" && t.readyStatus === "ready") return true;
+    const list = (state.transfers || []).filter((trf) => {
+      if (trf.status === "assigned" || trf.status === "in_transit") return true;
+      if (trf.status === "ready" || trf.status === "in_transit_back") return true;
       return false;
     }).sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
 
@@ -3512,28 +3558,34 @@
       return;
     }
 
-    list.forEach((t) => {
-      const readyLabel = t.readyStatus === "ready" ? t("ready") : t("not_ready");
-      const imageBtn = getRequestImageButton(t);
-      const rowClass = t.readyStatus === "ready" ? "transfer-ready" : "transfer-row";
+    list.forEach((trf) => {
+      const readyLabel = trf.readyStatus === "ready" ? t("ready") : t("not_ready");
+      const imageBtn = getRequestImageButton(trf);
+      const rowClass = (trf.status === "ready" || trf.status === "in_transit_back") ? "transfer-ready" : "transfer-row";
       const actionParts = [];
-      if (t.status === "assigned") {
-        actionParts.push(`<button class="btn btn-primary btn-sm" data-transfer-pickup="${escapeHtml(t.id)}">${t("take_request")}</button>`);
+      if (trf.status === "assigned") {
+        actionParts.push(`<button class="btn btn-primary btn-sm" data-transfer-pickup="${escapeHtml(trf.id)}">${t("take_request")}</button>`);
       }
-      if (t.status === "in_transit") {
-        actionParts.push(`<button class="btn btn-primary btn-sm" data-transfer-deliver="${escapeHtml(t.id)}">${t("deliver")}</button>`);
+      if (trf.status === "in_transit") {
+        actionParts.push(`<button class="btn btn-primary btn-sm" data-transfer-deliver-dest="${escapeHtml(trf.id)}">${t("deliver_destination")}</button>`);
+      }
+      if (trf.status === "ready") {
+        actionParts.push(`<button class="btn btn-primary btn-sm" data-transfer-pickup-back="${escapeHtml(trf.id)}">${t("pickup_back")}</button>`);
+      }
+      if (trf.status === "in_transit_back") {
+        actionParts.push(`<button class="btn btn-primary btn-sm" data-transfer-deliver-back="${escapeHtml(trf.id)}">${t("deliver_back")}</button>`);
       }
       const tr = document.createElement("tr");
       tr.className = rowClass;
       tr.innerHTML = `
-        <td>${escapeHtml(t.id)}</td>
-        <td>${escapeHtml(formatDateTime(t.createdAt))}</td>
-        <td>${escapeHtml(t.qty)}</td>
-        <td>${escapeHtml(getBranchName(t.fromBranchId))}</td>
-        <td>${escapeHtml(getBranchName(t.toBranchId))}</td>
-        <td><span class="pill pill-status ${escapeHtml(t.status)}">${t(t.status)}</span></td>
+        <td>${escapeHtml(trf.id)}</td>
+        <td>${escapeHtml(formatDateTime(trf.createdAt))}</td>
+        <td>${escapeHtml(trf.qty)}</td>
+        <td>${escapeHtml(getBranchName(trf.fromBranchId))}</td>
+        <td>${escapeHtml(getBranchName(trf.toBranchId))}</td>
+        <td><span class="pill pill-status ${escapeHtml(trf.status)}">${t(trf.status)}</span></td>
         <td>${escapeHtml(readyLabel)}</td>
-        <td>${escapeHtml(t.note || "")}</td>
+        <td>${escapeHtml(trf.note || "")}</td>
         <td>${imageBtn || "-"}</td>
         <td>${actionParts.join(" ") || "-"}</td>
       `;
@@ -5165,11 +5217,37 @@
           alert(err.message);
         }
       }
-      const deliverBtn = e.target.closest("button[data-transfer-deliver]");
-      if (deliverBtn) {
-        const id = deliverBtn.getAttribute("data-transfer-deliver");
+      const deliverDestBtn = e.target.closest("button[data-transfer-deliver-dest]");
+      if (deliverDestBtn) {
+        const id = deliverDestBtn.getAttribute("data-transfer-deliver-dest");
         try {
-          const updated = await apiDeliverTransfer(id);
+          const updated = await apiDeliverTransferDestination(id);
+          const idx = state.transfers.findIndex((t) => t.id === id);
+          if (idx >= 0) state.transfers[idx] = updated;
+          renderDriverTransfersTable();
+          renderTransferTables();
+        } catch (err) {
+          alert(err.message);
+        }
+      }
+      const pickupBackBtn = e.target.closest("button[data-transfer-pickup-back]");
+      if (pickupBackBtn) {
+        const id = pickupBackBtn.getAttribute("data-transfer-pickup-back");
+        try {
+          const updated = await apiPickupTransferBack(id);
+          const idx = state.transfers.findIndex((t) => t.id === id);
+          if (idx >= 0) state.transfers[idx] = updated;
+          renderDriverTransfersTable();
+          renderTransferTables();
+        } catch (err) {
+          alert(err.message);
+        }
+      }
+      const deliverBackBtn = e.target.closest("button[data-transfer-deliver-back]");
+      if (deliverBackBtn) {
+        const id = deliverBackBtn.getAttribute("data-transfer-deliver-back");
+        try {
+          const updated = await apiDeliverTransferBack(id);
           const idx = state.transfers.findIndex((t) => t.id === id);
           if (idx >= 0) state.transfers[idx] = updated;
           renderDriverTransfersTable();

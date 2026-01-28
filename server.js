@@ -108,15 +108,21 @@ function getNextBranchId(data) {
   return "B" + String(next).padStart(3, "0");
 }
 
-function getNextRequestOrderNo(data, toBranchId) {
-  const list = (data.requests || []).filter((r) => r.toBranchId === toBranchId);
-  let max = 0;
-  for (const r of list) {
-    const n = Number(r.orderNo);
-    if (Number.isFinite(n) && n > max) max = n;
+function getNextRequestOrderNo(data) {
+  const now = new Date();
+  const dd = String(now.getDate()).padStart(2, "0");
+  const mm = String(now.getMonth() + 1).padStart(2, "0");
+  const prefix = `${dd}${mm}`;
+  let maxSeq = 0;
+  for (const r of data.requests || []) {
+    const raw = String(r.orderNo || "");
+    if (!/^\d+$/.test(raw) || raw.length < 4) continue;
+    if (!raw.startsWith(prefix)) continue;
+    const seq = parseInt(raw.slice(4), 10);
+    if (Number.isFinite(seq) && seq > maxSeq) maxSeq = seq;
   }
-  if (max > 0) return max + 1;
-  return list.length + 1;
+  const nextSeq = maxSeq + 1;
+  return `${prefix}${String(nextSeq).padStart(2, "0")}`;
 }
 
 function genId(prefix) {
@@ -542,7 +548,7 @@ app.post("/api/requests", async (req, res) => {
 
     const request = {
       id: "REQ-" + Date.now(),
-      orderNo: getNextRequestOrderNo(data, user.branchId),
+      orderNo: getNextRequestOrderNo(data),
       itemId,
       qty: Number(qty),
       fromBranchId: MAIN_STORAGE_BRANCH_ID,
@@ -832,10 +838,13 @@ app.post("/api/transfers", async (req, res) => {
       assignedAt: null,
       driverUserId: null,
       pickedUpAt: null,
-      deliveredAt: null,
-      deliveredByUserId: null,
+      deliveredToDestinationAt: null,
+      deliveredToDestinationByUserId: null,
       readyAt: null,
-      readyByUserId: null
+      readyByUserId: null,
+      pickedUpBackAt: null,
+      deliveredBackAt: null,
+      deliveredBackByUserId: null
     };
 
     data.transfers.push(transfer);
@@ -875,7 +884,7 @@ app.post("/api/transfers/:id/assign", async (req, res) => {
   }
 });
 
-// Driver pickup (driver)
+// Driver pickup to destination (driver)
 app.post("/api/transfers/:id/pickup", async (req, res) => {
   try {
     const { id } = req.params;
@@ -887,8 +896,8 @@ app.post("/api/transfers/:id/pickup", async (req, res) => {
 
     const transfer = (data.transfers || []).find((t) => t.id === id);
     if (!transfer) return res.status(404).json({ error: "Transfer not found" });
-    if (transfer.status === "delivered") return res.status(400).json({ error: "Transfer already delivered" });
-    if (transfer.status === "pending") return res.status(400).json({ error: "Transfer not assigned" });
+    if (transfer.status === "delivered_back") return res.status(400).json({ error: "Transfer already completed" });
+    if (transfer.status !== "assigned") return res.status(400).json({ error: "Transfer not ready for pickup" });
 
     transfer.driverUserId = driver.id;
     transfer.status = "in_transit";
@@ -902,8 +911,8 @@ app.post("/api/transfers/:id/pickup", async (req, res) => {
   }
 });
 
-// Mark delivered (driver/admin/manager)
-app.post("/api/transfers/:id/deliver", async (req, res) => {
+// Mark delivered to destination (driver/admin/manager)
+app.post("/api/transfers/:id/deliver-destination", async (req, res) => {
   try {
     const { id } = req.params;
     const { userId } = req.body || {};
@@ -914,18 +923,19 @@ app.post("/api/transfers/:id/deliver", async (req, res) => {
 
     const transfer = (data.transfers || []).find((t) => t.id === id);
     if (!transfer) return res.status(404).json({ error: "Transfer not found" });
-    if (transfer.status === "delivered") return res.status(400).json({ error: "Transfer already delivered" });
+    if (transfer.status === "delivered_back") return res.status(400).json({ error: "Transfer already completed" });
+    if (transfer.status !== "in_transit") return res.status(400).json({ error: "Transfer not in transit" });
 
-    transfer.status = "delivered";
-    transfer.deliveredAt = new Date().toISOString();
-    transfer.deliveredByUserId = actor.id;
+    transfer.status = "delivered_to_destination";
+    transfer.deliveredToDestinationAt = new Date().toISOString();
+    transfer.deliveredToDestinationByUserId = actor.id;
     if (actor.role === "driver") transfer.driverUserId = actor.id;
 
     await saveData(data);
     res.json(transfer);
   } catch (err) {
-    console.error("Deliver transfer error", err);
-    res.status(500).json({ error: "Failed to deliver transfer" });
+    console.error("Deliver transfer to destination error", err);
+    res.status(500).json({ error: "Failed to deliver to destination" });
   }
 });
 
@@ -945,15 +955,73 @@ app.post("/api/transfers/:id/ready", async (req, res) => {
       return res.status(403).json({ error: "Only destination branch can update readiness" });
     }
 
+    if (transfer.status !== "delivered_to_destination" && transfer.status !== "ready") {
+      return res.status(400).json({ error: "Transfer not delivered to destination yet" });
+    }
+
     transfer.readyStatus = readyStatus === "ready" ? "ready" : "not_ready";
     transfer.readyAt = transfer.readyStatus === "ready" ? new Date().toISOString() : null;
     transfer.readyByUserId = actor.id;
+    transfer.status = transfer.readyStatus === "ready" ? "ready" : "delivered_to_destination";
 
     await saveData(data);
     res.json(transfer);
   } catch (err) {
     console.error("Ready transfer error", err);
     res.status(500).json({ error: "Failed to update readiness" });
+  }
+});
+
+// Driver pickup back to origin (driver)
+app.post("/api/transfers/:id/pickup-back", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { userId } = req.body || {};
+
+    const data = await loadData();
+    const driver = findUserById(data, userId);
+    if (!mustBe(driver, ["driver"], res)) return;
+
+    const transfer = (data.transfers || []).find((t) => t.id === id);
+    if (!transfer) return res.status(404).json({ error: "Transfer not found" });
+    if (transfer.status !== "ready") return res.status(400).json({ error: "Transfer not ready for return" });
+
+    transfer.driverUserId = driver.id;
+    transfer.status = "in_transit_back";
+    transfer.pickedUpBackAt = new Date().toISOString();
+
+    await saveData(data);
+    res.json(transfer);
+  } catch (err) {
+    console.error("Pickup back transfer error", err);
+    res.status(500).json({ error: "Failed to pickup back" });
+  }
+});
+
+// Mark delivered back to origin (driver/admin/manager)
+app.post("/api/transfers/:id/deliver-back", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { userId } = req.body || {};
+
+    const data = await loadData();
+    const actor = findUserById(data, userId);
+    if (!mustBe(actor, ["driver", "admin", "manager"], res)) return;
+
+    const transfer = (data.transfers || []).find((t) => t.id === id);
+    if (!transfer) return res.status(404).json({ error: "Transfer not found" });
+    if (transfer.status !== "in_transit_back") return res.status(400).json({ error: "Transfer not returning" });
+
+    transfer.status = "delivered_back";
+    transfer.deliveredBackAt = new Date().toISOString();
+    transfer.deliveredBackByUserId = actor.id;
+    if (actor.role === "driver") transfer.driverUserId = actor.id;
+
+    await saveData(data);
+    res.json(transfer);
+  } catch (err) {
+    console.error("Deliver back transfer error", err);
+    res.status(500).json({ error: "Failed to deliver back" });
   }
 });
 
