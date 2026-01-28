@@ -11,7 +11,7 @@ const DATA_FILE = process.env.DATA_FILE || path.join(__dirname, "data.json");
 const MAIN_STORAGE_BRANCH_ID = process.env.MAIN_STORAGE_BRANCH_ID || "B001"; // change if needed
 
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: "25mb" }));
 app.use(express.static(path.join(__dirname, "public"))); // serve frontend
 
 // ---------- Helpers ----------
