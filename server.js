@@ -27,6 +27,7 @@ async function loadData() {
     parsed.movements ||= [];
     parsed.budgets ||= [];
     parsed.requests ||= [];
+    parsed.transfers ||= [];
     parsed.trips ||= [];
     parsed.vehicles ||= [];
     parsed.vehicleReminders ||= [];
@@ -44,6 +45,7 @@ async function loadData() {
       movements: [],
       budgets: [],
       requests: [],
+      transfers: [],
       trips: [],
       vehicles: [],
       vehicleReminders: [],
@@ -186,6 +188,7 @@ app.get("/api/state", async (req, res) => {
       movements: data.movements || [],
       budgets: data.budgets || [],
       requests: data.requests || [],
+      transfers: data.transfers || [],
       trips: data.trips || [],
       vehicles: data.vehicles || [],
       vehicleReminders: data.vehicleReminders || [],
@@ -292,7 +295,7 @@ app.post("/api/users", async (req, res) => {
 app.patch("/api/users/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    const { adminUserId, name, role, password, branchId } = req.body;
+    const { adminUserId, name, role, password, branchId, allowedBranchIds, allowedBranchScope } = req.body;
 
     const data = await loadData();
     const admin = findUserById(data, adminUserId);
@@ -307,6 +310,12 @@ app.patch("/api/users/:id", async (req, res) => {
     if (role) user.role = role;
     if (typeof branchId !== "undefined") user.branchId = branchId;
     if (password) user.password = password;
+    if (Array.isArray(allowedBranchIds)) {
+      user.allowedBranchIds = allowedBranchIds;
+    }
+    if (typeof allowedBranchScope !== "undefined") {
+      user.allowedBranchScope = allowedBranchScope;
+    }
 
     await saveData(data);
     const { password: pw, ...safeUser } = user;
@@ -413,6 +422,9 @@ app.patch("/api/items/:id", async (req, res) => {
     if (!item) {
       return res.status(404).json({ error: "Item not found for this branch" });
     }
+    if (String(item.branchId) !== String(MAIN_STORAGE_BRANCH_ID)) {
+      return res.status(403).json({ error: "Only Main Storage items can be edited" });
+    }
 
     if (typeof name !== "undefined") item.name = String(name).trim();
     if (typeof nameEn !== "undefined") item.nameEn = String(nameEn || "").trim();
@@ -432,6 +444,39 @@ app.patch("/api/items/:id", async (req, res) => {
   } catch (err) {
     console.error("Update item error", err);
     res.status(500).json({ error: "Failed to update item" });
+  }
+});
+
+// ---------- ITEMS DELETE (Admin & Manager, Main Storage only) ----------
+app.delete("/api/items/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { userId, branchId } = req.body || {};
+
+    const data = await loadData();
+    const user = findUserById(data, userId);
+    if (!requireRole(user, ["admin", "manager"])) {
+      return res.status(403).json({ error: "Only admin/manager can delete items" });
+    }
+
+    if (!branchId) {
+      return res.status(400).json({ error: "branchId is required to delete item" });
+    }
+
+    const idx = (data.items || []).findIndex(
+      (it) => it.id === String(id).trim() && it.branchId === String(branchId).trim()
+    );
+    if (idx === -1) return res.status(404).json({ error: "Item not found for this branch" });
+    if (String(data.items[idx].branchId) !== String(MAIN_STORAGE_BRANCH_ID)) {
+      return res.status(403).json({ error: "Only Main Storage items can be deleted" });
+    }
+
+    data.items.splice(idx, 1);
+    await saveData(data);
+    res.json({ ok: true });
+  } catch (err) {
+    console.error("Delete item error", err);
+    res.status(500).json({ error: "Failed to delete item" });
   }
 });
 
@@ -755,6 +800,160 @@ app.delete("/api/requests/:id", async (req, res) => {
   } catch (err) {
     console.error("Delete request error", err);
     res.status(500).json({ error: "Failed to delete request" });
+  }
+});
+
+// ---------- TRANSFER BAGS (staff/supervisor/manager/admin) ----------
+app.post("/api/transfers", async (req, res) => {
+  try {
+    const { qty, userId, note, imageData } = req.body;
+    if (!qty || !userId) {
+      return res.status(400).json({ error: "qty and userId are required" });
+    }
+
+    const data = await loadData();
+    const user = findUserById(data, userId);
+    if (!user) return res.status(400).json({ error: "User not found" });
+    if (user.role === "driver") return res.status(403).json({ error: "Drivers cannot create transfers" });
+    if (!user.branchId) return res.status(400).json({ error: "User is not assigned to a branch" });
+
+    const transfer = {
+      id: "TRF-" + Date.now(),
+      qty: Number(qty),
+      fromBranchId: user.branchId,
+      toBranchId: null,
+      status: "pending",
+      readyStatus: "not_ready",
+      note: note || "",
+      imageData: imageData || "",
+      createdByUserId: userId,
+      createdAt: new Date().toISOString(),
+      assignedByUserId: null,
+      assignedAt: null,
+      driverUserId: null,
+      pickedUpAt: null,
+      deliveredAt: null,
+      deliveredByUserId: null,
+      readyAt: null,
+      readyByUserId: null
+    };
+
+    data.transfers.push(transfer);
+    await saveData(data);
+    res.status(201).json(transfer);
+  } catch (err) {
+    console.error("Create transfer error", err);
+    res.status(500).json({ error: "Failed to create transfer" });
+  }
+});
+
+// Assign destination branch (admin/manager/supervisor)
+app.post("/api/transfers/:id/assign", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { userId, toBranchId } = req.body || {};
+
+    const data = await loadData();
+    const actor = findUserById(data, userId);
+    if (!mustBe(actor, ["admin", "manager", "supervisor"], res)) return;
+
+    const transfer = (data.transfers || []).find((t) => t.id === id);
+    if (!transfer) return res.status(404).json({ error: "Transfer not found" });
+    if (transfer.status === "delivered") return res.status(400).json({ error: "Transfer already delivered" });
+    if (!toBranchId) return res.status(400).json({ error: "toBranchId is required" });
+
+    transfer.toBranchId = toBranchId;
+    transfer.status = "assigned";
+    transfer.assignedByUserId = actor.id;
+    transfer.assignedAt = new Date().toISOString();
+
+    await saveData(data);
+    res.json(transfer);
+  } catch (err) {
+    console.error("Assign transfer error", err);
+    res.status(500).json({ error: "Failed to assign transfer" });
+  }
+});
+
+// Driver pickup (driver)
+app.post("/api/transfers/:id/pickup", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { userId } = req.body || {};
+
+    const data = await loadData();
+    const driver = findUserById(data, userId);
+    if (!mustBe(driver, ["driver"], res)) return;
+
+    const transfer = (data.transfers || []).find((t) => t.id === id);
+    if (!transfer) return res.status(404).json({ error: "Transfer not found" });
+    if (transfer.status === "delivered") return res.status(400).json({ error: "Transfer already delivered" });
+    if (transfer.status === "pending") return res.status(400).json({ error: "Transfer not assigned" });
+
+    transfer.driverUserId = driver.id;
+    transfer.status = "in_transit";
+    transfer.pickedUpAt = new Date().toISOString();
+
+    await saveData(data);
+    res.json(transfer);
+  } catch (err) {
+    console.error("Pickup transfer error", err);
+    res.status(500).json({ error: "Failed to pickup transfer" });
+  }
+});
+
+// Mark delivered (driver/admin/manager)
+app.post("/api/transfers/:id/deliver", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { userId } = req.body || {};
+
+    const data = await loadData();
+    const actor = findUserById(data, userId);
+    if (!mustBe(actor, ["driver", "admin", "manager"], res)) return;
+
+    const transfer = (data.transfers || []).find((t) => t.id === id);
+    if (!transfer) return res.status(404).json({ error: "Transfer not found" });
+    if (transfer.status === "delivered") return res.status(400).json({ error: "Transfer already delivered" });
+
+    transfer.status = "delivered";
+    transfer.deliveredAt = new Date().toISOString();
+    transfer.deliveredByUserId = actor.id;
+    if (actor.role === "driver") transfer.driverUserId = actor.id;
+
+    await saveData(data);
+    res.json(transfer);
+  } catch (err) {
+    console.error("Deliver transfer error", err);
+    res.status(500).json({ error: "Failed to deliver transfer" });
+  }
+});
+
+// Set ready status (destination staff/supervisor/admin/manager)
+app.post("/api/transfers/:id/ready", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { userId, readyStatus } = req.body || {};
+
+    const data = await loadData();
+    const actor = findUserById(data, userId);
+    if (!mustBe(actor, ["staff", "supervisor", "admin", "manager"], res)) return;
+
+    const transfer = (data.transfers || []).find((t) => t.id === id);
+    if (!transfer) return res.status(404).json({ error: "Transfer not found" });
+    if (transfer.toBranchId && actor.branchId && transfer.toBranchId !== actor.branchId && !requireRole(actor, ["admin", "manager"])) {
+      return res.status(403).json({ error: "Only destination branch can update readiness" });
+    }
+
+    transfer.readyStatus = readyStatus === "ready" ? "ready" : "not_ready";
+    transfer.readyAt = transfer.readyStatus === "ready" ? new Date().toISOString() : null;
+    transfer.readyByUserId = actor.id;
+
+    await saveData(data);
+    res.json(transfer);
+  } catch (err) {
+    console.error("Ready transfer error", err);
+    res.status(500).json({ error: "Failed to update readiness" });
   }
 });
 

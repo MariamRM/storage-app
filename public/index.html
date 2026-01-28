@@ -34,6 +34,8 @@
     input:focus, select:focus, textarea:focus { outline: none; border-color: #111827; box-shadow: 0 0 0 1px #11182711; }
     table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
     th, td { padding: 0.4rem 0.45rem; text-align: left; border-bottom: 1px solid #f3f4f6; white-space: nowrap; }
+    .transfer-row { background: #fff7ed; }
+    .transfer-ready { background: #ecfdf3; }
     th { font-size: 0.72rem; font-weight: 700; color: #6b7280; background: #f9fafb; }
     tr:nth-child(even) td { background: #f9fafb; }
     .pill { display: inline-flex; align-items: center; padding: 0.08rem 0.55rem; border-radius: 999px; font-size: 0.72rem; }
@@ -41,6 +43,7 @@
     .pill-status.pending { background: #fef3c7; color: #92400e; }
     .pill-status.delivered { background: #dcfce7; color: #166534; }
     .pill-status.assigned { background: #dbeafe; color: #1e3a8a; }
+    .pill-status.in_transit { background: #fde68a; color: #92400e; }
     .pill-priority { background: #e5e7eb; color: #111827; }
     .pill-priority.urgent { background: #fee2e2; color: #991b1b; }
     .pill-open { background: #fef3c7; color: #92400e; }
@@ -278,6 +281,7 @@
     <div class="mt-sm" style="display:flex;gap:0.5rem;flex-wrap:wrap;">
       <button id="addItemBtn" class="btn btn-primary" data-i18n="save_item">Save item</button>
       <button id="updateItemBtn" class="btn btn-secondary" data-i18n="update_item">Update item</button>
+      <button id="deleteItemBtn" class="btn btn-secondary" data-i18n="delete_item">Cancel item</button>
     </div>
     </div>
   </section>
@@ -349,7 +353,7 @@
     <div class="table-wrapper">
       <table>
         <thead>
-        <tr><th data-i18n="th_name">Name</th><th data-i18n="role">Role</th><th data-i18n="th_branch">Branch</th></tr>
+        <tr><th data-i18n="th_name">Name</th><th data-i18n="role">Role</th><th data-i18n="th_branch">Branch</th><th data-i18n="th_access">Access</th></tr>
         </thead>
         <tbody id="usersTableBody"></tbody>
       </table>
@@ -386,6 +390,18 @@
       <div>
         <label data-i18n="th_branch">Branch</label>
         <select id="editUserBranchSelect"></select>
+      </div>
+      <div>
+        <label data-i18n="allowed_scope">Allowed scope (Supervisor)</label>
+        <select id="editUserAllowedScope">
+          <option value="own" data-i18n="scope_own">Own branch only</option>
+          <option value="multiple" data-i18n="scope_multiple">Multiple branches</option>
+          <option value="all" data-i18n="scope_all">All branches</option>
+        </select>
+      </div>
+      <div>
+        <label data-i18n="allowed_branches">Allowed branches (Supervisor)</label>
+        <select id="editUserAllowedBranches" multiple size="4"></select>
       </div>
       <div style="display:flex;align-items:flex-end;gap:0.4rem;">
         <button id="saveUserChangesBtn" class="btn btn-primary" style="flex:1;" data-i18n="save_changes">Save changes</button>
@@ -453,6 +469,12 @@
     </div>
 
     <div class="panel-section-title mt-md" data-i18n="requests_for_my_branch">Requests for my branch</div>
+    <div id="requestsFilterBar" class="toolbar mt-xs" style="display:none;">
+      <div>
+        <label data-i18n="filter_by_branch">Filter by branch</label>
+        <select id="requestBranchFilterSelect"></select>
+      </div>
+    </div>
     <div class="table-wrapper">
       <table>
         <thead>
@@ -474,6 +496,110 @@
         </tr>
         </thead>
         <tbody id="requestsTableBody"></tbody>
+      </table>
+    </div>
+
+    <div id="requestsHistoryBlock" class="mt-md" style="display:none;">
+      <div class="panel-section-title" data-i18n="requests_history">Requests history</div>
+      <div class="toolbar mt-xs">
+        <div>
+          <label data-i18n="filter_by_branch">Filter by branch</label>
+          <select id="requestHistoryBranchSelect"></select>
+        </div>
+      </div>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+          <tr>
+            <th data-i18n="th_order">Order #</th>
+            <th data-i18n="th_created_at">Created</th>
+            <th data-i18n="th_delivered_at">Delivered</th>
+            <th data-i18n="th_item">Item</th>
+            <th data-i18n="th_qty">Qty</th>
+            <th data-i18n="th_from">From</th>
+            <th data-i18n="th_to">To</th>
+            <th data-i18n="th_priority">Priority</th>
+            <th data-i18n="th_by">By</th>
+            <th data-i18n="th_driver">Driver</th>
+            <th data-i18n="th_note">Note</th>
+            <th data-i18n="th_image">Image</th>
+          </tr>
+          </thead>
+          <tbody id="requestsHistoryTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- Transfers (bags) -->
+  <section id="transferPanel" class="panel" style="display:none;">
+    <div class="panel-header">
+      <div>
+        <div class="panel-title" data-i18n="transfer_title">Bags transfer</div>
+        <div class="panel-subtitle" data-i18n="transfer_subtitle">Request bags transfer between branches. Supervisor assigns destination. Drivers deliver.</div>
+      </div>
+    </div>
+
+    <div class="panel-section-title" data-i18n="new_transfer">New transfer</div>
+    <div class="grid mt-xs">
+      <div>
+        <label data-i18n="transfer_qty">Quantity of bags</label>
+        <input id="transferQtyInput" type="number" min="1" value="1" />
+      </div>
+      <div>
+        <label data-i18n="note">Note</label>
+        <input id="transferNoteInput" />
+      </div>
+      <div>
+        <label data-i18n="transfer_image">Transfer image</label>
+        <input id="transferImageInput" type="file" accept="image/*" />
+      </div>
+      <div style="display:flex;align-items:flex-end;">
+        <button id="createTransferBtn" class="btn btn-primary" style="width:100%;" data-i18n="create_transfer">Create transfer</button>
+      </div>
+    </div>
+
+    <div class="panel-section-title mt-md" data-i18n="active_transfers">Active transfers</div>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+        <tr>
+          <th data-i18n="th_id">ID</th>
+          <th data-i18n="th_created_at">Created</th>
+          <th data-i18n="th_qty">Qty</th>
+          <th data-i18n="th_from">From</th>
+          <th data-i18n="th_to">To</th>
+          <th data-i18n="th_status">Status</th>
+          <th data-i18n="th_ready">Ready</th>
+          <th data-i18n="th_by">By</th>
+          <th data-i18n="th_driver">Driver</th>
+          <th data-i18n="th_note">Note</th>
+          <th data-i18n="th_image">Image</th>
+          <th data-i18n="th_action">Action</th>
+        </tr>
+        </thead>
+        <tbody id="transferTableBody"></tbody>
+      </table>
+    </div>
+
+    <div class="panel-section-title mt-md" data-i18n="transfer_history">Transfer history</div>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+        <tr>
+          <th data-i18n="th_id">ID</th>
+          <th data-i18n="th_created_at">Created</th>
+          <th data-i18n="th_delivered_at">Delivered</th>
+          <th data-i18n="th_qty">Qty</th>
+          <th data-i18n="th_from">From</th>
+          <th data-i18n="th_to">To</th>
+          <th data-i18n="th_ready">Ready</th>
+          <th data-i18n="th_driver">Driver</th>
+          <th data-i18n="th_note">Note</th>
+          <th data-i18n="th_image">Image</th>
+        </tr>
+        </thead>
+        <tbody id="transferHistoryTableBody"></tbody>
       </table>
     </div>
   </section>
@@ -509,6 +635,27 @@
         </tr>
         </thead>
         <tbody id="driverRequestsTableBody"></tbody>
+      </table>
+    </div>
+
+    <div class="panel-section-title mt-md" data-i18n="driver_transfers">Driver transfers</div>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+        <tr>
+          <th data-i18n="th_id">ID</th>
+          <th data-i18n="th_created_at">Created</th>
+          <th data-i18n="th_qty">Qty</th>
+          <th data-i18n="th_from">From</th>
+          <th data-i18n="th_to">To</th>
+          <th data-i18n="th_status">Status</th>
+          <th data-i18n="th_ready">Ready</th>
+          <th data-i18n="th_note">Note</th>
+          <th data-i18n="th_image">Image</th>
+          <th data-i18n="th_action">Action</th>
+        </tr>
+        </thead>
+        <tbody id="driverTransfersTableBody"></tbody>
       </table>
     </div>
   </section>
@@ -971,13 +1118,14 @@
       password: "Password",
 
       inventory_title: "Inventory",
-      inventory_subtitle: "Admin & Manager can add items and manage inventory. Supervisor can view Main Storage.",
+      inventory_subtitle: "Admin & Manager can add items and manage inventory.",
       view_inventory_list: "View inventory list",
       select_list: "Select list",
       search_items: "Search items",
       refresh: "Refresh",
       menu_inventory: "Inventory",
       menu_requests: "Requests",
+      menu_transfers: "Transfers",
       menu_driver: "Driver",
       menu_movements: "Movements",
       menu_analytics: "Analytics",
@@ -991,6 +1139,7 @@
       th_id: "ID",
       th_order: "Order #",
       th_created_at: "Created",
+      th_delivered_at: "Delivered",
       th_name: "Name",
       th_branch: "Branch",
       th_qty: "Qty",
@@ -1003,6 +1152,7 @@
       th_priority: "Priority",
       th_eta: "ETA",
       th_status: "Status",
+      th_ready: "Ready",
       th_by: "By",
       th_driver: "Driver",
       th_note: "Note",
@@ -1013,6 +1163,7 @@
       th_requested_by: "Requested by",
       th_total_qty: "Total qty",
       th_total_cost: "Total cost",
+      th_access: "Access",
 
       selected_list_value: "Selected list value (KWD)",
       main_storage_value: "Main Storage value (KWD)",
@@ -1021,6 +1172,7 @@
       search_item_to_edit: "Search item to edit",
       select_item_to_edit: "Select item to edit (optional)",
       update_item: "Update item",
+      delete_item: "Cancel item",
       item_type: "Item type",
       item_type_regular: "Regular (ITEM)",
       item_type_thread: "Thread (THR)",
@@ -1050,6 +1202,11 @@
       password_keep: "Password (leave empty to keep)",
       save_changes: "Save changes",
       delete_user: "Delete user",
+      allowed_branches: "Allowed branches (Supervisor)",
+      allowed_scope: "Allowed scope (Supervisor)",
+      scope_own: "Own branch only",
+      scope_multiple: "Multiple branches",
+      scope_all: "All branches",
 
       branch_requests: "Branch requests",
       requests_subtitle: "Staff / Supervisor / Manager / Admin request items from Main Storage to their own branch.",
@@ -1060,6 +1217,8 @@
       search_items_placeholder: "Type to filter items",
       search_item_edit_placeholder: "Type to search items",
       no_items_match_search: "No items match your search.",
+      delete_item_confirm: "Cancel this item?",
+      item_deleted: "Item canceled.",
       quantity: "Quantity",
       priority: "Priority",
       priority_normal: "Normal",
@@ -1073,6 +1232,17 @@
       no_image: "No image available.",
       create_request: "Create request",
       requests_for_my_branch: "Requests for my branch",
+      transfer_title: "Bags transfer",
+      transfer_subtitle: "Request bags transfer between branches. Supervisor assigns destination. Drivers deliver.",
+      new_transfer: "New transfer",
+      transfer_qty: "Quantity of bags",
+      transfer_image: "Transfer image",
+      create_transfer: "Create transfer",
+      active_transfers: "Active transfers",
+      transfer_history: "Transfer history",
+      driver_transfers: "Driver transfers",
+      requests_history: "Requests history",
+      filter_by_branch: "Filter by branch",
       assign: "Assign",
       assigned_to_you: "Assigned to you",
       unassigned_requests: "Unassigned requests",
@@ -1160,6 +1330,7 @@
 
       pending: "pending",
       assigned: "assigned",
+      in_transit: "in transit",
       delivered: "delivered",
       deliver: "Receive",
 
@@ -1188,14 +1359,20 @@
       mark_delivered_confirm: "Confirm receipt of this request?",
       no_requests_yet: "No requests yet.",
       no_pending_requests: "No pending requests.",
+      no_history_requests: "No delivered requests yet.",
       delete_request: "Delete request",
       delete_request_confirm: "Delete this pending request?",
+      no_transfers_yet: "No transfers yet.",
+      no_transfer_history: "No transfer history yet.",
+      ready: "Ready",
+      not_ready: "Not ready",
 
       no_movements: "No movements recorded.",
       no_delivered_period: "No delivered requests in this period.",
 
       vehicle_name_required_msg: "Vehicle name required",
       select_vehicle_msg: "Select a vehicle",
+      select_branch: "Select a branch",
       select_driver_msg: "Select a driver",
       only_admin_mgr_assign: "Only admins/managers or drivers with the vehicle can assign it.",
       handover_not_allowed: "Only admin, manager, or the assigned driver can hand over a vehicle.",
@@ -1224,13 +1401,14 @@
       password: "كلمة المرور",
 
       inventory_title: "المخزون",
-      inventory_subtitle: "المدير والمشرف يمكنهم إضافة الأصناف وإدارة المخزون. المراقب يمكنه عرض المخزن الرئيسي.",
+      inventory_subtitle: "المدير والمشرف يمكنهم إضافة الأصناف وإدارة المخزون.",
       view_inventory_list: "عرض قائمة المخزون",
       select_list: "اختر القائمة",
       search_items: "بحث عن صنف",
       refresh: "تحديث",
       menu_inventory: "المخزون",
       menu_requests: "الطلبات",
+      menu_transfers: "النقل",
       menu_driver: "السائق",
       menu_movements: "الحركات",
       menu_analytics: "التقارير",
@@ -1244,6 +1422,7 @@
       th_id: "الرقم",
       th_order: "رقم الطلب",
       th_created_at: "تاريخ الإنشاء",
+      th_delivered_at: "تاريخ التسليم",
       th_name: "الاسم",
       th_branch: "الفرع",
       th_qty: "الكمية",
@@ -1256,6 +1435,7 @@
       th_priority: "الأولوية",
       th_eta: "وقت التسليم",
       th_status: "الحالة",
+      th_ready: "الجاهزية",
       th_by: "بواسطة",
       th_driver: "السائق",
       th_note: "ملاحظة",
@@ -1266,6 +1446,7 @@
       th_requested_by: "طالب الطلب",
       th_total_qty: "إجمالي الكمية",
       th_total_cost: "إجمالي التكلفة",
+      th_access: "الصلاحية",
 
       selected_list_value: "قيمة القائمة المختارة (د.ك)",
       main_storage_value: "قيمة المخزن الرئيسي (د.ك)",
@@ -1274,6 +1455,7 @@
       search_item_to_edit: "ابحث عن صنف للتعديل",
       select_item_to_edit: "اختر صنف للتعديل (اختياري)",
       update_item: "تحديث الصنف",
+      delete_item: "إلغاء الصنف",
       item_type: "نوع الصنف",
       item_type_regular: "عادي (ITEM)",
       item_type_thread: "خيط (THR)",
@@ -1298,6 +1480,11 @@
       password_keep: "كلمة المرور (اتركها فارغة للإبقاء)",
       save_changes: "حفظ التعديل",
       delete_user: "حذف المستخدم",
+      allowed_branches: "الفروع المسموحة (للمراقب)",
+      allowed_scope: "نطاق الصلاحية (للمراقب)",
+      scope_own: "فرع واحد فقط",
+      scope_multiple: "عدة فروع",
+      scope_all: "كل الفروع",
 
       branch_requests: "طلبات الفروع",
       requests_subtitle: "الموظف/المدير/المشرف/المراقب يطلبون أصناف من المخزن الرئيسي إلى فرعهم.",
@@ -1308,6 +1495,8 @@
       search_items_placeholder: "اكتب بعض الحروف لتصفية الأصناف",
       search_item_edit_placeholder: "اكتب للبحث عن الأصناف",
       no_items_match_search: "لا توجد أصناف مطابقة لبحثك.",
+      delete_item_confirm: "هل تريد إلغاء هذا الصنف؟",
+      item_deleted: "تم إلغاء الصنف.",
       quantity: "الكمية",
       priority: "الأولوية",
       priority_normal: "عادية",
@@ -1321,6 +1510,17 @@
       no_image: "لا توجد صورة.",
       create_request: "إنشاء طلب",
       requests_for_my_branch: "طلبات فرعي",
+      transfer_title: "نقل الأكياس",
+      transfer_subtitle: "طلب نقل الأكياس بين الفروع. المشرف يحدد الوجهة والسائق يسلّم.",
+      new_transfer: "طلب نقل جديد",
+      transfer_qty: "عدد الأكياس",
+      transfer_image: "صورة النقل",
+      create_transfer: "إنشاء نقل",
+      active_transfers: "عمليات النقل الحالية",
+      transfer_history: "سجل نقل الأكياس",
+      driver_transfers: "نقل الأكياس للسائق",
+      requests_history: "سجل الطلبات",
+      filter_by_branch: "تصفية حسب الفرع",
       assign: "تعيين",
       assigned_to_you: "مُعيّن لك",
       unassigned_requests: "غير مُعيّن",
@@ -1406,6 +1606,7 @@
 
       pending: "قيد الانتظار",
       assigned: "تم التعيين",
+      in_transit: "في الطريق",
       delivered: "تم التسليم",
       deliver: "استلام",
 
@@ -1434,14 +1635,20 @@
       mark_delivered_confirm: "تأكيد استلام هذا الطلب؟",
       no_requests_yet: "لا توجد طلبات بعد.",
       no_pending_requests: "لا توجد طلبات معلّقة.",
+      no_history_requests: "لا توجد طلبات مسلّمة بعد.",
       delete_request: "حذف الطلب",
       delete_request_confirm: "هل تريد حذف هذا الطلب المعلّق؟",
+      no_transfers_yet: "لا توجد عمليات نقل بعد.",
+      no_transfer_history: "لا يوجد سجل نقل بعد.",
+      ready: "جاهز",
+      not_ready: "غير جاهز",
 
       no_movements: "لا توجد حركات مسجلة.",
       no_delivered_period: "لا توجد طلبات مسلّمة في هذه الفترة.",
 
       vehicle_name_required_msg: "اسم المركبة مطلوب",
       select_vehicle_msg: "اختر مركبة",
+      select_branch: "اختر فرعًا",
       select_driver_msg: "اختر السائق",
       only_admin_mgr_assign: "فقط المدير أو المشرف أو السائق المسؤول يمكنه تسليم المركبة.",
       handover_not_allowed: "لا يمكن تسليم المركبة إلا للمدير أو المشرف أو السائق المعين عليه.",
@@ -1545,6 +1752,7 @@
     movements: [],
     budgets: [],
     requests: [],
+    transfers: [],
     vehicles: [],
     vehicleReminders: [],
     carAssignments: [],
@@ -1552,6 +1760,7 @@
     inventoryPage: 1,
     inventoryPageSize: 40,
     requestImageData: "",
+    transferImageData: "",
     activePageId: "",
     phoneMode: false,
     lastNotifiedCount: 0
@@ -1629,6 +1838,73 @@
     const u = state.users.find((x) => x.id === id);
     return u ? u.name : id || "";
   }
+  function getUserRoleById(id) {
+    const u = state.users.find((x) => x.id === id);
+    return u ? u.role : "";
+  }
+  function getSupervisorAllowedBranches(user) {
+    if (!user || user.role !== "supervisor") return [];
+    const scope = getSupervisorAllowedScope(user);
+    if (scope === "all") return (state.branches || []).map((b) => b.id);
+    if (scope === "multiple") {
+      const list = Array.isArray(user.allowedBranchIds) ? user.allowedBranchIds.filter(Boolean) : [];
+      if (list.length) return list;
+    }
+    return user.branchId ? [user.branchId] : [];
+  }
+  function getSupervisorAllowedScope(user) {
+    if (!user || user.role !== "supervisor") return "own";
+    return user.allowedBranchScope || "own";
+  }
+  function getSupervisorAccessLabel(user) {
+    if (!user || user.role !== "supervisor") return "-";
+    const scope = getSupervisorAllowedScope(user);
+    if (scope === "all") return t("scope_all");
+    if (scope === "multiple") {
+      const names = getSupervisorAllowedBranches(user).map((id) => getBranchName(id));
+      return names.length ? names.join(", ") : t("scope_multiple");
+    }
+    return user.branchId ? getBranchName(user.branchId) : t("scope_own");
+  }
+  function applySupervisorAccessUI(role, scope, branchId, allowedIds) {
+    const scopeSel = document.getElementById("editUserAllowedScope");
+    const allowedSel = document.getElementById("editUserAllowedBranches");
+    const scopeWrap = scopeSel ? scopeSel.closest("div") : null;
+    const allowedWrap = allowedSel ? allowedSel.closest("div") : null;
+
+    const isSupervisor = role === "supervisor";
+    if (scopeWrap) scopeWrap.style.display = isSupervisor ? "block" : "none";
+    if (allowedWrap) allowedWrap.style.display = isSupervisor ? "block" : "none";
+
+    if (!isSupervisor) {
+      if (allowedSel) {
+        allowedSel.disabled = true;
+        Array.from(allowedSel.options).forEach((opt) => { opt.selected = false; });
+      }
+      return;
+    }
+
+    const nextScope = scope || "own";
+    if (scopeSel) scopeSel.value = nextScope;
+
+    if (allowedSel) {
+      if (nextScope === "multiple") {
+        allowedSel.disabled = false;
+        const allowedSet = new Set(allowedIds || []);
+        Array.from(allowedSel.options).forEach((opt) => {
+          opt.selected = allowedSet.has(opt.value);
+        });
+      } else if (nextScope === "all") {
+        allowedSel.disabled = true;
+        Array.from(allowedSel.options).forEach((opt) => { opt.selected = false; });
+      } else {
+        allowedSel.disabled = true;
+        Array.from(allowedSel.options).forEach((opt) => {
+          opt.selected = branchId ? opt.value === branchId : false;
+        });
+      }
+    }
+  }
   function getDriverOptionsHtml(selectedId) {
     const drivers = (state.users || []).filter((u) => u.role === "driver");
     const placeholder = currentLang === "ar" ? "اختر سائق" : "Select driver";
@@ -1636,6 +1912,15 @@
     drivers.forEach((d) => {
       const sel = d.id === selectedId ? " selected" : "";
       html += `<option value="${escapeHtml(d.id)}"${sel}>${escapeHtml(d.name)}</option>`;
+    });
+    return html;
+  }
+  function getBranchOptionsHtml(selectedId) {
+    const placeholder = currentLang === "ar" ? "اختر فرع" : "Select branch";
+    let html = `<option value="">${escapeHtml(placeholder)}</option>`;
+    (state.branches || []).forEach((b) => {
+      const sel = b.id === selectedId ? " selected" : "";
+      html += `<option value="${escapeHtml(b.id)}"${sel}>${escapeHtml(b.name)}</option>`;
     });
     return html;
   }
@@ -1800,8 +2085,9 @@
     if (!state.user) return false;
     const role = state.user.role;
     const rules = {
-      inventoryPanel: ["admin", "manager", "supervisor"],
+      inventoryPanel: ["admin", "manager"],
       requestsPanel: ["staff", "supervisor", "manager", "admin"],
+      transferPanel: ["staff", "supervisor", "manager", "admin"],
       driverPanel: ["driver"],
       movementsPanel: ["admin", "manager"],
       analyticsPanel: ["admin", "manager"],
@@ -1812,7 +2098,7 @@
   }
   function getDefaultPageForRole(role) {
     if (role === "driver") return "driverPanel";
-    if (role === "supervisor") return "inventoryPanel";
+    if (role === "supervisor") return "requestsPanel";
     if (role === "staff") return "requestsPanel";
     return "inventoryPanel";
   }
@@ -1821,6 +2107,7 @@
     const panelIds = [
       "inventoryPanel",
       "requestsPanel",
+      "transferPanel",
       "driverPanel",
       "movementsPanel",
       "analyticsPanel",
@@ -1841,6 +2128,9 @@
     if (pageId === "requestsPanel" || pageId === "driverPanel") {
       markRequestsSeen();
     }
+    if (pageId === "transferPanel") {
+      renderTransferTables();
+    }
   }
   function renderMenu() {
     const menu = document.getElementById("mainMenu");
@@ -1848,6 +2138,7 @@
     const items = [
       { id: "inventoryPanel", label: "menu_inventory" },
       { id: "requestsPanel", label: "menu_requests" },
+      { id: "transferPanel", label: "menu_transfers" },
       { id: "driverPanel", label: "menu_driver" },
       { id: "movementsPanel", label: "menu_movements" },
       { id: "analyticsPanel", label: "menu_analytics" },
@@ -1890,13 +2181,15 @@
   }
   function openRequestImageById(id) {
     const req = (state.requests || []).find((r) => r.id === id);
-    if (!req || !req.imageData) {
+    const trf = (state.transfers || []).find((t) => t.id === id);
+    const imageData = (req && req.imageData) || (trf && trf.imageData) || "";
+    if (!imageData) {
       alert(t("no_image"));
       return;
     }
     const w = window.open();
     if (!w) return;
-    w.document.write(`<img src="${req.imageData}" style="max-width:100%;height:auto;" />`);
+    w.document.write(`<img src="${imageData}" style="max-width:100%;height:auto;" />`);
   }
 
   // ✅ UPDATED: uses MAIN_STORAGE_BRANCH_ID override (matches your server env)
@@ -2073,6 +2366,16 @@
     if (!res.ok) throw new Error(body.error || "Update item failed");
     return body;
   }
+  async function apiDeleteItem(id, data) {
+    const res = await fetch(`${API_BASE}/items/${encodeURIComponent(id)}`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data || {})
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(body.error || "Delete item failed");
+    return body;
+  }
 
   async function apiCreateMovement(itemId, type, qty, note) {
     const res = await fetch(`${API_BASE}/movements`, {
@@ -2104,6 +2407,61 @@
     });
     const body = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(body.error || "Assign request failed");
+    return body;
+  }
+
+  async function apiCreateTransfer(qty, note, imageData) {
+    const res = await fetch(`${API_BASE}/transfers`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ qty, note, imageData, userId: state.user.id })
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(body.error || "Create transfer failed");
+    return body;
+  }
+
+  async function apiAssignTransfer(id, toBranchId) {
+    const res = await fetch(`${API_BASE}/transfers/${id}/assign`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId: state.user.id, toBranchId })
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(body.error || "Assign transfer failed");
+    return body;
+  }
+
+  async function apiPickupTransfer(id) {
+    const res = await fetch(`${API_BASE}/transfers/${id}/pickup`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId: state.user.id })
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(body.error || "Pickup transfer failed");
+    return body;
+  }
+
+  async function apiDeliverTransfer(id) {
+    const res = await fetch(`${API_BASE}/transfers/${id}/deliver`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId: state.user.id })
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(body.error || "Deliver transfer failed");
+    return body;
+  }
+
+  async function apiReadyTransfer(id, readyStatus) {
+    const res = await fetch(`${API_BASE}/transfers/${id}/ready`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId: state.user.id, readyStatus })
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(body.error || "Ready transfer failed");
     return body;
   }
 
@@ -2292,6 +2650,19 @@
       });
     });
 
+    const allowedSel = document.getElementById("editUserAllowedBranches");
+    if (allowedSel) {
+      const prev = new Set(Array.from(allowedSel.selectedOptions || []).map((o) => o.value));
+      allowedSel.innerHTML = "";
+      (state.branches || []).forEach((b) => {
+        const opt = document.createElement("option");
+        opt.value = b.id;
+        opt.textContent = b.name;
+        if (prev.has(b.id)) opt.selected = true;
+        allowedSel.appendChild(opt);
+      });
+    }
+
     const invSel = document.getElementById("inventoryViewBranchSelect");
     if (invSel) {
       invSel.innerHTML = "";
@@ -2339,6 +2710,7 @@
     const query = (searchInput && searchInput.value ? searchInput.value : "")
       .trim()
       .toLowerCase();
+    const storageId = getMainStorageId();
     const currentValue = sel.value;
 
     sel.innerHTML = "";
@@ -2349,9 +2721,9 @@
       : "Select item to edit";
     sel.appendChild(placeholder);
 
-    const all = [...(state.items || [])].sort((a, b) =>
-      (a.name || "").localeCompare(b.name || "")
-    );
+    const all = (state.items || [])
+      .filter((it) => it.branchId === storageId)
+      .sort((a, b) => (a.name || "").localeCompare(b.name || ""));
 
     const filtered = query
       ? all.filter((it) => {
@@ -2603,7 +2975,8 @@
     const users = [...state.users].sort((a, b) => a.name.localeCompare(b.name));
     users.forEach((u) => {
       const tr = document.createElement("tr");
-      tr.innerHTML = `<td>${escapeHtml(u.name)}</td><td>${escapeHtml(u.role)}</td><td>${escapeHtml(getBranchName(u.branchId))}</td>`;
+      const accessLabel = getSupervisorAccessLabel(u);
+      tr.innerHTML = `<td>${escapeHtml(u.name)}</td><td>${escapeHtml(u.role)}</td><td>${escapeHtml(getBranchName(u.branchId))}</td><td>${escapeHtml(accessLabel)}</td>`;
       tbody.appendChild(tr);
     });
 
@@ -2624,9 +2997,122 @@
     }
   }
 
+  function setupRequestBranchFilters() {
+    if (!state.user) return;
+
+    const filterBar = document.getElementById("requestsFilterBar");
+    const filterSelect = document.getElementById("requestBranchFilterSelect");
+    if (filterBar && filterSelect) {
+      const canFilter = ["admin", "manager", "supervisor"].includes(state.user.role);
+      filterBar.style.display = canFilter ? "flex" : "none";
+
+      if (canFilter) {
+        const prev = filterSelect.value;
+        filterSelect.innerHTML = "";
+        if (state.user.role === "supervisor") {
+          const allowed = getSupervisorAllowedBranches(state.user);
+          allowed.forEach((id) => {
+            const opt = document.createElement("option");
+            opt.value = id;
+            opt.textContent = getBranchName(id);
+            filterSelect.appendChild(opt);
+          });
+          if (allowed.length > 1) {
+            const allOpt = document.createElement("option");
+            allOpt.value = "ALL";
+            allOpt.textContent = (currentLang === "ar") ? "كل الفروع" : "All branches";
+            filterSelect.insertBefore(allOpt, filterSelect.firstChild);
+            filterSelect.disabled = false;
+            if (prev && filterSelect.querySelector(`option[value="${prev}"]`)) {
+              filterSelect.value = prev;
+            } else {
+              filterSelect.value = "ALL";
+            }
+          } else {
+            const only = allowed[0] || "";
+            filterSelect.value = only;
+            filterSelect.disabled = true;
+          }
+        } else {
+          const allOpt = document.createElement("option");
+          allOpt.value = "ALL";
+          allOpt.textContent = (currentLang === "ar") ? "كل الفروع" : "All branches";
+          filterSelect.appendChild(allOpt);
+          (state.branches || []).forEach((b) => {
+            const opt = document.createElement("option");
+            opt.value = b.id;
+            opt.textContent = b.name;
+            filterSelect.appendChild(opt);
+          });
+          filterSelect.disabled = false;
+          if (prev && filterSelect.querySelector(`option[value="${prev}"]`)) {
+            filterSelect.value = prev;
+          } else {
+            filterSelect.value = "ALL";
+          }
+        }
+      }
+    }
+
+    const historySelect = document.getElementById("requestHistoryBranchSelect");
+    const historyBlock = document.getElementById("requestsHistoryBlock");
+    if (historySelect && historyBlock) {
+      if (!["admin", "manager", "supervisor"].includes(state.user.role)) {
+        historyBlock.style.display = "none";
+        return;
+      }
+      const prev = historySelect.value;
+      historySelect.innerHTML = "";
+      if (state.user.role === "supervisor") {
+        const allowed = getSupervisorAllowedBranches(state.user);
+        allowed.forEach((id) => {
+          const opt = document.createElement("option");
+          opt.value = id;
+          opt.textContent = getBranchName(id);
+          historySelect.appendChild(opt);
+        });
+        if (allowed.length > 1) {
+          const allOpt = document.createElement("option");
+          allOpt.value = "ALL";
+          allOpt.textContent = (currentLang === "ar") ? "كل الفروع" : "All branches";
+          historySelect.insertBefore(allOpt, historySelect.firstChild);
+          historySelect.disabled = false;
+          if (prev && historySelect.querySelector(`option[value="${prev}"]`)) {
+            historySelect.value = prev;
+          } else {
+            historySelect.value = "ALL";
+          }
+        } else {
+          const only = allowed[0] || "";
+          historySelect.value = only;
+          historySelect.disabled = true;
+        }
+      } else {
+        const allOpt = document.createElement("option");
+        allOpt.value = "ALL";
+        allOpt.textContent = (currentLang === "ar") ? "كل الفروع" : "All branches";
+        historySelect.appendChild(allOpt);
+        (state.branches || []).forEach((b) => {
+          const opt = document.createElement("option");
+          opt.value = b.id;
+          opt.textContent = b.name;
+          historySelect.appendChild(opt);
+        });
+        historySelect.disabled = false;
+        if (prev && historySelect.querySelector(`option[value="${prev}"]`)) {
+          historySelect.value = prev;
+        } else {
+          historySelect.value = "ALL";
+        }
+      }
+    }
+  }
+
   function renderRequestsTable() {
     const tbody = document.getElementById("requestsTableBody");
     tbody.innerHTML = "";
+    if (!state.user) return;
+    setupRequestBranchFilters();
     const orderMap = buildRequestOrderMap(state.requests || []);
     const all = [...state.requests].sort(
       (a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0)
@@ -2639,14 +3125,23 @@
     } else if (state.user.role === "admin" || state.user.role === "manager") {
       // Admin & Manager see all non-delivered requests
       visible = all.filter((r) => r.status !== "delivered");
+    } else if (state.user.role === "supervisor") {
+      const allowed = getSupervisorAllowedBranches(state.user);
+      visible = all.filter((r) => r.status !== "delivered" && allowed.includes(r.toBranchId));
     } else {
-      // Staff/Supervisor: requests for their own branch (all statuses)
-      visible = all.filter((r) => r.toBranchId === state.user.branchId);
+      // Staff: requests for their own branch (non-delivered)
+      visible = all.filter((r) => r.toBranchId === state.user.branchId && r.status !== "delivered");
     }
 
     const canDelete = state.user.role === "admin" || state.user.role === "manager";
     const canAssign = state.user.role === "admin" || state.user.role === "manager";
     const canReceive = ["staff", "supervisor"].includes(state.user.role);
+    const canFilter = ["admin", "manager", "supervisor"].includes(state.user.role);
+    const filterSelect = document.getElementById("requestBranchFilterSelect");
+    const filterValue = canFilter && filterSelect ? filterSelect.value : "ALL";
+    if (canFilter && filterValue && filterValue !== "ALL") {
+      visible = visible.filter((r) => r.toBranchId === filterValue);
+    }
 
     if (!visible.length) {
       const tr = document.createElement("tr");
@@ -2702,6 +3197,190 @@
       `;
       tbody.appendChild(tr);
     });
+    renderRequestsHistoryTable();
+  }
+
+  function renderRequestsHistoryTable() {
+    const block = document.getElementById("requestsHistoryBlock");
+    const tbody = document.getElementById("requestsHistoryTableBody");
+    if (!block || !tbody) return;
+
+    if (!state.user || !["admin", "manager", "supervisor"].includes(state.user.role)) {
+      block.style.display = "none";
+      return;
+    }
+    block.style.display = "block";
+    tbody.innerHTML = "";
+
+    const orderMap = buildRequestOrderMap(state.requests || []);
+    const historySelect = document.getElementById("requestHistoryBranchSelect");
+    const filterValue = historySelect ? historySelect.value : "ALL";
+    let list = (state.requests || []).filter((r) => r.status === "delivered");
+
+    if (state.user.role === "supervisor") {
+      const allowed = getSupervisorAllowedBranches(state.user);
+      list = list.filter((r) => allowed.includes(r.toBranchId));
+      if (filterValue && filterValue !== "ALL") {
+        list = list.filter((r) => r.toBranchId === filterValue);
+      }
+    } else if (filterValue && filterValue !== "ALL") {
+      list = list.filter((r) => r.toBranchId === filterValue);
+    }
+
+    list.sort((a, b) => new Date(b.deliveredAt || b.createdAt || 0) - new Date(a.deliveredAt || a.createdAt || 0));
+
+    if (!list.length) {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td colspan="12" class="text-muted">${t("no_history_requests")}</td>`;
+      tbody.appendChild(tr);
+      return;
+    }
+
+    list.forEach((r) => {
+      const item = getItemById(r.itemId);
+      const orderLabel = getRequestOrderLabel(r, orderMap);
+      const priority = r.priority === "urgent" ? "urgent" : "normal";
+      const priorityPill = `<span class="pill pill-priority ${priority === "urgent" ? "urgent" : ""}">${escapeHtml(priorityText(priority))}</span>`;
+      const noteText = [r.urgentNote ? `${t("urgent_note_label")}: ${r.urgentNote}` : "", r.note || ""]
+        .filter(Boolean)
+        .join(" | ");
+      const imageBtn = getRequestImageButton(r);
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td title="${escapeHtml(r.id)}">${escapeHtml(orderLabel)}</td>
+        <td>${escapeHtml(formatDateTime(r.createdAt))}</td>
+        <td>${escapeHtml(formatDateTime(r.deliveredAt))}</td>
+        <td>${escapeHtml(item ? item.name : r.itemId)}</td>
+        <td>${escapeHtml(r.qty)}</td>
+        <td>${escapeHtml(getBranchName(r.fromBranchId))}</td>
+        <td>${escapeHtml(getBranchName(r.toBranchId))}</td>
+        <td>${priorityPill}</td>
+        <td>${escapeHtml(getUserName(r.createdByUserId))}</td>
+        <td>${escapeHtml(r.driverUserId ? getUserName(r.driverUserId) : "")}</td>
+        <td>${escapeHtml(noteText)}</td>
+        <td>${imageBtn || "-"}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function renderTransferTables() {
+    renderTransferRequestsTable();
+    renderTransferHistoryTable();
+  }
+
+  function getVisibleTransfersForUser(list) {
+    if (!state.user) return [];
+    const role = state.user.role;
+    if (role === "admin" || role === "manager") return list;
+    if (role === "supervisor") {
+      const allowed = getSupervisorAllowedBranches(state.user);
+      return list.filter((t) => allowed.includes(t.fromBranchId) || allowed.includes(t.toBranchId));
+    }
+    if (role === "staff") {
+      return list.filter((t) => t.fromBranchId === state.user.branchId || t.toBranchId === state.user.branchId);
+    }
+    return [];
+  }
+
+  function renderTransferRequestsTable() {
+    const tbody = document.getElementById("transferTableBody");
+    if (!tbody) return;
+    tbody.innerHTML = "";
+    if (!state.user) return;
+
+    const all = [...(state.transfers || [])];
+    const active = all.filter((t) => t.status !== "delivered");
+    const visible = getVisibleTransfersForUser(active);
+
+    if (!visible.length) {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td colspan="12" class="text-muted">${t("no_transfers_yet")}</td>`;
+      tbody.appendChild(tr);
+      return;
+    }
+
+    visible.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+
+    visible.forEach((t) => {
+      const canAssign = ["admin", "manager", "supervisor"].includes(state.user.role);
+      const canReady = ["admin", "manager", "supervisor", "staff"].includes(state.user.role)
+        && t.status === "delivered"
+        && t.toBranchId
+        && (state.user.branchId === t.toBranchId || ["admin", "manager"].includes(state.user.role));
+
+      const assignSelect = canAssign && t.status === "pending"
+        ? `<select data-transfer-assign="${escapeHtml(t.id)}">${getBranchOptionsHtml(t.toBranchId)}</select>`
+        : `<span>${escapeHtml(getBranchName(t.toBranchId))}</span>`;
+
+      const readyLabel = t.readyStatus === "ready" ? t("ready") : t("not_ready");
+      const readyBtn = canReady
+        ? `<button class="btn btn-secondary btn-sm" data-transfer-ready="${escapeHtml(t.id)}">${t.readyStatus === "ready" ? t("not_ready") : t("ready")}</button>`
+        : "";
+
+      const actionParts = [];
+      if (canAssign && t.status === "pending") {
+        actionParts.push(`<button class="btn btn-primary btn-sm" data-transfer-assign-btn="${escapeHtml(t.id)}">${t("assign")}</button>`);
+      }
+      if (readyBtn) actionParts.push(readyBtn);
+      const actionBtns = actionParts.join(" ");
+
+      const imageBtn = getRequestImageButton(t);
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${escapeHtml(t.id)}</td>
+        <td>${escapeHtml(formatDateTime(t.createdAt))}</td>
+        <td>${escapeHtml(t.qty)}</td>
+        <td>${escapeHtml(getBranchName(t.fromBranchId))}</td>
+        <td>${assignSelect}</td>
+        <td><span class="pill pill-status ${escapeHtml(t.status)}">${t(t.status)}</span></td>
+        <td>${escapeHtml(readyLabel)}</td>
+        <td>${escapeHtml(getUserName(t.createdByUserId))}</td>
+        <td>${escapeHtml(t.driverUserId ? getUserName(t.driverUserId) : "")}</td>
+        <td>${escapeHtml(t.note || "")}</td>
+        <td>${imageBtn || "-"}</td>
+        <td>${actionBtns || "-"}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function renderTransferHistoryTable() {
+    const tbody = document.getElementById("transferHistoryTableBody");
+    if (!tbody) return;
+    tbody.innerHTML = "";
+    if (!state.user) return;
+
+    const history = (state.transfers || []).filter((t) => t.status === "delivered");
+    const visible = getVisibleTransfersForUser(history);
+
+    if (!visible.length) {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td colspan="10" class="text-muted">${t("no_transfer_history")}</td>`;
+      tbody.appendChild(tr);
+      return;
+    }
+
+    visible.sort((a, b) => new Date(b.deliveredAt || b.createdAt || 0) - new Date(a.deliveredAt || a.createdAt || 0));
+
+    visible.forEach((t) => {
+      const readyLabel = t.readyStatus === "ready" ? t("ready") : t("not_ready");
+      const imageBtn = getRequestImageButton(t);
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${escapeHtml(t.id)}</td>
+        <td>${escapeHtml(formatDateTime(t.createdAt))}</td>
+        <td>${escapeHtml(formatDateTime(t.deliveredAt))}</td>
+        <td>${escapeHtml(t.qty)}</td>
+        <td>${escapeHtml(getBranchName(t.fromBranchId))}</td>
+        <td>${escapeHtml(getBranchName(t.toBranchId))}</td>
+        <td>${escapeHtml(readyLabel)}</td>
+        <td>${escapeHtml(t.driverUserId ? getUserName(t.driverUserId) : "")}</td>
+        <td>${escapeHtml(t.note || "")}</td>
+        <td>${imageBtn || "-"}</td>
+      `;
+      tbody.appendChild(tr);
+    });
   }
 
 
@@ -2747,21 +3426,22 @@
         .join(" | ");
       const imageBtn = getRequestImageButton(r);
       const isMine = state.user && r.driverUserId === state.user.id;
-      const canEdit = !r.driverUserId || isMine;
+      const assignedByRole = getUserRoleById(r.assignedByUserId);
+      const canShowEta = isMine && ["admin", "manager"].includes(assignedByRole);
       const useIcons = state.phoneMode && state.user && state.user.role === "driver";
       const claimLabel = useIcons ? "🚚" : t("take_request");
       const etaLabel = useIcons ? "⏱" : t("set_eta");
       const claimBtn = !r.driverUserId ? `<button class="btn btn-primary btn-sm" data-claim-request="${escapeHtml(r.id)}">${claimLabel}</button>` : "";
-      const etaSelect = `
-        <select data-eta-type="${escapeHtml(r.id)}" ${canEdit ? "" : "disabled"}>
+      const etaSelect = canShowEta ? `
+        <select data-eta-type="${escapeHtml(r.id)}">
           <option value="">${t("eta_select")}</option>
           <option value="3h">${t("eta_3h")}</option>
           <option value="tomorrow">${t("eta_tomorrow")}</option>
           <option value="custom">${t("eta_custom")}</option>
         </select>
-        <input type="datetime-local" data-eta-custom="${escapeHtml(r.id)}" style="display:none;" ${canEdit ? "" : "disabled"} />
-      `;
-      const etaBtn = `<button class="btn btn-secondary btn-sm" data-set-eta="${escapeHtml(r.id)}" ${canEdit ? "" : "disabled"}>${etaLabel}</button>`;
+        <input type="datetime-local" data-eta-custom="${escapeHtml(r.id)}" style="display:none;" />
+      ` : "";
+      const etaBtn = canShowEta ? `<button class="btn btn-secondary btn-sm" data-set-eta="${escapeHtml(r.id)}">${etaLabel}</button>` : "";
 
       const tr = document.createElement("tr");
       tr.innerHTML = `
@@ -2779,6 +3459,54 @@
         <td>${escapeHtml(getUserName(r.createdByUserId))}</td>
         <td><span class="pill pill-status ${escapeHtml(r.status)}">${t(r.status)}</span></td>
         <td><div class="driver-actions">${claimBtn} ${etaSelect} ${etaBtn}</div></td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function renderDriverTransfersTable() {
+    const tbody = document.getElementById("driverTransfersTableBody");
+    if (!tbody) return;
+    tbody.innerHTML = "";
+    if (!state.user) return;
+
+    const list = (state.transfers || []).filter((t) => {
+      if (t.status === "assigned" || t.status === "in_transit") return true;
+      if (t.status === "delivered" && t.readyStatus === "ready") return true;
+      return false;
+    }).sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+
+    if (!list.length) {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td colspan="10" class="text-muted">${t("no_transfers_yet")}</td>`;
+      tbody.appendChild(tr);
+      return;
+    }
+
+    list.forEach((t) => {
+      const readyLabel = t.readyStatus === "ready" ? t("ready") : t("not_ready");
+      const imageBtn = getRequestImageButton(t);
+      const rowClass = t.readyStatus === "ready" ? "transfer-ready" : "transfer-row";
+      const actionParts = [];
+      if (t.status === "assigned") {
+        actionParts.push(`<button class="btn btn-primary btn-sm" data-transfer-pickup="${escapeHtml(t.id)}">${t("take_request")}</button>`);
+      }
+      if (t.status === "in_transit") {
+        actionParts.push(`<button class="btn btn-primary btn-sm" data-transfer-deliver="${escapeHtml(t.id)}">${t("deliver")}</button>`);
+      }
+      const tr = document.createElement("tr");
+      tr.className = rowClass;
+      tr.innerHTML = `
+        <td>${escapeHtml(t.id)}</td>
+        <td>${escapeHtml(formatDateTime(t.createdAt))}</td>
+        <td>${escapeHtml(t.qty)}</td>
+        <td>${escapeHtml(getBranchName(t.fromBranchId))}</td>
+        <td>${escapeHtml(getBranchName(t.toBranchId))}</td>
+        <td><span class="pill pill-status ${escapeHtml(t.status)}">${t(t.status)}</span></td>
+        <td>${escapeHtml(readyLabel)}</td>
+        <td>${escapeHtml(t.note || "")}</td>
+        <td>${imageBtn || "-"}</td>
+        <td>${actionParts.join(" ") || "-"}</td>
       `;
       tbody.appendChild(tr);
     });
@@ -3579,6 +4307,7 @@
     state.movements = all.movements || [];
     state.budgets = all.budgets || [];
     state.requests = all.requests || [];
+    state.transfers = all.transfers || [];
     state.vehicles = all.vehicles || [];
     state.vehicleReminders = all.vehicleReminders || [];
     state.carAssignments = all.carAssignments || [];
@@ -3650,7 +4379,9 @@
       renderUsersTable();
       renderBranchesTable();
       renderRequestsTable();
+      renderTransferTables();
       renderDriverRequestsTable();
+      renderDriverTransfersTable();
       renderMovementsTable();
       renderAnalytics();
       renderVehiclesUI();
@@ -3686,7 +4417,7 @@
     }
   });
 
-  document.getElementById("loginBtn").addEventListener("click", async () => {
+  async function handleLoginSubmit() {
     const name = document.getElementById("loginNameInput").value.trim();
     const password = document.getElementById("loginPasswordInput").value;
     const errorEl = document.getElementById("loginError");
@@ -3728,6 +4459,18 @@
       errorEl.textContent = e.message;
       errorEl.style.display = "block";
     }
+  }
+
+  document.getElementById("loginBtn").addEventListener("click", handleLoginSubmit);
+  ["loginNameInput", "loginPasswordInput"].forEach((id) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        handleLoginSubmit();
+      }
+    });
   });
 
   document.getElementById("logoutBtn").addEventListener("click", logout);
@@ -3744,7 +4487,9 @@
       await refreshAllState();
       updateRequestNotifications({ notify: true });
       if (state.activePageId === "requestsPanel") renderRequestsTable();
+      if (state.activePageId === "transferPanel") renderTransferTables();
       if (state.activePageId === "driverPanel") renderDriverRequestsTable();
+      if (state.activePageId === "driverPanel") renderDriverTransfersTable();
     } catch {}
   }, POLL_INTERVAL_MS);
 
@@ -3774,6 +4519,22 @@
     };
     reader.readAsDataURL(file);
   });
+
+  const transferImageInput = document.getElementById("transferImageInput");
+  if (transferImageInput) {
+    transferImageInput.addEventListener("change", (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) {
+        state.transferImageData = "";
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = () => {
+        state.transferImageData = String(reader.result || "");
+      };
+      reader.readAsDataURL(file);
+    });
+  }
 
   const prioritySelectEl = document.getElementById("requestPrioritySelect");
   const urgentNoteEl = document.getElementById("requestUrgentNoteInput");
@@ -3858,12 +4619,19 @@
     if (!user) {
       document.getElementById("editUserName").value = "";
       document.getElementById("editUserPassword").value = "";
+      applySupervisorAccessUI("", "own", "", []);
       return;
     }
     document.getElementById("editUserName").value = user.name;
     document.getElementById("editUserPassword").value = "";
     document.getElementById("editUserRole").value = user.role;
     document.getElementById("editUserBranchSelect").value = user.branchId || "";
+    applySupervisorAccessUI(
+      user.role,
+      getSupervisorAllowedScope(user),
+      user.branchId,
+      getSupervisorAllowedBranches(user)
+    );
   });
 
   document.getElementById("saveUserChangesBtn").addEventListener("click", async () => {
@@ -3874,8 +4642,15 @@
     const password = document.getElementById("editUserPassword").value.trim();
     const role = document.getElementById("editUserRole").value;
     const branchId = document.getElementById("editUserBranchSelect").value;
+    const allowedSel = document.getElementById("editUserAllowedBranches");
+    const scopeSel = document.getElementById("editUserAllowedScope");
+    const allowedBranchScope = role === "supervisor" ? (scopeSel ? scopeSel.value : "own") : "";
+    const selectedIds = role === "supervisor"
+      ? Array.from(allowedSel ? allowedSel.selectedOptions : []).map((o) => o.value).filter(Boolean)
+      : [];
+    const allowedBranchIds = (role === "supervisor" && allowedBranchScope === "multiple") ? selectedIds : [];
 
-    const updates = { name, role, branchId };
+    const updates = { name, role, branchId, allowedBranchScope, allowedBranchIds };
     if (password) updates.password = password;
 
     try {
@@ -3953,6 +4728,24 @@
   document.getElementById("itemEditSelect").addEventListener("change", () => {
     applyItemEditSelection();
   });
+
+  document.getElementById("editUserRole").addEventListener("change", () => {
+    const role = document.getElementById("editUserRole").value;
+    const branchId = document.getElementById("editUserBranchSelect").value;
+    applySupervisorAccessUI(role, "own", branchId, []);
+  });
+
+  const editUserAllowedScope = document.getElementById("editUserAllowedScope");
+  if (editUserAllowedScope) {
+    editUserAllowedScope.addEventListener("change", () => {
+      const role = document.getElementById("editUserRole").value;
+      const branchId = document.getElementById("editUserBranchSelect").value;
+      const scope = editUserAllowedScope.value;
+      const allowedSel = document.getElementById("editUserAllowedBranches");
+      const selectedIds = Array.from(allowedSel ? allowedSel.selectedOptions : []).map((o) => o.value);
+      applySupervisorAccessUI(role, scope, branchId, selectedIds);
+    });
+  }
 
   // ✅ IMPORTANT FIX: PATCH /items/:id requires branchId in body
   document.getElementById("updateItemBtn").addEventListener("click", async () => {
@@ -4058,6 +4851,67 @@
     }
   });
 
+  const createTransferBtn = document.getElementById("createTransferBtn");
+  if (createTransferBtn) {
+    createTransferBtn.addEventListener("click", async () => {
+      if (!state.user || state.user.role === "driver") { alert(t("drivers_cannot_create")); return; }
+      if (!state.user.branchId) { alert(t("user_no_branch")); return; }
+
+      const qty = Number(document.getElementById("transferQtyInput").value || "1");
+      const note = document.getElementById("transferNoteInput").value.trim();
+
+      if (!qty || qty <= 0) { alert(t("item_qty_required")); return; }
+
+      try {
+        const transfer = await apiCreateTransfer(qty, note, state.transferImageData);
+        state.transfers.push(transfer);
+        renderTransferTables();
+        renderDriverTransfersTable();
+        document.getElementById("transferQtyInput").value = "1";
+        document.getElementById("transferNoteInput").value = "";
+        if (document.getElementById("transferImageInput")) document.getElementById("transferImageInput").value = "";
+        state.transferImageData = "";
+      } catch (e) {
+        alert(e.message);
+      }
+    });
+  }
+
+  document.getElementById("deleteItemBtn").addEventListener("click", async () => {
+    if (!state.user || (state.user.role !== "admin" && state.user.role !== "manager")) {
+      alert(t("only_admin_mgr_create_items"));
+      return;
+    }
+
+    const id = document.getElementById("itemIdInput").value.trim();
+    const branchId = document.getElementById("itemBranchSelect").value;
+
+    if (!id) {
+      alert(currentLang === "ar" ? "اختر صنفًا أولًا" : "Select an item first");
+      return;
+    }
+    if (!confirm(t("delete_item_confirm"))) return;
+
+    try {
+      await apiDeleteItem(id, { userId: state.user.id, branchId });
+      state.items = state.items.filter((it) => !(it.id === id && it.branchId === branchId));
+      renderInventoryViewer();
+      fillRequestItemsFromStorage();
+      renderItemEditSelect();
+
+      document.getElementById("itemEditSelect").value = "";
+      document.getElementById("itemNameInput").value = "";
+      document.getElementById("itemBaseQtyInput").value = "0";
+      document.getElementById("itemMinQtyInput").value = "0";
+      document.getElementById("itemUnitCostInput").value = "0";
+      await updateItemIdField();
+
+      alert(t("item_deleted"));
+    } catch (e) {
+      alert(e.message);
+    }
+  });
+
   document.getElementById("addBranchBtn").addEventListener("click", async () => {
     if (!state.user || state.user.role !== "admin") {
       alert(t("only_admin_create_users"));
@@ -4142,6 +4996,69 @@
     }
   });
 
+  const transferTableBody = document.getElementById("transferTableBody");
+  if (transferTableBody) {
+    transferTableBody.addEventListener("click", async (e) => {
+      const viewBtn = e.target.closest("button[data-view-image]");
+      if (viewBtn) {
+        const id = viewBtn.getAttribute("data-view-image");
+        openRequestImageById(id);
+        return;
+      }
+      const assignBtn = e.target.closest("button[data-transfer-assign-btn]");
+      if (assignBtn) {
+        const id = assignBtn.getAttribute("data-transfer-assign-btn");
+        const select = document.querySelector(`select[data-transfer-assign="${CSS.escape(id)}"]`);
+        const toBranchId = select ? select.value : "";
+        if (!toBranchId) { alert(t("select_branch")); return; }
+        try {
+          const updated = await apiAssignTransfer(id, toBranchId);
+          const idx = state.transfers.findIndex((t) => t.id === id);
+          if (idx >= 0) state.transfers[idx] = updated;
+          renderTransferTables();
+          renderDriverTransfersTable();
+        } catch (err) {
+          alert(err.message);
+        }
+      }
+      const readyBtn = e.target.closest("button[data-transfer-ready]");
+      if (readyBtn) {
+        const id = readyBtn.getAttribute("data-transfer-ready");
+        const tItem = (state.transfers || []).find((t) => t.id === id);
+        if (!tItem) return;
+        const next = tItem.readyStatus === "ready" ? "not_ready" : "ready";
+        try {
+          const updated = await apiReadyTransfer(id, next);
+          const idx = state.transfers.findIndex((t) => t.id === id);
+          if (idx >= 0) state.transfers[idx] = updated;
+          renderTransferTables();
+          renderDriverTransfersTable();
+        } catch (err) {
+          alert(err.message);
+        }
+      }
+    });
+  }
+
+  const transferHistoryTableBody = document.getElementById("transferHistoryTableBody");
+  if (transferHistoryTableBody) {
+    transferHistoryTableBody.addEventListener("click", (e) => {
+      const viewBtn = e.target.closest("button[data-view-image]");
+      if (!viewBtn) return;
+      const id = viewBtn.getAttribute("data-view-image");
+      openRequestImageById(id);
+    });
+  }
+
+  const requestBranchFilterSelect = document.getElementById("requestBranchFilterSelect");
+  if (requestBranchFilterSelect) {
+    requestBranchFilterSelect.addEventListener("change", renderRequestsTable);
+  }
+  const requestHistoryBranchSelect = document.getElementById("requestHistoryBranchSelect");
+  if (requestHistoryBranchSelect) {
+    requestHistoryBranchSelect.addEventListener("change", renderRequestsHistoryTable);
+  }
+
   document.getElementById("driverRequestsTableBody").addEventListener("change", (e) => {
     const sel = e.target.closest("select[data-eta-type]");
     if (!sel) return;
@@ -4196,6 +5113,44 @@
       }
     }
   });
+
+  const driverTransfersTableBody = document.getElementById("driverTransfersTableBody");
+  if (driverTransfersTableBody) {
+    driverTransfersTableBody.addEventListener("click", async (e) => {
+      const viewBtn = e.target.closest("button[data-view-image]");
+      if (viewBtn) {
+        const id = viewBtn.getAttribute("data-view-image");
+        openRequestImageById(id);
+        return;
+      }
+      const pickupBtn = e.target.closest("button[data-transfer-pickup]");
+      if (pickupBtn) {
+        const id = pickupBtn.getAttribute("data-transfer-pickup");
+        try {
+          const updated = await apiPickupTransfer(id);
+          const idx = state.transfers.findIndex((t) => t.id === id);
+          if (idx >= 0) state.transfers[idx] = updated;
+          renderDriverTransfersTable();
+          renderTransferTables();
+        } catch (err) {
+          alert(err.message);
+        }
+      }
+      const deliverBtn = e.target.closest("button[data-transfer-deliver]");
+      if (deliverBtn) {
+        const id = deliverBtn.getAttribute("data-transfer-deliver");
+        try {
+          const updated = await apiDeliverTransfer(id);
+          const idx = state.transfers.findIndex((t) => t.id === id);
+          if (idx >= 0) state.transfers[idx] = updated;
+          renderDriverTransfersTable();
+          renderTransferTables();
+        } catch (err) {
+          alert(err.message);
+        }
+      }
+    });
+  }
 
   document.getElementById("analyticsApplyBtn").addEventListener("click", () => {
     renderAnalytics();
