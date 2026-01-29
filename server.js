@@ -305,6 +305,36 @@ app.get("/api/state-full", async (req, res) => {
   }
 });
 
+// ---------- FULL STATE IMPORT (admin-only, temporary) ----------
+app.post("/api/state-import", async (req, res) => {
+  try {
+    const key = process.env.ADMIN_EXPORT_KEY;
+    if (!key || req.query.key !== key) {
+      return res.status(403).json({ error: "Unauthorized" });
+    }
+
+    const incoming = req.body && typeof req.body === "object" ? req.body : null;
+    if (!incoming) {
+      return res.status(400).json({ error: "Invalid JSON body" });
+    }
+
+    const payload =
+      incoming.data && typeof incoming.data === "object" ? incoming.data : incoming;
+    if (!payload || typeof payload !== "object") {
+      return res.status(400).json({ error: "Invalid state payload" });
+    }
+
+    ensureDataShape(payload);
+    await backupCurrentDataFile();
+    await saveData(payload);
+
+    res.json({ ok: true });
+  } catch (err) {
+    console.error("State-import error", err);
+    res.status(500).json({ error: "Failed to import data" });
+  }
+});
+
 // ---------- USERS (Admin create) ----------
 app.post("/api/users", async (req, res) => {
   try {
