@@ -8,6 +8,7 @@ const app = express();
 const PORT = process.env.PORT || 4000;
 
 const DATA_FILE = process.env.DATA_FILE || path.join(__dirname, "data.json");
+const DATA_BACKUP_ON_SAVE = process.env.DATA_BACKUP_ON_SAVE === "1";
 const MAIN_STORAGE_BRANCH_ID = process.env.MAIN_STORAGE_BRANCH_ID || "B001"; // change if needed
 
 app.use(cors());
@@ -16,49 +17,92 @@ app.use(express.static(path.join(__dirname, "public"))); // serve frontend
 
 // ---------- Helpers ----------
 async function loadData() {
+  let raw;
   try {
-    const raw = await fs.readFile(DATA_FILE, "utf-8");
-    const parsed = JSON.parse(raw);
-
-    // Ensure new fields exist
-    parsed.branches ||= [];
-    parsed.users ||= [];
-    parsed.items ||= [];
-    parsed.movements ||= [];
-    parsed.budgets ||= [];
-    parsed.requests ||= [];
-    parsed.transfers ||= [];
-    parsed.trips ||= [];
-    parsed.vehicles ||= [];
-    parsed.vehicleReminders ||= [];
-
-    // ✅ NEW (for car handover + maintenance)
-    parsed.carAssignments ||= [];     // { id, vehicleId, driverUserId, assignedByUserId, assignedAt, note? }
-    parsed.carMaintenances ||= [];    // { id, vehicleId, driverUserId, maintenanceDate, nextMaintenanceDate, price, invoiceNo, place?, storeName?, note?, createdAt }
-
-    return parsed;
+    raw = await fs.readFile(DATA_FILE, "utf-8");
   } catch (e) {
-    const initial = {
-      branches: [],
-      users: [],
-      items: [],
-      movements: [],
-      budgets: [],
-      requests: [],
-      transfers: [],
-      trips: [],
-      vehicles: [],
-      vehicleReminders: [],
-      carAssignments: [],
-      carMaintenances: []
-    };
-    await saveData(initial);
-    return initial;
+    if (e && e.code === "ENOENT") {
+      const initial = {
+        branches: [],
+        users: [],
+        items: [],
+        movements: [],
+        budgets: [],
+        requests: [],
+        transfers: [],
+        trips: [],
+        vehicles: [],
+        vehicleReminders: [],
+        carAssignments: [],
+        carMaintenances: []
+      };
+      await saveData(initial);
+      return initial;
+    }
+    throw e;
   }
+
+  let parsed;
+  try {
+    parsed = JSON.parse(raw);
+  } catch (e) {
+    const err = new Error("Invalid JSON in data file");
+    err.code = "EINVALIDJSON";
+    err.cause = e;
+    throw err;
+  }
+
+  ensureDataShape(parsed);
+  return parsed;
 }
 
 async function saveData(data) {
-  await fs.writeFile(DATA_FILE, JSON.stringify(data, null, 2), "utf-8");
+  const dir = path.dirname(DATA_FILE);
+  await fs.mkdir(dir, { recursive: true });
+  if (DATA_BACKUP_ON_SAVE) {
+    await backupCurrentDataFile();
+  }
+  const tmpPath = path.join(
+    dir,
+    `.${path.basename(DATA_FILE)}.tmp-${process.pid}-${Date.now()}`
+  );
+  await fs.writeFile(tmpPath, JSON.stringify(data, null, 2), "utf-8");
+  await fs.rename(tmpPath, DATA_FILE);
+}
+
+function ensureDataShape(parsed) {
+  // Ensure new fields exist
+  parsed.branches ||= [];
+  parsed.users ||= [];
+  parsed.items ||= [];
+  parsed.movements ||= [];
+  parsed.budgets ||= [];
+  parsed.requests ||= [];
+  parsed.transfers ||= [];
+  parsed.trips ||= [];
+  parsed.vehicles ||= [];
+  parsed.vehicleReminders ||= [];
+
+  // NEW (for car handover + maintenance)
+  parsed.carAssignments ||= []; // { id, vehicleId, driverUserId, assignedByUserId, assignedAt, note? }
+  parsed.carMaintenances ||= []; // { id, vehicleId, driverUserId, maintenanceDate, nextMaintenanceDate, price, invoiceNo, place?, storeName?, note?, createdAt }
+}
+
+async function backupCurrentDataFile() {
+  try {
+    await fs.access(DATA_FILE);
+    const dir = path.dirname(DATA_FILE);
+    const ts = new Date().toISOString().replace(/[-:]/g, "").replace(/\..+$/, "");
+    const backupPath = path.join(
+      dir,
+      `${path.basename(DATA_FILE)}.bak-${ts}`
+    );
+    await fs.copyFile(DATA_FILE, backupPath);
+  } catch (e) {
+    if (!(e && e.code === "ENOENT")) {
+      console.warn("Backup failed:", e);
+    }
+  }
 }
 
 function findUserById(data, userId) {
@@ -75,7 +119,7 @@ function requireRole(user, roles) {
   return user && roles.includes(user.role);
 }
 
-// ✅ UPDATED: supports ITEM-001 and ITM-001 (but will generate ITEM-###)
+// UPDATED: supports ITEM-001 and ITM-001 (but will generate ITEM-###)
 function parseItemNumberAny(id) {
   const s = String(id || "").trim();
   let m = /^ITEM-(\d+)$/i.exec(s);
