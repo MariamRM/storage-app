@@ -36,6 +36,20 @@
     th, td { padding: 0.4rem 0.45rem; text-align: left; border-bottom: 1px solid #f3f4f6; white-space: nowrap; }
     .transfer-row { background: #fff7ed; }
     .transfer-ready { background: #ecfdf3; }
+    .driver-requests-table .col-created,
+    .driver-requests-table .col-from,
+    .driver-requests-table .col-to,
+    .driver-requests-table .col-priority,
+    .driver-requests-table .col-eta,
+    .driver-requests-table .col-note,
+    .driver-requests-table .col-image,
+    .driver-requests-table .col-driver,
+    .driver-requests-table .col-requested-by { }
+    .driver-transfers-table .col-created,
+    .driver-transfers-table .col-from,
+    .driver-transfers-table .col-to,
+    .driver-transfers-table .col-note,
+    .driver-transfers-table .col-image { }
     th { font-size: 0.72rem; font-weight: 700; color: #6b7280; background: #f9fafb; }
     tr:nth-child(even) td { background: #f9fafb; }
     .pill { display: inline-flex; align-items: center; padding: 0.08rem 0.55rem; border-radius: 999px; font-size: 0.72rem; }
@@ -85,6 +99,31 @@
     body.phone-mode .driver-actions select,
     body.phone-mode .driver-actions input,
     body.phone-mode .driver-actions button { width: 100%; }
+    body.phone-mode .driver-requests-table th,
+    body.phone-mode .driver-requests-table td,
+    body.phone-mode .driver-transfers-table th,
+    body.phone-mode .driver-transfers-table td {
+      padding: 0.3rem 0.35rem;
+      font-size: 0.78rem;
+    }
+    body.phone-mode .driver-requests-table .col-created,
+    body.phone-mode .driver-requests-table .col-from,
+    body.phone-mode .driver-requests-table .col-to,
+    body.phone-mode .driver-requests-table .col-priority,
+    body.phone-mode .driver-requests-table .col-eta,
+    body.phone-mode .driver-requests-table .col-note,
+    body.phone-mode .driver-requests-table .col-image,
+    body.phone-mode .driver-requests-table .col-driver,
+    body.phone-mode .driver-requests-table .col-requested-by {
+      display: none;
+    }
+    body.phone-mode .driver-transfers-table .col-created,
+    body.phone-mode .driver-transfers-table .col-from,
+    body.phone-mode .driver-transfers-table .col-to,
+    body.phone-mode .driver-transfers-table .col-note,
+    body.phone-mode .driver-transfers-table .col-image {
+      display: none;
+    }
 
     .toast-container { position: fixed; right: 1rem; bottom: 1rem; display: flex; flex-direction: column; gap: 0.5rem; z-index: 9999; }
     .toast { background: #111827; color: #fff; padding: 0.6rem 0.9rem; border-radius: 0.6rem; font-size: 0.9rem; box-shadow: 0 8px 20px rgba(0,0,0,0.2); animation: toast-in 0.2s ease-out; }
@@ -480,7 +519,7 @@
       </div>
     </div>
     <div class="table-wrapper">
-      <table>
+      <table class="driver-transfers-table">
         <thead>
         <tr>
           <th data-i18n="th_order">Order #</th>
@@ -618,24 +657,39 @@
       </div>
     </div>
 
+    <div class="toolbar mt-xs" id="driverRequestFilters">
+      <div>
+        <label data-i18n="filter_by_branch">Filter by branch</label>
+        <select id="driverBranchFilterSelect"></select>
+      </div>
+      <div>
+        <label data-i18n="filter_by_assignment">Filter by assignment</label>
+        <select id="driverAssignFilterSelect">
+          <option value="all" data-i18n="filter_all">All</option>
+          <option value="mine" data-i18n="filter_assigned_to_me">Assigned to me</option>
+          <option value="unassigned" data-i18n="filter_unassigned">Unassigned</option>
+        </select>
+      </div>
+    </div>
+
     <div class="table-wrapper">
-      <table>
+      <table class="driver-requests-table">
         <thead>
         <tr>
-          <th data-i18n="th_order">Order #</th>
-          <th data-i18n="th_created_at">Created</th>
-          <th data-i18n="th_item">Item</th>
-          <th data-i18n="th_qty">Qty</th>
-          <th data-i18n="th_from">From</th>
-          <th data-i18n="th_to">To</th>
-          <th data-i18n="th_priority">Priority</th>
-          <th data-i18n="th_eta">ETA</th>
-          <th data-i18n="th_note">Note</th>
-          <th data-i18n="th_image">Image</th>
-          <th data-i18n="th_driver">Driver</th>
-          <th data-i18n="th_requested_by">Requested by</th>
-          <th data-i18n="th_status">Status</th>
-          <th data-i18n="th_action">Action</th>
+          <th class="col-order" data-i18n="th_order">Order #</th>
+          <th class="col-created" data-i18n="th_created_at">Created</th>
+          <th class="col-item" data-i18n="th_item">Item</th>
+          <th class="col-qty" data-i18n="th_qty">Qty</th>
+          <th class="col-from" data-i18n="th_from">From</th>
+          <th class="col-to" data-i18n="th_to">To</th>
+          <th class="col-priority" data-i18n="th_priority">Priority</th>
+          <th class="col-eta" data-i18n="th_eta">ETA</th>
+          <th class="col-note" data-i18n="th_note">Note</th>
+          <th class="col-image" data-i18n="th_image">Image</th>
+          <th class="col-driver" data-i18n="th_driver">Driver</th>
+          <th class="col-requested-by" data-i18n="th_requested_by">Requested by</th>
+          <th class="col-status" data-i18n="th_status">Status</th>
+          <th class="col-action" data-i18n="th_action">Action</th>
         </tr>
         </thead>
         <tbody id="driverRequestsTableBody"></tbody>
@@ -647,16 +701,16 @@
       <table>
         <thead>
         <tr>
-          <th data-i18n="th_id">ID</th>
-          <th data-i18n="th_created_at">Created</th>
-          <th data-i18n="th_qty">Qty</th>
-          <th data-i18n="th_from">From</th>
-          <th data-i18n="th_to">To</th>
-          <th data-i18n="th_status">Status</th>
-          <th data-i18n="th_ready">Ready</th>
-          <th data-i18n="th_note">Note</th>
-          <th data-i18n="th_image">Image</th>
-          <th data-i18n="th_action">Action</th>
+          <th class="col-id" data-i18n="th_id">ID</th>
+          <th class="col-created" data-i18n="th_created_at">Created</th>
+          <th class="col-qty" data-i18n="th_qty">Qty</th>
+          <th class="col-from" data-i18n="th_from">From</th>
+          <th class="col-to" data-i18n="th_to">To</th>
+          <th class="col-status" data-i18n="th_status">Status</th>
+          <th class="col-ready" data-i18n="th_ready">Ready</th>
+          <th class="col-note" data-i18n="th_note">Note</th>
+          <th class="col-image" data-i18n="th_image">Image</th>
+          <th class="col-action" data-i18n="th_action">Action</th>
         </tr>
         </thead>
         <tbody id="driverTransfersTableBody"></tbody>
@@ -1260,6 +1314,10 @@
       eta_invalid_msg: "Invalid delivery time.",
 
       driver_deliveries: "Driver requests",
+      filter_by_assignment: "Filter by assignment",
+      filter_all: "All",
+      filter_assigned_to_me: "Assigned to me",
+      filter_unassigned: "Unassigned",
       driver_subtitle: "Drivers see pending requests, can take any request and set ETA (staff confirm receipt).",
 
       manual_movements: "Manual stock movements",
@@ -1370,6 +1428,7 @@
       no_history_requests: "No delivered requests yet.",
       delete_request: "Delete request",
       delete_request_confirm: "Delete this pending request?",
+      save_qty: "Save qty",
       no_transfers_yet: "No transfers yet.",
       no_transfer_history: "No transfer history yet.",
       ready: "Ready",
@@ -1545,6 +1604,10 @@
       eta_invalid_msg: "وقت غير صحيح.",
 
       driver_deliveries: "طلبات السائق",
+      filter_by_assignment: "تصفية حسب التعيين",
+      filter_all: "الكل",
+      filter_assigned_to_me: "معي",
+      filter_unassigned: "غير معي",
       driver_subtitle: "السائق يرى الطلبات المعلّقة ويمكنه استلام الطلب وتحديد وقت التسليم (تأكيد الاستلام من الموظف).",
 
       manual_movements: "حركات مخزون يدوية",
@@ -1653,6 +1716,7 @@
       no_history_requests: "لا توجد طلبات مسلّمة بعد.",
       delete_request: "حذف الطلب",
       delete_request_confirm: "هل تريد حذف هذا الطلب المعلّق؟",
+      save_qty: "حفظ الكمية",
       no_transfers_yet: "لا توجد عمليات نقل بعد.",
       no_transfer_history: "لا يوجد سجل نقل بعد.",
       ready: "جاهز",
@@ -1953,7 +2017,13 @@
     if (!iso) return "";
     const d = new Date(iso);
     if (Number.isNaN(d.getTime())) return iso;
-    return d.toLocaleString();
+    const dd = String(d.getDate()).padStart(2, "0");
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const yyyy = d.getFullYear();
+    const hh = String(d.getHours()).padStart(2, "0");
+    const min = String(d.getMinutes()).padStart(2, "0");
+    const ss = String(d.getSeconds()).padStart(2, "0");
+    return `${dd}/${mm}/${yyyy}, ${hh}:${min}:${ss}`;
   }
   function buildRequestOrderMap(requests) {
     const map = new Map();
@@ -2463,6 +2533,17 @@
     return body;
   }
 
+  async function apiUpdateRequest(id, data) {
+    const res = await fetch(`${API_BASE}/requests/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...data, userId: state.user.id })
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(body.error || "Update request failed");
+    return body;
+  }
+
   async function apiCreateTransfer(qty, note, imageData) {
     const res = await fetch(`${API_BASE}/transfers`, {
       method: "POST",
@@ -2873,6 +2954,27 @@
       typeSelect.value = getItemTypeFromId(item.id);
       typeSelect.disabled = true;
     }
+
+    const driverBranchSel = document.getElementById("driverBranchFilterSelect");
+    if (driverBranchSel) {
+      const prev = driverBranchSel.value;
+      driverBranchSel.innerHTML = "";
+      const allOpt = document.createElement("option");
+      allOpt.value = "ALL";
+      allOpt.textContent = (currentLang === "ar") ? "كل الفروع" : "All branches";
+      driverBranchSel.appendChild(allOpt);
+      (state.branches || []).forEach((b) => {
+        const opt = document.createElement("option");
+        opt.value = b.id;
+        opt.textContent = b.name;
+        driverBranchSel.appendChild(opt);
+      });
+      if (prev && driverBranchSel.querySelector(`option[value="${prev}"]`)) {
+        driverBranchSel.value = prev;
+      } else {
+        driverBranchSel.value = "ALL";
+      }
+    }
   }
 
   function renderInventoryViewer() {
@@ -3246,8 +3348,12 @@
         );
         actionParts.push(`<button class="btn btn-primary btn-sm" data-assign-request="${escapeHtml(r.id)}">${t("assign")}</button>`);
       }
-      if (canDelete && r.status === "pending") {
+      if (canDelete && (r.status === "pending" || r.status === "assigned")) {
         actionParts.push(`<button class="btn btn-secondary btn-sm" data-delete-request="${escapeHtml(r.id)}">${t("delete_request")}</button>`);
+      }
+      if (canDelete && r.status !== "delivered") {
+        actionParts.push(`<input type="number" min="1" class="input-sm" style="width:80px;" data-edit-qty="${escapeHtml(r.id)}" value="${escapeHtml(String(r.qty))}" />`);
+        actionParts.push(`<button class="btn btn-secondary btn-sm" data-save-qty="${escapeHtml(r.id)}">${t("save_qty")}</button>`);
       }
       if (canReceive && r.status !== "delivered" && r.toBranchId === state.user.branchId) {
         actionParts.push(`<button class="btn btn-primary btn-sm" data-receive-request="${escapeHtml(r.id)}">${t("deliver")}</button>`);
@@ -3463,8 +3569,16 @@
     const tbody = document.getElementById("driverRequestsTableBody");
     tbody.innerHTML = "";
     const orderMap = buildRequestOrderMap(state.requests || []);
+    const branchFilter = document.getElementById("driverBranchFilterSelect")?.value || "ALL";
+    const assignFilter = document.getElementById("driverAssignFilterSelect")?.value || "all";
     const pending = state.requests
       .filter((r) => r.status === "pending" || r.status === "assigned")
+      .filter((r) => branchFilter === "ALL" || r.toBranchId === branchFilter)
+      .filter((r) => {
+        if (assignFilter === "mine") return r.driverUserId === state.user?.id;
+        if (assignFilter === "unassigned") return !r.driverUserId;
+        return true;
+      })
       .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
 
     const notice = document.getElementById("driverNotice");
@@ -3520,20 +3634,20 @@
 
       const tr = document.createElement("tr");
       tr.innerHTML = `
-        <td title="${escapeHtml(r.id)}">${escapeHtml(orderLabel)}</td>
-        <td>${escapeHtml(formatDateTime(r.createdAt))}</td>
-        <td>${escapeHtml(item ? item.name : r.itemId)}</td>
-        <td>${escapeHtml(r.qty)}</td>
-        <td>${escapeHtml(getBranchName(r.fromBranchId))}</td>
-        <td>${escapeHtml(getBranchName(r.toBranchId))}</td>
-        <td>${priorityPill}</td>
-        <td>${escapeHtml(etaText)}</td>
-        <td>${escapeHtml(noteText)}</td>
-        <td>${imageBtn || "-"}</td>
-        <td>${escapeHtml(r.driverUserId ? getUserName(r.driverUserId) : "")}</td>
-        <td>${escapeHtml(getUserName(r.createdByUserId))}</td>
-        <td><span class="pill pill-status ${escapeHtml(r.status)}">${t(r.status)}</span></td>
-        <td><div class="driver-actions">${claimBtn} ${etaSelect} ${etaBtn}</div></td>
+        <td class="col-order" title="${escapeHtml(r.id)}">${escapeHtml(orderLabel)}</td>
+        <td class="col-created">${escapeHtml(formatDateTime(r.createdAt))}</td>
+        <td class="col-item">${escapeHtml(item ? item.name : r.itemId)}</td>
+        <td class="col-qty">${escapeHtml(r.qty)}</td>
+        <td class="col-from">${escapeHtml(getBranchName(r.fromBranchId))}</td>
+        <td class="col-to">${escapeHtml(getBranchName(r.toBranchId))}</td>
+        <td class="col-priority">${priorityPill}</td>
+        <td class="col-eta">${escapeHtml(etaText)}</td>
+        <td class="col-note">${escapeHtml(noteText)}</td>
+        <td class="col-image">${imageBtn || "-"}</td>
+        <td class="col-driver">${escapeHtml(r.driverUserId ? getUserName(r.driverUserId) : "")}</td>
+        <td class="col-requested-by">${escapeHtml(getUserName(r.createdByUserId))}</td>
+        <td class="col-status"><span class="pill pill-status ${escapeHtml(r.status)}">${t(r.status)}</span></td>
+        <td class="col-action"><div class="driver-actions">${claimBtn} ${etaSelect} ${etaBtn}</div></td>
       `;
       tbody.appendChild(tr);
     });
@@ -3578,16 +3692,16 @@
       const tr = document.createElement("tr");
       tr.className = rowClass;
       tr.innerHTML = `
-        <td>${escapeHtml(trf.id)}</td>
-        <td>${escapeHtml(formatDateTime(trf.createdAt))}</td>
-        <td>${escapeHtml(trf.qty)}</td>
-        <td>${escapeHtml(getBranchName(trf.fromBranchId))}</td>
-        <td>${escapeHtml(getBranchName(trf.toBranchId))}</td>
-        <td><span class="pill pill-status ${escapeHtml(trf.status)}">${t(trf.status)}</span></td>
-        <td>${escapeHtml(readyLabel)}</td>
-        <td>${escapeHtml(trf.note || "")}</td>
-        <td>${imageBtn || "-"}</td>
-        <td>${actionParts.join(" ") || "-"}</td>
+        <td class="col-id">${escapeHtml(trf.id)}</td>
+        <td class="col-created">${escapeHtml(formatDateTime(trf.createdAt))}</td>
+        <td class="col-qty">${escapeHtml(trf.qty)}</td>
+        <td class="col-from">${escapeHtml(getBranchName(trf.fromBranchId))}</td>
+        <td class="col-to">${escapeHtml(getBranchName(trf.toBranchId))}</td>
+        <td class="col-status"><span class="pill pill-status ${escapeHtml(trf.status)}">${t(trf.status)}</span></td>
+        <td class="col-ready">${escapeHtml(readyLabel)}</td>
+        <td class="col-note">${escapeHtml(trf.note || "")}</td>
+        <td class="col-image">${imageBtn || "-"}</td>
+        <td class="col-action">${actionParts.join(" ") || "-"}</td>
       `;
       tbody.appendChild(tr);
     });
@@ -4574,6 +4688,15 @@
     } catch {}
   }, POLL_INTERVAL_MS);
 
+  const driverBranchFilterSelect = document.getElementById("driverBranchFilterSelect");
+  if (driverBranchFilterSelect) {
+    driverBranchFilterSelect.addEventListener("change", renderDriverRequestsTable);
+  }
+  const driverAssignFilterSelect = document.getElementById("driverAssignFilterSelect");
+  if (driverAssignFilterSelect) {
+    driverAssignFilterSelect.addEventListener("change", renderDriverRequestsTable);
+  }
+
   document.getElementById("inventoryViewBranchSelect").addEventListener("change", () => {
     state.inventoryPage = 1;
     renderInventoryViewer();
@@ -5034,6 +5157,21 @@
         alert(err.message);
       }
       return;
+    }
+    const saveQtyBtn = e.target.closest("button[data-save-qty]");
+    if (saveQtyBtn) {
+      const id = saveQtyBtn.getAttribute("data-save-qty");
+      const input = document.querySelector(`input[data-edit-qty="${CSS.escape(id)}"]`);
+      const qty = input ? Number(input.value || "0") : 0;
+      if (!qty || qty <= 0) { alert(t("item_qty_required")); return; }
+      try {
+        const updated = await apiUpdateRequest(id, { qty });
+        const idx = state.requests.findIndex((r) => r.id === id);
+        if (idx >= 0) state.requests[idx] = updated;
+        renderRequestsTable();
+      } catch (err) {
+        alert(err.message);
+      }
     }
 
     const receiveBtn = e.target.closest("button[data-receive-request]");

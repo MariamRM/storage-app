@@ -796,8 +796,8 @@ app.delete("/api/requests/:id", async (req, res) => {
     const idx = (data.requests || []).findIndex((r) => r.id === id);
     if (idx === -1) return res.status(404).json({ error: "Request not found" });
 
-    if (data.requests[idx].status !== "pending") {
-      return res.status(400).json({ error: "Only pending requests can be deleted" });
+    if (!["pending", "assigned"].includes(data.requests[idx].status)) {
+      return res.status(400).json({ error: "Only pending or assigned requests can be deleted" });
     }
 
     data.requests.splice(idx, 1);
@@ -806,6 +806,40 @@ app.delete("/api/requests/:id", async (req, res) => {
   } catch (err) {
     console.error("Delete request error", err);
     res.status(500).json({ error: "Failed to delete request" });
+  }
+});
+
+// Admin/Manager can edit request qty (and note) before delivery
+app.patch("/api/requests/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { userId, qty, note } = req.body || {};
+    const data = await loadData();
+    const user = findUserById(data, userId);
+    if (!requireRole(user, ["admin", "manager"])) {
+      return res.status(403).json({ error: "Only admin/manager can update requests" });
+    }
+
+    const request = (data.requests || []).find((r) => r.id === id);
+    if (!request) return res.status(404).json({ error: "Request not found" });
+    if (request.status === "delivered") {
+      return res.status(400).json({ error: "Delivered requests cannot be edited" });
+    }
+
+    if (typeof qty !== "undefined") {
+      const n = Number(qty);
+      if (!Number.isFinite(n) || n <= 0) return res.status(400).json({ error: "qty must be > 0" });
+      request.qty = n;
+    }
+    if (typeof note !== "undefined") {
+      request.note = String(note || "");
+    }
+
+    await saveData(data);
+    res.json(request);
+  } catch (err) {
+    console.error("Update request error", err);
+    res.status(500).json({ error: "Failed to update request" });
   }
 });
 
