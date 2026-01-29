@@ -108,7 +108,6 @@
     }
     body.phone-mode .driver-requests-table .col-created,
     body.phone-mode .driver-requests-table .col-from,
-    body.phone-mode .driver-requests-table .col-to,
     body.phone-mode .driver-requests-table .col-priority,
     body.phone-mode .driver-requests-table .col-eta,
     body.phone-mode .driver-requests-table .col-note,
@@ -119,10 +118,15 @@
     }
     body.phone-mode .driver-transfers-table .col-created,
     body.phone-mode .driver-transfers-table .col-from,
-    body.phone-mode .driver-transfers-table .col-to,
     body.phone-mode .driver-transfers-table .col-note,
     body.phone-mode .driver-transfers-table .col-image {
       display: none;
+    }
+    body.phone-mode .driver-requests-table .btn,
+    body.phone-mode .driver-transfers-table .btn {
+      border-radius: 0.5rem;
+      padding: 0.5rem 0.7rem;
+      font-size: 0.82rem;
     }
 
     .toast-container { position: fixed; right: 1rem; bottom: 1rem; display: flex; flex-direction: column; gap: 0.5rem; z-index: 9999; }
@@ -3332,7 +3336,7 @@
     visible.forEach((r) => {
       const item = getItemById(r.itemId);
       const driverName = r.driverUserId ? getUserName(r.driverUserId) : "";
-      const etaText = formatEta(r);
+      const etaText = r.status === "pending" ? "" : formatEta(r);
       const orderLabel = getRequestOrderLabel(r, orderMap);
       const priority = r.priority === "urgent" ? "urgent" : "normal";
       const priorityPill = `<span class="pill pill-priority ${priority === "urgent" ? "urgent" : ""}">${escapeHtml(priorityText(priority))}</span>`;
