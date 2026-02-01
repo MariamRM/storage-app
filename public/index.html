@@ -4511,6 +4511,10 @@
     state.vehicleReminders = all.vehicleReminders || [];
     state.carAssignments = all.carAssignments || [];
     state.carMaintenances = all.carMaintenances || [];
+    if (state.user) {
+      const fresh = (state.users || []).find((u) => u.id === state.user.id);
+      if (fresh) state.user = { ...state.user, ...fresh };
+    }
   }
 
   function parseThreadNumber(id) {

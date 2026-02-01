@@ -209,7 +209,9 @@ app.post("/api/login", async (req, res) => {
       id: user.id,
       name: user.name,
       role: user.role,
-      branchId: user.branchId || null
+      branchId: user.branchId || null,
+      allowedBranchScope: user.allowedBranchScope || "",
+      allowedBranchIds: user.allowedBranchIds || []
     });
   } catch (err) {
     console.error("Login error", err);
