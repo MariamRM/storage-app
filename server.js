@@ -963,6 +963,9 @@ app.post("/api/transfers", async (req, res) => {
     const transfer = {
       id: getNextTransferId(data),
       qty: Number(qty),
+      readyQty: 0,
+      returnedQty: 0,
+      inTransitBackQty: 0,
       fromBranchId: user.branchId,
       toBranchId: null,
       status: "pending",
@@ -1080,7 +1083,7 @@ app.post("/api/transfers/:id/deliver-destination", async (req, res) => {
 app.post("/api/transfers/:id/ready", async (req, res) => {
   try {
     const { id } = req.params;
-    const { userId, readyStatus } = req.body || {};
+    const { userId, readyStatus, readyQty } = req.body || {};
 
     const data = await loadData();
     const actor = findUserById(data, userId);
@@ -1096,10 +1099,27 @@ app.post("/api/transfers/:id/ready", async (req, res) => {
       return res.status(400).json({ error: "Transfer not delivered to destination yet" });
     }
 
-    transfer.readyStatus = readyStatus === "ready" ? "ready" : "not_ready";
-    transfer.readyAt = transfer.readyStatus === "ready" ? new Date().toISOString() : null;
-    transfer.readyByUserId = actor.id;
-    transfer.status = transfer.readyStatus === "ready" ? "ready" : "delivered_to_destination";
+    const totalQty = Number(transfer.qty) || 0;
+    transfer.returnedQty = Number(transfer.returnedQty) || 0;
+    transfer.inTransitBackQty = Number(transfer.inTransitBackQty) || 0;
+    transfer.readyQty = Number(transfer.readyQty) || 0;
+
+    if (typeof readyQty !== "undefined") {
+      const n = Number(readyQty);
+      if (!Number.isFinite(n) || n < 0) return res.status(400).json({ error: "readyQty must be >= 0" });
+      const remaining = Math.max(0, totalQty - transfer.returnedQty - transfer.inTransitBackQty);
+      if (n > remaining) return res.status(400).json({ error: "readyQty exceeds remaining qty" });
+      transfer.readyQty = n;
+      transfer.readyStatus = n > 0 ? "ready" : "not_ready";
+      transfer.readyAt = n > 0 ? new Date().toISOString() : null;
+      transfer.readyByUserId = actor.id;
+      transfer.status = n > 0 ? "ready" : "delivered_to_destination";
+    } else {
+      transfer.readyStatus = readyStatus === "ready" ? "ready" : "not_ready";
+      transfer.readyAt = transfer.readyStatus === "ready" ? new Date().toISOString() : null;
+      transfer.readyByUserId = actor.id;
+      transfer.status = transfer.readyStatus === "ready" ? "ready" : "delivered_to_destination";
+    }
 
     await saveData(data);
     res.json(transfer);
@@ -1122,9 +1142,13 @@ app.post("/api/transfers/:id/pickup-back", async (req, res) => {
     const transfer = (data.transfers || []).find((t) => t.id === id);
     if (!transfer) return res.status(404).json({ error: "Transfer not found" });
     if (transfer.status !== "ready") return res.status(400).json({ error: "Transfer not ready for return" });
+    const readyQty = Number(transfer.readyQty) || 0;
+    if (readyQty <= 0) return res.status(400).json({ error: "No ready qty to return" });
 
     transfer.driverUserId = driver.id;
     transfer.status = "in_transit_back";
+    transfer.inTransitBackQty = readyQty;
+    transfer.readyQty = 0;
     transfer.pickedUpBackAt = new Date().toISOString();
 
     await saveData(data);
@@ -1148,11 +1172,25 @@ app.post("/api/transfers/:id/deliver-back", async (req, res) => {
     const transfer = (data.transfers || []).find((t) => t.id === id);
     if (!transfer) return res.status(404).json({ error: "Transfer not found" });
     if (transfer.status !== "in_transit_back") return res.status(400).json({ error: "Transfer not returning" });
+    const totalQty = Number(transfer.qty) || 0;
+    const inTransitBackQty = Number(transfer.inTransitBackQty) || 0;
+    if (inTransitBackQty <= 0) return res.status(400).json({ error: "No qty in transit back" });
 
-    transfer.status = "delivered_back";
+    transfer.returnedQty = Number(transfer.returnedQty) || 0;
+    transfer.returnedQty += inTransitBackQty;
+    transfer.inTransitBackQty = 0;
     transfer.deliveredBackAt = new Date().toISOString();
     transfer.deliveredBackByUserId = actor.id;
     if (actor.role === "driver") transfer.driverUserId = actor.id;
+    if (transfer.returnedQty >= totalQty) {
+      transfer.status = "delivered_back";
+      transfer.readyStatus = "ready";
+    } else {
+      transfer.status = "delivered_to_destination";
+      transfer.readyStatus = "not_ready";
+      transfer.readyAt = null;
+      transfer.readyByUserId = null;
+    }
 
     await saveData(data);
     res.json(transfer);
@@ -1205,7 +1243,7 @@ app.get("/api/vehicles", async (req, res) => {
 // Create vehicle (admin/manager)
 app.post("/api/vehicles", async (req, res) => {
   try {
-    const { userId, name, plate } = req.body;
+    const { userId, name, plate, lastOilChangeDate, nextOilChangeDate } = req.body;
     const data = await loadData();
     const user = findUserById(data, userId);
     if (!requireRole(user, ["admin", "manager"])) {
@@ -1216,7 +1254,9 @@ app.post("/api/vehicles", async (req, res) => {
     const vehicle = {
       id: "CAR-" + Date.now(),
       name: String(name).trim(),
-      plate: String(plate || "").trim()
+      plate: String(plate || "").trim(),
+      lastOilChangeDate: lastOilChangeDate || null,
+      nextOilChangeDate: nextOilChangeDate || null
     };
     data.vehicles.push(vehicle);
     await saveData(data);
@@ -1230,7 +1270,7 @@ app.post("/api/vehicles", async (req, res) => {
 app.patch("/api/vehicles/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    const { userId, name, plate } = req.body || {};
+    const { userId, name, plate, lastOilChangeDate, nextOilChangeDate } = req.body || {};
     const data = await loadData();
     const user = findUserById(data, userId);
     if (!requireRole(user, ["admin", "manager"])) {
@@ -1247,6 +1287,12 @@ app.patch("/api/vehicles/:id", async (req, res) => {
     }
     if (typeof plate !== "undefined") {
       vehicle.plate = String(plate || "").trim();
+    }
+    if (typeof lastOilChangeDate !== "undefined") {
+      vehicle.lastOilChangeDate = lastOilChangeDate || null;
+    }
+    if (typeof nextOilChangeDate !== "undefined") {
+      vehicle.nextOilChangeDate = nextOilChangeDate || null;
     }
 
     await saveData(data);

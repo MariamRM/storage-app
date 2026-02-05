@@ -861,6 +861,14 @@
           <label data-i18n="plate_optional">Plate (optional)</label>
           <input id="vehPlateInput" placeholder="KUWAIT-12345" />
         </div>
+        <div>
+          <label data-i18n="last_oil_change">Last oil change</label>
+          <input id="vehLastOilInput" type="date" />
+        </div>
+        <div>
+          <label data-i18n="next_oil_change">Next oil change</label>
+          <input id="vehNextOilInput" type="date" />
+        </div>
         <div style="display:flex;align-items:flex-end;">
           <button id="addVehicleBtn" class="btn btn-primary" style="width:100%;" data-i18n="add_vehicle_btn">Add vehicle</button>
         </div>
@@ -882,6 +890,14 @@
           <div>
             <label data-i18n="plate_optional">Plate (optional)</label>
             <input id="vehEditPlateInput" />
+          </div>
+          <div>
+            <label data-i18n="last_oil_change">Last oil change</label>
+            <input id="vehEditLastOilInput" type="date" />
+          </div>
+          <div>
+            <label data-i18n="next_oil_change">Next oil change</label>
+            <input id="vehEditNextOilInput" type="date" />
           </div>
         </div>
         <div class="mt-sm" style="display:flex;gap:0.5rem;flex-wrap:wrap;">
@@ -997,6 +1013,21 @@
         </tr>
         </thead>
         <tbody id="remindersTableBody"></tbody>
+      </table>
+    </div>
+
+    <div class="panel-section-title mt-md" data-i18n="oil_change_schedule">Oil change schedule</div>
+    <div class="table-wrapper mt-sm">
+      <table>
+        <thead>
+        <tr>
+          <th data-i18n="vehicle">Vehicle</th>
+          <th data-i18n="last_oil_change">Last oil change</th>
+          <th data-i18n="next_oil_change">Next oil change</th>
+          <th data-i18n="th_status">Status</th>
+        </tr>
+        </thead>
+        <tbody id="oilChangeTableBody"></tbody>
       </table>
     </div>
 
@@ -1323,6 +1354,7 @@
       eta_custom: "Custom time",
       eta_select_msg: "Select a delivery ETA option.",
       eta_invalid_msg: "Invalid delivery time.",
+      invalid_qty: "Invalid quantity.",
 
       driver_deliveries: "Driver requests",
       filter_by_assignment: "Filter by assignment",
@@ -1363,6 +1395,8 @@
       add_vehicle: "Add vehicle (Admin/Manager)",
       vehicle_name: "Vehicle name",
       plate_optional: "Plate (optional)",
+      last_oil_change: "Last oil change",
+      next_oil_change: "Next oil change",
       add_vehicle_btn: "Add vehicle",
       manage_vehicles_title: "Edit / delete vehicles (Admin/Manager)",
       select_vehicle_edit: "Select vehicle",
@@ -1374,6 +1408,7 @@
       due_odometer: "Due odometer (km)",
       add_reminder_btn: "Add reminder",
       reminders: "Reminders",
+      oil_change_schedule: "Oil change schedule",
       filter: "Filter",
       due: "Due",
       odometer: "Odometer",
@@ -1616,6 +1651,7 @@
       eta_custom: "وقت محدد",
       eta_select_msg: "اختر وقت التسليم.",
       eta_invalid_msg: "وقت غير صحيح.",
+      invalid_qty: "كمية غير صالحة.",
 
       driver_deliveries: "طلبات السائق",
       filter_by_assignment: "تصفية حسب التعيين",
@@ -1653,6 +1689,8 @@
       add_vehicle: "إضافة مركبة (مدير/مشرف)",
       vehicle_name: "اسم المركبة",
       plate_optional: "اللوحة (اختياري)",
+      last_oil_change: "آخر تغيير زيت",
+      next_oil_change: "تغيير الزيت القادم",
       add_vehicle_btn: "إضافة مركبة",
       manage_vehicles_title: "تعديل / حذف المركبات (مدير/مشرف)",
       select_vehicle_edit: "اختر مركبة",
@@ -1664,6 +1702,7 @@
       due_odometer: "عداد الاستحقاق (كم)",
       add_reminder_btn: "إضافة تذكير",
       reminders: "التذكيرات",
+      oil_change_schedule: "جدول تغيير الزيت",
       filter: "فلتر",
       due: "الاستحقاق",
       odometer: "العداد",
@@ -2476,14 +2515,20 @@
   function setVehicleEditInputs(vehicleId) {
     const nameInput = document.getElementById("vehEditNameInput");
     const plateInput = document.getElementById("vehEditPlateInput");
+    const lastOilInput = document.getElementById("vehEditLastOilInput");
+    const nextOilInput = document.getElementById("vehEditNextOilInput");
     if (!nameInput || !plateInput) return;
     const vehicle = (state.vehicles || []).find((v) => v.id === vehicleId);
     if (vehicle) {
       nameInput.value = vehicle.name || "";
       plateInput.value = vehicle.plate || "";
+      if (lastOilInput) lastOilInput.value = vehicle.lastOilChangeDate || "";
+      if (nextOilInput) nextOilInput.value = vehicle.nextOilChangeDate || "";
     } else {
       nameInput.value = "";
       plateInput.value = "";
+      if (lastOilInput) lastOilInput.value = "";
+      if (nextOilInput) nextOilInput.value = "";
     }
   }
 
@@ -2739,11 +2784,11 @@
     return body;
   }
 
-  async function apiReadyTransfer(id, readyStatus) {
+  async function apiReadyTransfer(id, readyStatus, readyQty) {
     const res = await fetch(`${API_BASE}/transfers/${id}/ready`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId: state.user.id, readyStatus })
+      body: JSON.stringify({ userId: state.user.id, readyStatus, readyQty })
     });
     const body = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(body.error || "Ready transfer failed");
@@ -2794,11 +2839,11 @@
     return body;
   }
 
-  async function apiCreateVehicle(name, plate) {
+  async function apiCreateVehicle(name, plate, lastOilChangeDate, nextOilChangeDate) {
     const res = await fetch(`${API_BASE}/vehicles`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId: state.user.id, name, plate })
+      body: JSON.stringify({ userId: state.user.id, name, plate, lastOilChangeDate, nextOilChangeDate })
     });
     const body = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(body.error || "Create vehicle failed");
@@ -3630,15 +3675,24 @@
         ? `<select data-transfer-assign="${escapeHtml(trf.id)}">${getBranchOptionsHtml(trf.toBranchId)}</select>`
         : `<span>${escapeHtml(getBranchName(trf.toBranchId))}</span>`;
 
-      const readyLabel = trf.readyStatus === "ready" ? t("ready") : t("not_ready");
+      const totalQty = Number(trf.qty) || 0;
+      const returnedQty = Number(trf.returnedQty) || 0;
+      const inTransitBackQty = Number(trf.inTransitBackQty) || 0;
+      const readyQty = (typeof trf.readyQty === "number" ? trf.readyQty : (trf.readyStatus === "ready" ? totalQty : 0));
+      const remainingQty = Math.max(0, totalQty - returnedQty - inTransitBackQty);
+      const readyLabel = `${readyQty}/${totalQty}`;
+      const readyInput = canReady
+        ? `<input type="number" min="0" max="${escapeHtml(String(remainingQty))}" class="input-sm" style="width:80px;" data-ready-qty="${escapeHtml(trf.id)}" value="${escapeHtml(String(readyQty))}" />`
+        : "";
       const readyBtn = canReady
-        ? `<button class="btn btn-secondary btn-sm" data-transfer-ready="${escapeHtml(trf.id)}">${trf.readyStatus === "ready" ? t("not_ready") : t("ready")}</button>`
+        ? `<button class="btn btn-secondary btn-sm" data-transfer-ready="${escapeHtml(trf.id)}">${t("ready")}</button>`
         : "";
 
       const actionParts = [];
       if (canAssign && trf.status === "pending") {
         actionParts.push(`<button class="btn btn-primary btn-sm" data-transfer-assign-btn="${escapeHtml(trf.id)}">${t("assign")}</button>`);
       }
+      if (readyInput) actionParts.push(readyInput);
       if (readyBtn) actionParts.push(readyBtn);
       const actionBtns = actionParts.join(" ");
 
@@ -3824,12 +3878,16 @@
       if (trf.status === "in_transit_back") {
         actionParts.push(`<button class="btn btn-primary btn-sm" data-transfer-deliver-back="${escapeHtml(trf.id)}">${t("deliver_back")}</button>`);
       }
+      const totalQty = Number(trf.qty) || 0;
+      const readyQty = (typeof trf.readyQty === "number" ? trf.readyQty : (trf.readyStatus === "ready" ? totalQty : 0));
+      const inTransitBackQty = Number(trf.inTransitBackQty) || 0;
+      const displayQty = trf.status === "in_transit_back" ? inTransitBackQty : (trf.status === "ready" ? readyQty : totalQty);
       const tr = document.createElement("tr");
       tr.className = rowClass;
       tr.innerHTML = `
         <td class="col-id">${escapeHtml(trf.id)}</td>
         <td class="col-created">${escapeHtml(formatDateTime(trf.createdAt))}</td>
-        <td class="col-qty">${escapeHtml(trf.qty)}</td>
+        <td class="col-qty">${escapeHtml(displayQty)}</td>
         <td class="col-from">${escapeHtml(getBranchName(trf.fromBranchId))}</td>
         <td class="col-to">${escapeHtml(getBranchName(trf.toBranchId))}</td>
         <td class="col-status"><span class="pill pill-status ${escapeHtml(trf.status)}">${t(trf.status)}</span></td>
@@ -4151,6 +4209,7 @@
 
     renderVehicleAssignmentsTable();
     renderRemindersTable();
+    renderOilChangeSchedule();
     renderMaintenanceForm();
     renderMaintenanceHistoryTable();
     renderMaintenanceSummaryBlock();
@@ -4267,6 +4326,47 @@
         <td>${escapeHtml(odoText)}</td>
         <td>${escapeHtml(r.note || "")}</td>
         <td style="display:flex;gap:0.4rem;align-items:center;flex-wrap:wrap;">${actionBtns}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function renderOilChangeSchedule() {
+    const tbody = document.getElementById("oilChangeTableBody");
+    if (!tbody) return;
+    tbody.innerHTML = "";
+    const vehicles = (state.vehicles || []).filter((v) => v.lastOilChangeDate || v.nextOilChangeDate);
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const soon = new Date(today.getTime());
+    soon.setDate(soon.getDate() + 7);
+
+    vehicles.sort((a, b) => {
+      const ad = a.nextOilChangeDate ? new Date(a.nextOilChangeDate).getTime() : Infinity;
+      const bd = b.nextOilChangeDate ? new Date(b.nextOilChangeDate).getTime() : Infinity;
+      return ad - bd;
+    });
+
+    if (!vehicles.length) {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td colspan="4" class="text-muted">${t("no_reminders")}</td>`;
+      tbody.appendChild(tr);
+      return;
+    }
+
+    vehicles.forEach((v) => {
+      const dueDateObj = v.nextOilChangeDate ? new Date(v.nextOilChangeDate + "T00:00:00") : null;
+      const isOverdue = dueDateObj && dueDateObj < today;
+      const isSoon = dueDateObj && dueDateObj <= soon;
+      const statusBadge = isOverdue ? t("overdue") : (isSoon ? t("due_soon") : "");
+
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${escapeHtml(vehicleOptionLabel(v))}</td>
+        <td>${escapeHtml(v.lastOilChangeDate || "")}</td>
+        <td${isOverdue ? ' class="danger"' : ""}>${escapeHtml(v.nextOilChangeDate || "")}${statusBadge ? ` <span class="pill pill-priority urgent">${escapeHtml(statusBadge)}</span>` : ""}</td>
+        <td>${statusBadge ? escapeHtml(statusBadge) : "-"}</td>
       `;
       tbody.appendChild(tr);
     });
@@ -5393,9 +5493,14 @@
         const id = readyBtn.getAttribute("data-transfer-ready");
         const tItem = (state.transfers || []).find((t) => t.id === id);
         if (!tItem) return;
-        const next = tItem.readyStatus === "ready" ? "not_ready" : "ready";
+        const input = document.querySelector(`input[data-ready-qty="${CSS.escape(id)}"]`);
+        const readyQty = input ? Number(input.value) : undefined;
+        if (input && (!Number.isFinite(readyQty) || readyQty < 0)) {
+          alert(t("invalid_qty"));
+          return;
+        }
         try {
-          const updated = await apiReadyTransfer(id, next);
+          const updated = await apiReadyTransfer(id, "ready", readyQty);
           const idx = state.transfers.findIndex((t) => t.id === id);
           if (idx >= 0) state.transfers[idx] = updated;
           renderTransferTables();
@@ -5553,14 +5658,18 @@
   document.getElementById("addVehicleBtn").addEventListener("click", async () => {
     const name = document.getElementById("vehNameInput").value.trim();
     const plate = document.getElementById("vehPlateInput").value.trim();
+    const lastOilChangeDate = document.getElementById("vehLastOilInput").value;
+    const nextOilChangeDate = document.getElementById("vehNextOilInput").value;
     if (!name) { alert(t("vehicle_name_required_msg")); return; }
 
     try {
-      await apiCreateVehicle(name, plate);
+      await apiCreateVehicle(name, plate, lastOilChangeDate || null, nextOilChangeDate || null);
       await refreshAllState();
       renderVehiclesUI();
       document.getElementById("vehNameInput").value = "";
       document.getElementById("vehPlateInput").value = "";
+      document.getElementById("vehLastOilInput").value = "";
+      document.getElementById("vehNextOilInput").value = "";
     } catch (e) {
       alert(e.message);
     }
@@ -5579,10 +5688,12 @@
     if (!id) { alert(t("select_vehicle_msg")); return; }
     const name = document.getElementById("vehEditNameInput").value.trim();
     const plate = document.getElementById("vehEditPlateInput").value.trim();
+    const lastOilChangeDate = document.getElementById("vehEditLastOilInput").value;
+    const nextOilChangeDate = document.getElementById("vehEditNextOilInput").value;
     if (!name) { alert(t("vehicle_name_required_msg")); return; }
 
     try {
-      await apiUpdateVehicle(id, { name, plate });
+      await apiUpdateVehicle(id, { name, plate, lastOilChangeDate: lastOilChangeDate || null, nextOilChangeDate: nextOilChangeDate || null });
       await refreshAllState();
       renderVehiclesUI();
       alert(t("vehicle_updated"));
