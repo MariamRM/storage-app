@@ -169,6 +169,33 @@ function getNextRequestOrderNo(data) {
   return `${prefix}${String(nextSeq).padStart(2, "0")}`;
 }
 
+function getYearSuffix() {
+  return String(new Date().getFullYear()).slice(-2);
+}
+
+function getNextScopedId(list, prefix) {
+  const yy = getYearSuffix();
+  const re = new RegExp(`^${prefix}${yy}(\\d{4})$`, "i");
+  let max = 0;
+  for (const it of list || []) {
+    const id = String(it.id || "").trim();
+    const m = re.exec(id);
+    if (!m) continue;
+    const n = parseInt(m[1], 10);
+    if (Number.isFinite(n) && n > max) max = n;
+  }
+  const next = max + 1;
+  return `${prefix}${yy}${String(next).padStart(4, "0")}`;
+}
+
+function getNextRequestId(data) {
+  return getNextScopedId(data.requests, "R");
+}
+
+function getNextTransferId(data) {
+  return getNextScopedId(data.transfers, "T");
+}
+
 function genId(prefix) {
   return `${prefix}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 }
@@ -623,7 +650,7 @@ app.post("/api/requests", async (req, res) => {
     if (!storageItem) return res.status(400).json({ error: "Item not found in Main Storage" });
 
     const request = {
-      id: "REQ-" + Date.now(),
+      id: getNextRequestId(data),
       orderNo: getNextRequestOrderNo(data),
       itemId,
       qty: Number(qty),
@@ -934,7 +961,7 @@ app.post("/api/transfers", async (req, res) => {
     if (!user.branchId) return res.status(400).json({ error: "User is not assigned to a branch" });
 
     const transfer = {
-      id: "TRF-" + Date.now(),
+      id: getNextTransferId(data),
       qty: Number(qty),
       fromBranchId: user.branchId,
       toBranchId: null,

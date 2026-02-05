@@ -12,6 +12,8 @@
     header h1 { font-size: 1rem; margin: 0; letter-spacing: 0.03em; }
     header small { display: block; font-size: 0.7rem; opacity: 0.8; }
     .header-right { display: flex; align-items: center; gap: 0.75rem; font-size: 0.8rem; flex-wrap: wrap; }
+    .mute-toggle { display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.75rem; color: #e5e7eb; }
+    .mute-toggle input { width: auto; }
     .badge { display: inline-flex; align-items: center; padding: 0.15rem 0.6rem; border-radius: 999px; font-size: 0.75rem; background: #e5e7eb; color: #111827; }
     .btn { display: inline-flex; align-items: center; justify-content: center; border-radius: 999px; border: none; padding: 0.55rem 1.15rem; font-size: 0.9rem; cursor: pointer; transition: background 0.15s, transform 0.1s; }
     .btn-primary { background: #111827; color: white; }
@@ -36,10 +38,11 @@
     th, td { padding: 0.4rem 0.45rem; text-align: left; border-bottom: 1px solid #f3f4f6; white-space: nowrap; }
     .transfer-row { background: #fff7ed; }
     .transfer-ready { background: #ecfdf3; }
+    .driver-requests-table tr.urgent-row td { background: #fff1f2; }
+    .driver-requests-table tr.urgent-row td:first-child { border-left: 4px solid #ef4444; }
     .driver-requests-table .col-created,
     .driver-requests-table .col-from,
     .driver-requests-table .col-to,
-    .driver-requests-table .col-priority,
     .driver-requests-table .col-eta,
     .driver-requests-table .col-note,
     .driver-requests-table .col-image,
@@ -108,7 +111,6 @@
     }
     body.phone-mode .driver-requests-table .col-created,
     body.phone-mode .driver-requests-table .col-from,
-    body.phone-mode .driver-requests-table .col-priority,
     body.phone-mode .driver-requests-table .col-eta,
     body.phone-mode .driver-requests-table .col-note,
     body.phone-mode .driver-requests-table .col-image,
@@ -156,6 +158,10 @@
     <span id="headerUserName" class="badge" style="display:none;"></span>
     <span id="headerRole" class="badge" style="display:none;"></span>
 
+    <label class="mute-toggle" style="display:none;">
+      <input type="checkbox" id="muteNotificationsToggle" />
+      <span data-i18n="mute_sound">Mute</span>
+    </label>
     <button id="phoneModeBtn" class="btn btn-secondary btn-sm" style="display:none;"></button>
     <button id="langBtn" class="btn btn-secondary btn-sm">AR</button>
     <button id="logoutBtn" class="btn btn-secondary btn-sm" style="display:none;" data-i18n="logout">Logout</button>
@@ -686,13 +692,11 @@
           <th class="col-qty" data-i18n="th_qty">Qty</th>
           <th class="col-from" data-i18n="th_from">From</th>
           <th class="col-to" data-i18n="th_to">To</th>
-          <th class="col-priority" data-i18n="th_priority">Priority</th>
           <th class="col-eta" data-i18n="th_eta">ETA</th>
           <th class="col-note" data-i18n="th_note">Note</th>
           <th class="col-image" data-i18n="th_image">Image</th>
           <th class="col-driver" data-i18n="th_driver">Driver</th>
           <th class="col-requested-by" data-i18n="th_requested_by">Requested by</th>
-          <th class="col-status" data-i18n="th_status">Status</th>
           <th class="col-action" data-i18n="th_action">Action</th>
         </tr>
         </thead>
@@ -1197,6 +1201,9 @@
       phone_mode_off: "Phone mode off",
       toast_new_requests: "New requests: {count}",
       toast_new_assigned: "New assigned to you: {count}",
+      toast_new_transfers: "New transfers: {count}",
+      toast_ready_transfers: "Transfers ready: {count}",
+      mute_sound: "Mute",
 
       th_id: "ID",
       th_order: "Order #",
@@ -1492,6 +1499,9 @@
       phone_mode_off: "إيقاف وضع الهاتف",
       toast_new_requests: "طلبات جديدة: {count}",
       toast_new_assigned: "طلبات جديدة لك: {count}",
+      toast_new_transfers: "طلبات نقل جديدة: {count}",
+      toast_ready_transfers: "طلبات جاهزة: {count}",
+      mute_sound: "كتم الصوت",
 
       th_id: "الرقم",
       th_order: "رقم الطلب",
@@ -1849,15 +1859,23 @@
     transferImageData: "",
     activePageId: "",
     phoneMode: false,
-    lastNotifiedCount: 0
+    lastNotifiedCount: 0,
+    lastNotifiedTransferCount: 0,
+    lastNotifiedReadyCount: 0,
+    muteNotifications: false
   };
   const SESSION_STORAGE_KEY = "APP_SESSION";
   const PHONE_MODE_KEY = "PHONE_MODE";
   const REQ_SEEN_KEY_PREFIX = "REQ_SEEN_AT_";
+  const TRF_SEEN_KEY_PREFIX = "TRF_SEEN_AT_";
+  const READY_SEEN_KEY_PREFIX = "READY_SEEN_AT_";
+  const NOTIFY_MUTE_KEY = "NOTIFY_MUTE";
   let sessionLogoutTimer = null;
   let audioCtx = null;
   const POLL_INTERVAL_MS = 10000;
   let pollTimer = null;
+
+  state.muteNotifications = localStorage.getItem(NOTIFY_MUTE_KEY) === "1";
 
   function applyPhoneMode() {
     document.body.classList.toggle("phone-mode", !!state.phoneMode);
@@ -1866,6 +1884,15 @@
       phoneBtn.textContent = state.phoneMode ? t("phone_mode_off") : t("phone_mode_on");
     }
     localStorage.setItem(PHONE_MODE_KEY, state.phoneMode ? "1" : "0");
+  }
+
+  function shouldSkipPolling() {
+    const el = document.activeElement;
+    if (!el) return false;
+    if (el.closest("#requestsPanel") && (el.matches("select[data-assign-driver]") || el.matches("input[data-edit-qty]"))) {
+      return true;
+    }
+    return false;
   }
 
   function saveSession(user) {
@@ -2127,6 +2154,7 @@
     }, 3500);
   }
   function playNotificationSound() {
+    if (state.muteNotifications) return;
     try {
       if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       if (audioCtx.state === "suspended") audioCtx.resume().catch(() => {});
@@ -2145,6 +2173,38 @@
     const key = (state.user && state.user.role === "driver") ? "toast_new_assigned" : "toast_new_requests";
     return t(key).replace("{count}", String(count));
   }
+
+  function formatTransferToastMessage(count) {
+    return t("toast_new_transfers").replace("{count}", String(count));
+  }
+
+  function formatReadyToastMessage(count) {
+    return t("toast_ready_transfers").replace("{count}", String(count));
+  }
+
+  function getRelevantTransfersForNotify() {
+    if (!state.user) return [];
+    const role = state.user.role;
+    const list = state.transfers || [];
+    if (role === "driver") {
+      return list.filter((t) => ["assigned", "in_transit", "ready", "in_transit_back"].includes(t.status));
+    }
+    if (role === "staff" || role === "supervisor") {
+      return list.filter((t) => t.toBranchId === state.user.branchId || t.fromBranchId === state.user.branchId);
+    }
+    return list;
+  }
+
+  function getRelevantReadyTransfersForNotify() {
+    if (!state.user) return [];
+    const role = state.user.role;
+    let list = (state.transfers || []).filter((t) => t.readyStatus === "ready");
+    if (role === "staff" || role === "supervisor") {
+      list = list.filter((t) => t.toBranchId === state.user.branchId);
+    }
+    return list;
+  }
+
   function updateRequestNotifications(opts = {}) {
     const notify = opts.notify !== false;
     if (!state.user) return;
@@ -2172,12 +2232,73 @@
     }
     state.lastNotifiedCount = newCount;
   }
+
+  function updateTransferNotifications(opts = {}) {
+    const notify = opts.notify !== false;
+    if (!state.user) return;
+    const key = TRF_SEEN_KEY_PREFIX + state.user.id;
+    const seenAt = Number(localStorage.getItem(key) || "0");
+    const relevant = getRelevantTransfersForNotify();
+    const newCount = relevant.filter((t) => {
+      const created = t.createdAt ? new Date(t.createdAt).getTime() : 0;
+      return created > seenAt;
+    }).length;
+
+    if (notify && newCount > state.lastNotifiedTransferCount) {
+      const diff = newCount - state.lastNotifiedTransferCount;
+      showToast(formatTransferToastMessage(diff));
+      playNotificationSound();
+    }
+    state.lastNotifiedTransferCount = newCount;
+  }
+
+  function updateReadyTransferNotifications(opts = {}) {
+    const notify = opts.notify !== false;
+    if (!state.user) return;
+    const key = READY_SEEN_KEY_PREFIX + state.user.id;
+    const seenAt = Number(localStorage.getItem(key) || "0");
+    const relevant = getRelevantReadyTransfersForNotify();
+    const newCount = relevant.filter((t) => {
+      const readyAt = t.readyAt ? new Date(t.readyAt).getTime() : 0;
+      return readyAt > seenAt;
+    }).length;
+
+    if (notify && newCount > state.lastNotifiedReadyCount) {
+      const diff = newCount - state.lastNotifiedReadyCount;
+      showToast(formatReadyToastMessage(diff));
+      playNotificationSound();
+    }
+    state.lastNotifiedReadyCount = newCount;
+  }
+
+  function updateAllNotifications(opts = {}) {
+    updateRequestNotifications(opts);
+    updateTransferNotifications(opts);
+    updateReadyTransferNotifications(opts);
+  }
+
   function markRequestsSeen() {
     if (!state.user) return;
     const key = REQ_SEEN_KEY_PREFIX + state.user.id;
     localStorage.setItem(key, String(Date.now()));
     state.lastNotifiedCount = 0;
     updateRequestNotifications({ notify: false });
+  }
+
+  function markTransfersSeen() {
+    if (!state.user) return;
+    const key = TRF_SEEN_KEY_PREFIX + state.user.id;
+    localStorage.setItem(key, String(Date.now()));
+    state.lastNotifiedTransferCount = 0;
+    updateTransferNotifications({ notify: false });
+  }
+
+  function markReadyTransfersSeen() {
+    if (!state.user) return;
+    const key = READY_SEEN_KEY_PREFIX + state.user.id;
+    localStorage.setItem(key, String(Date.now()));
+    state.lastNotifiedReadyCount = 0;
+    updateReadyTransferNotifications({ notify: false });
   }
   function isPageAllowed(pageId) {
     if (!state.user) return false;
@@ -2225,6 +2346,10 @@
     }
     if (pageId === "requestsPanel" || pageId === "driverPanel") {
       markRequestsSeen();
+    }
+    if (pageId === "transferPanel" || pageId === "driverPanel") {
+      markTransfersSeen();
+      markReadyTransfersSeen();
     }
     if (pageId === "transferPanel") {
       renderTransferTables();
@@ -2773,11 +2898,14 @@
     const headerUser = document.getElementById("headerUserName");
     const headerRole = document.getElementById("headerRole");
     const logoutBtn = document.getElementById("logoutBtn");
+    const muteToggle = document.getElementById("muteNotificationsToggle");
+    const muteWrap = muteToggle ? muteToggle.closest("label") : null;
 
     if (!state.user) {
       headerUser.style.display = "none";
       headerRole.style.display = "none";
       logoutBtn.style.display = "none";
+      if (muteWrap) muteWrap.style.display = "none";
       return;
     }
 
@@ -2789,6 +2917,8 @@
     headerRole.style.display = "inline-flex";
 
     logoutBtn.style.display = "inline-flex";
+    if (muteWrap) muteWrap.style.display = "inline-flex";
+    if (muteToggle) muteToggle.checked = state.muteNotifications;
   }
 
   function renderBranchSelects() {
@@ -2859,6 +2989,27 @@
         opt.textContent = b.name;
         analyticsBranchSelect.appendChild(opt);
       });
+    }
+
+    const driverBranchSel = document.getElementById("driverBranchFilterSelect");
+    if (driverBranchSel) {
+      const prev = driverBranchSel.value;
+      driverBranchSel.innerHTML = "";
+      const allOpt = document.createElement("option");
+      allOpt.value = "ALL";
+      allOpt.textContent = (currentLang === "ar") ? "ÙƒÙ„ Ø§Ù„ÙØ±ÙˆØ¹" : "All branches";
+      driverBranchSel.appendChild(allOpt);
+      (state.branches || []).forEach((b) => {
+        const opt = document.createElement("option");
+        opt.value = b.id;
+        opt.textContent = b.name;
+        driverBranchSel.appendChild(opt);
+      });
+      if (prev && driverBranchSel.querySelector(`option[value="${prev}"]`)) {
+        driverBranchSel.value = prev;
+      } else {
+        driverBranchSel.value = "ALL";
+      }
     }
   }
 
@@ -2959,26 +3110,7 @@
       typeSelect.disabled = true;
     }
 
-    const driverBranchSel = document.getElementById("driverBranchFilterSelect");
-    if (driverBranchSel) {
-      const prev = driverBranchSel.value;
-      driverBranchSel.innerHTML = "";
-      const allOpt = document.createElement("option");
-      allOpt.value = "ALL";
-      allOpt.textContent = (currentLang === "ar") ? "كل الفروع" : "All branches";
-      driverBranchSel.appendChild(allOpt);
-      (state.branches || []).forEach((b) => {
-        const opt = document.createElement("option");
-        opt.value = b.id;
-        opt.textContent = b.name;
-        driverBranchSel.appendChild(opt);
-      });
-      if (prev && driverBranchSel.querySelector(`option[value="${prev}"]`)) {
-        driverBranchSel.value = prev;
-      } else {
-        driverBranchSel.value = "ALL";
-      }
-    }
+
   }
 
   function renderInventoryViewer() {
@@ -3339,7 +3471,6 @@
       const etaText = r.status === "pending" ? "" : formatEta(r);
       const orderLabel = getRequestOrderLabel(r, orderMap);
       const priority = r.priority === "urgent" ? "urgent" : "normal";
-      const priorityPill = `<span class="pill pill-priority ${priority === "urgent" ? "urgent" : ""}">${escapeHtml(priorityText(priority))}</span>`;
       const noteText = [r.urgentNote ? `${t("urgent_note_label")}: ${r.urgentNote}` : "", r.note || ""]
         .filter(Boolean)
         .join(" | ");
@@ -3603,7 +3734,7 @@
 
     if (!pending.length) {
       const tr = document.createElement("tr");
-      tr.innerHTML = `<td colspan="14" class="text-muted">${t("no_pending_requests")}</td>`;
+      tr.innerHTML = `<td colspan="12" class="text-muted">${t("no_pending_requests")}</td>`;
       tbody.appendChild(tr);
       return;
     }
@@ -3637,6 +3768,7 @@
       const etaBtn = canShowEta ? `<button class="btn btn-secondary btn-sm" data-set-eta="${escapeHtml(r.id)}">${etaLabel}</button>` : "";
 
       const tr = document.createElement("tr");
+      if (priority === "urgent") tr.className = "urgent-row";
       tr.innerHTML = `
         <td class="col-order" title="${escapeHtml(r.id)}">${escapeHtml(orderLabel)}</td>
         <td class="col-created">${escapeHtml(formatDateTime(r.createdAt))}</td>
@@ -3644,13 +3776,11 @@
         <td class="col-qty">${escapeHtml(r.qty)}</td>
         <td class="col-from">${escapeHtml(getBranchName(r.fromBranchId))}</td>
         <td class="col-to">${escapeHtml(getBranchName(r.toBranchId))}</td>
-        <td class="col-priority">${priorityPill}</td>
         <td class="col-eta">${escapeHtml(etaText)}</td>
         <td class="col-note">${escapeHtml(noteText)}</td>
         <td class="col-image">${imageBtn || "-"}</td>
         <td class="col-driver">${escapeHtml(r.driverUserId ? getUserName(r.driverUserId) : "")}</td>
         <td class="col-requested-by">${escapeHtml(getUserName(r.createdByUserId))}</td>
-        <td class="col-status"><span class="pill pill-status ${escapeHtml(r.status)}">${t(r.status)}</span></td>
         <td class="col-action"><div class="driver-actions">${claimBtn} ${etaSelect} ${etaBtn}</div></td>
       `;
       tbody.appendChild(tr);
@@ -4588,7 +4718,7 @@
       renderMovementsTable();
       renderAnalytics();
       renderVehiclesUI();
-      updateRequestNotifications({ notify: false });
+      updateAllNotifications({ notify: false });
 
       await updateItemIdField();
       showApp();
@@ -4654,7 +4784,7 @@
       renderMovementsTable();
       renderAnalytics();
       renderVehiclesUI();
-      updateRequestNotifications({ notify: false });
+      updateAllNotifications({ notify: false });
 
       await updateItemIdField();
       showApp();
@@ -4683,12 +4813,21 @@
     renderDriverRequestsTable();
   });
 
+  const muteToggle = document.getElementById("muteNotificationsToggle");
+  if (muteToggle) {
+    muteToggle.addEventListener("change", () => {
+      state.muteNotifications = !!muteToggle.checked;
+      localStorage.setItem(NOTIFY_MUTE_KEY, state.muteNotifications ? "1" : "0");
+    });
+  }
+
   if (pollTimer) clearInterval(pollTimer);
   pollTimer = setInterval(async () => {
     if (!state.user) return;
+    if (shouldSkipPolling()) return;
     try {
       await refreshAllState();
-      updateRequestNotifications({ notify: true });
+      updateAllNotifications({ notify: true });
       if (state.activePageId === "requestsPanel") renderRequestsTable();
       if (state.activePageId === "transferPanel") renderTransferTables();
       if (state.activePageId === "driverPanel") renderDriverRequestsTable();
