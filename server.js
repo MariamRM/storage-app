@@ -1200,6 +1200,27 @@ app.post("/api/transfers/:id/deliver-back", async (req, res) => {
   }
 });
 
+// Delete transfer (admin/manager)
+app.delete("/api/transfers/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { userId } = req.body || {};
+    const data = await loadData();
+    const user = findUserById(data, userId);
+    if (!requireRole(user, ["admin", "manager"])) {
+      return res.status(403).json({ error: "Only admin/manager can delete transfers" });
+    }
+    const idx = (data.transfers || []).findIndex((t) => t.id === id);
+    if (idx === -1) return res.status(404).json({ error: "Transfer not found" });
+    data.transfers.splice(idx, 1);
+    await saveData(data);
+    res.json({ ok: true });
+  } catch (err) {
+    console.error("Delete transfer error", err);
+    res.status(500).json({ error: "Failed to delete transfer" });
+  }
+});
+
 // ---------- BUDGET ----------
 app.post("/api/budgets", async (req, res) => {
   try {

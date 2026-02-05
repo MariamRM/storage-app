@@ -1476,6 +1476,8 @@
       delete_request_confirm: "Delete this pending request?",
       save_qty: "Save qty",
       no_transfers_yet: "No transfers yet.",
+      delete_transfer: "Delete transfer",
+      delete_transfer_confirm: "Delete this transfer?",
       no_transfer_history: "No transfer history yet.",
       ready: "Ready",
       not_ready: "Not ready",
@@ -1771,6 +1773,8 @@
       delete_request_confirm: "هل تريد حذف هذا الطلب المعلّق؟",
       save_qty: "حفظ الكمية",
       no_transfers_yet: "لا توجد عمليات نقل بعد.",
+      delete_transfer: "حذف النقل",
+      delete_transfer_confirm: "حذف هذا النقل؟",
       no_transfer_history: "لا يوجد سجل نقل بعد.",
       ready: "جاهز",
       not_ready: "غير جاهز",
@@ -1929,6 +1933,9 @@
     const el = document.activeElement;
     if (!el) return false;
     if (el.closest("#requestsPanel") && (el.matches("select[data-assign-driver]") || el.matches("input[data-edit-qty]"))) {
+      return true;
+    }
+    if (el.closest("#transferPanel") && el.matches("input[data-ready-qty]")) {
       return true;
     }
     return false;
@@ -2792,6 +2799,17 @@
     });
     const body = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(body.error || "Ready transfer failed");
+    return body;
+  }
+
+  async function apiDeleteTransfer(id) {
+    const res = await fetch(`${API_BASE}/transfers/${id}`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId: state.user.id })
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(body.error || "Delete transfer failed");
     return body;
   }
 
@@ -3694,6 +3712,9 @@
       }
       if (readyInput) actionParts.push(readyInput);
       if (readyBtn) actionParts.push(readyBtn);
+      if (["admin", "manager"].includes(state.user.role)) {
+        actionParts.push(`<button class="btn btn-secondary btn-sm danger" data-transfer-delete="${escapeHtml(trf.id)}">${t("delete_transfer")}</button>`);
+      }
       const actionBtns = actionParts.join(" ");
 
       const imageBtn = getRequestImageButton(trf);
@@ -5503,6 +5524,19 @@
           const updated = await apiReadyTransfer(id, "ready", readyQty);
           const idx = state.transfers.findIndex((t) => t.id === id);
           if (idx >= 0) state.transfers[idx] = updated;
+          renderTransferTables();
+          renderDriverTransfersTable();
+        } catch (err) {
+          alert(err.message);
+        }
+      }
+      const delBtn = e.target.closest("button[data-transfer-delete]");
+      if (delBtn) {
+        const id = delBtn.getAttribute("data-transfer-delete");
+        if (!confirm(t("delete_transfer_confirm"))) return;
+        try {
+          await apiDeleteTransfer(id);
+          state.transfers = state.transfers.filter((t) => t.id !== id);
           renderTransferTables();
           renderDriverTransfersTable();
         } catch (err) {
