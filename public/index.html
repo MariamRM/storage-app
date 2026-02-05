@@ -3471,6 +3471,7 @@
       const etaText = r.status === "pending" ? "" : formatEta(r);
       const orderLabel = getRequestOrderLabel(r, orderMap);
       const priority = r.priority === "urgent" ? "urgent" : "normal";
+      const priorityPill = `<span class="pill pill-priority ${priority === "urgent" ? "urgent" : ""}">${escapeHtml(priorityText(priority))}</span>`;
       const noteText = [r.urgentNote ? `${t("urgent_note_label")}: ${r.urgentNote}` : "", r.note || ""]
         .filter(Boolean)
         .join(" | ");
