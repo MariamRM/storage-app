@@ -1938,6 +1938,9 @@
     if (el.closest("#transferPanel") && el.matches("input[data-ready-qty]")) {
       return true;
     }
+    if (el.closest("#transferPanel") && el.matches("select[data-transfer-assign]")) {
+      return true;
+    }
     return false;
   }
 
@@ -3712,7 +3715,7 @@
       }
       if (readyInput) actionParts.push(readyInput);
       if (readyBtn) actionParts.push(readyBtn);
-      if (["admin", "manager"].includes(state.user.role)) {
+      if (["admin", "manager", "supervisor"].includes(state.user.role)) {
         actionParts.push(`<button class="btn btn-secondary btn-sm danger" data-transfer-delete="${escapeHtml(trf.id)}">${t("delete_transfer")}</button>`);
       }
       const actionBtns = actionParts.join(" ");
@@ -3826,8 +3829,7 @@
         .join(" | ");
       const imageBtn = getRequestImageButton(r);
       const isMine = state.user && r.driverUserId === state.user.id;
-      const assignedByRole = getUserRoleById(r.assignedByUserId);
-      const canShowEta = isMine && ["admin", "manager"].includes(assignedByRole);
+      const canShowEta = isMine;
       const useIcons = state.phoneMode && state.user && state.user.role === "driver";
       const claimLabel = useIcons ? "🚚" : t("take_request");
       const etaLabel = useIcons ? "⏱" : t("set_eta");

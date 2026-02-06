@@ -1207,8 +1207,8 @@ app.delete("/api/transfers/:id", async (req, res) => {
     const { userId } = req.body || {};
     const data = await loadData();
     const user = findUserById(data, userId);
-    if (!requireRole(user, ["admin", "manager"])) {
-      return res.status(403).json({ error: "Only admin/manager can delete transfers" });
+    if (!requireRole(user, ["admin", "manager", "supervisor"])) {
+      return res.status(403).json({ error: "Only admin/manager/supervisor can delete transfers" });
     }
     const idx = (data.transfers || []).findIndex((t) => t.id === id);
     if (idx === -1) return res.status(404).json({ error: "Transfer not found" });
