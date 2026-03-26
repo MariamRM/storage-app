@@ -1252,6 +1252,7 @@ app.post("/api/deliveries", async (req, res) => {
       driverUserId: null,
       createdByUserId: userId,
       createdAt: new Date().toISOString(),
+      deliveredAt: null,
       updatedAt: null
     };
 
@@ -1290,8 +1291,14 @@ app.post("/api/deliveries/:id/status", async (req, res) => {
       }
     }
 
+    const now = new Date().toISOString();
     delivery.status = next;
-    delivery.updatedAt = new Date().toISOString();
+    delivery.updatedAt = now;
+    if (next === "delivered") {
+      delivery.deliveredAt = now;
+    } else if (delivery.deliveredAt) {
+      delivery.deliveredAt = null;
+    }
     await saveData(data);
     res.json(delivery);
   } catch (err) {

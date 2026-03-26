@@ -27,6 +27,7 @@
     .panel-title { font-size: 0.95rem; font-weight: 600; color: #111827; }
     .panel-subtitle { font-size: 0.75rem; color: #6b7280; }
     .panel-section-title { font-size: 0.85rem; font-weight: 700; margin: 0.8rem 0 0.35rem; }
+    .section-header { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; }
     .text-muted { color: #9ca3af; }
     .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.6rem; }
     .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.6rem; }
@@ -569,33 +570,38 @@
     </div>
 
     <div id="requestsHistoryBlock" class="mt-md" style="display:none;">
-      <div class="panel-section-title" data-i18n="requests_history">Requests history</div>
-      <div class="toolbar mt-xs">
-        <div>
-          <label data-i18n="filter_by_branch">Filter by branch</label>
-          <select id="requestHistoryBranchSelect"></select>
-        </div>
+      <div class="section-header">
+        <div class="panel-section-title" data-i18n="requests_history">Requests history</div>
+        <button class="btn btn-secondary btn-sm" data-history-toggle="requestsHistoryTableWrap" data-history-state="shown"></button>
       </div>
-      <div class="table-wrapper">
-        <table>
-          <thead>
-          <tr>
-            <th data-i18n="th_order">Order #</th>
-            <th data-i18n="th_created_at">Created</th>
-            <th data-i18n="th_delivered_at">Delivered</th>
-            <th data-i18n="th_item">Item</th>
-            <th data-i18n="th_qty">Qty</th>
-            <th data-i18n="th_from">From</th>
-            <th data-i18n="th_to">To</th>
-            <th data-i18n="th_priority">Priority</th>
-            <th data-i18n="th_by">By</th>
-            <th data-i18n="th_driver">Driver</th>
-            <th data-i18n="th_note">Note</th>
-            <th data-i18n="th_image">Image</th>
-          </tr>
-          </thead>
-          <tbody id="requestsHistoryTableBody"></tbody>
-        </table>
+      <div id="requestsHistoryTableWrap">
+        <div class="toolbar mt-xs">
+          <div>
+            <label data-i18n="filter_by_branch">Filter by branch</label>
+            <select id="requestHistoryBranchSelect"></select>
+          </div>
+        </div>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+            <tr>
+              <th data-i18n="th_order">Order #</th>
+              <th data-i18n="th_created_at">Created</th>
+              <th data-i18n="th_delivered_at">Delivered</th>
+              <th data-i18n="th_item">Item</th>
+              <th data-i18n="th_qty">Qty</th>
+              <th data-i18n="th_from">From</th>
+              <th data-i18n="th_to">To</th>
+              <th data-i18n="th_priority">Priority</th>
+              <th data-i18n="th_by">By</th>
+              <th data-i18n="th_driver">Driver</th>
+              <th data-i18n="th_note">Note</th>
+              <th data-i18n="th_image">Image</th>
+            </tr>
+            </thead>
+            <tbody id="requestsHistoryTableBody"></tbody>
+          </table>
+        </div>
       </div>
     </div>
   </section>
@@ -651,25 +657,30 @@
       </table>
     </div>
 
-    <div class="panel-section-title mt-md" data-i18n="transfer_history">Transfer history</div>
-    <div class="table-wrapper">
-      <table>
-        <thead>
-        <tr>
-          <th data-i18n="th_id">ID</th>
-          <th data-i18n="th_created_at">Created</th>
-          <th data-i18n="th_delivered_at">Delivered</th>
-          <th data-i18n="th_qty">Qty</th>
-          <th data-i18n="th_from">From</th>
-          <th data-i18n="th_to">To</th>
-          <th data-i18n="th_ready">Ready</th>
-          <th data-i18n="th_driver">Driver</th>
-          <th data-i18n="th_note">Note</th>
-          <th data-i18n="th_image">Image</th>
-        </tr>
-        </thead>
-        <tbody id="transferHistoryTableBody"></tbody>
-      </table>
+    <div id="transferHistoryBlock" class="mt-md" style="display:none;">
+      <div class="section-header">
+        <div class="panel-section-title" data-i18n="transfer_history">Transfer history</div>
+        <button class="btn btn-secondary btn-sm" data-history-toggle="transferHistoryTableWrap" data-history-state="shown"></button>
+      </div>
+      <div id="transferHistoryTableWrap" class="table-wrapper">
+        <table>
+          <thead>
+          <tr>
+            <th data-i18n="th_id">ID</th>
+            <th data-i18n="th_created_at">Created</th>
+            <th data-i18n="th_delivered_at">Delivered</th>
+            <th data-i18n="th_qty">Qty</th>
+            <th data-i18n="th_from">From</th>
+            <th data-i18n="th_to">To</th>
+            <th data-i18n="th_ready">Ready</th>
+            <th data-i18n="th_driver">Driver</th>
+            <th data-i18n="th_note">Note</th>
+            <th data-i18n="th_image">Image</th>
+          </tr>
+          </thead>
+          <tbody id="transferHistoryTableBody"></tbody>
+        </table>
+      </div>
     </div>
   </section>
 
@@ -733,7 +744,7 @@
       <table>
         <thead>
         <tr>
-          <th data-i18n="th_id">ID</th>
+          <th data-i18n="th_order">Order #</th>
           <th data-i18n="th_created_at">Created</th>
           <th data-i18n="th_from">From</th>
           <th data-i18n="th_address">Address</th>
@@ -749,6 +760,33 @@
         </thead>
         <tbody id="deliveriesTableBody"></tbody>
       </table>
+    </div>
+    <div id="deliveriesHistoryBlock" class="mt-md" style="display:none;">
+      <div class="section-header">
+        <div class="panel-section-title" data-i18n="deliveries_history">Deliveries history</div>
+        <button class="btn btn-secondary btn-sm" data-history-toggle="deliveriesHistoryTableWrap" data-history-state="shown"></button>
+      </div>
+      <div id="deliveriesHistoryTableWrap" class="table-wrapper">
+        <table>
+          <thead>
+          <tr>
+            <th data-i18n="th_order">Order #</th>
+            <th data-i18n="th_created_at">Created</th>
+            <th data-i18n="th_delivered_at">Delivered</th>
+            <th data-i18n="th_from">From</th>
+            <th data-i18n="th_address">Address</th>
+            <th data-i18n="th_invoice">Invoice</th>
+            <th data-i18n="th_due">Due</th>
+            <th data-i18n="th_customer">Customer</th>
+            <th data-i18n="th_phone">Phone</th>
+            <th data-i18n="th_status">Status</th>
+            <th data-i18n="th_driver">Driver</th>
+            <th data-i18n="th_note">Note</th>
+          </tr>
+          </thead>
+          <tbody id="deliveriesHistoryTableBody"></tbody>
+        </table>
+      </div>
     </div>
   </section>
 
@@ -804,7 +842,7 @@
       <table class="driver-deliveries-table">
         <thead>
         <tr>
-          <th class="col-id" data-i18n="th_id">ID</th>
+          <th class="col-id" data-i18n="th_order">Order #</th>
           <th class="col-created" data-i18n="th_created_at">Created</th>
           <th class="col-from" data-i18n="th_from">From</th>
           <th class="col-address" data-i18n="th_address">Address</th>
@@ -1469,6 +1507,7 @@
       deliveries_subtitle: "Create delivery requests from branches to customer addresses. Drivers deliver.",
       new_delivery: "New delivery",
       deliveries_list: "Deliveries list",
+      deliveries_history: "Deliveries history",
       delivery_from_branch: "From branch",
       delivery_status: "Status",
       delivery_due_date: "Due date",
@@ -1484,6 +1523,8 @@
       mark_in_transit: "In transit",
       mark_delivered: "Delivered",
       new: "new",
+      hide_history: "Hide history",
+      show_history: "Show history",
       requests_history: "Requests history",
       filter_by_branch: "Filter by branch",
       assign: "Assign",
@@ -1961,6 +2002,7 @@
       deliveries_subtitle: "Create delivery requests from branches to customer addresses. Drivers deliver.",
       new_delivery: "New delivery",
       deliveries_list: "Deliveries list",
+      deliveries_history: "Deliveries history",
       delivery_from_branch: "From branch",
       delivery_status: "Status",
       delivery_due_date: "Due date",
@@ -1976,7 +2018,9 @@
       mark_in_transit: "In transit",
       mark_delivered: "Delivered",
       no_deliveries_yet: "No deliveries yet.",
-      new: "new"
+      new: "new",
+      hide_history: "Hide history",
+      show_history: "Show history"
     }
   };
 
@@ -2052,6 +2096,8 @@
 
     const editSearchInput = document.getElementById("itemEditSearchInput");
     if (editSearchInput) editSearchInput.placeholder = t("search_item_edit_placeholder");
+
+    updateHistoryToggleLabels();
   }
   // ---------- end i18n ----------
 
@@ -2310,6 +2356,40 @@
     const padded = String(n).padStart(6, "0");
     return `${t("order_prefix")}${padded}`;
   }
+  function buildDeliveryOrderMap(deliveries) {
+    const map = new Map();
+    const byBranch = new Map();
+    (deliveries || []).forEach((d) => {
+      const key = d.fromBranchId || "";
+      if (!byBranch.has(key)) byBranch.set(key, []);
+      byBranch.get(key).push(d);
+    });
+    byBranch.forEach((list) => {
+      list.sort((a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0));
+      list.forEach((d, idx) => {
+        map.set(d.id, idx + 1);
+      });
+    });
+    return map;
+  }
+  function getDeliveryOrderLabel(delivery, orderMap) {
+    const n = orderMap ? orderMap.get(delivery.id) : null;
+    if (!n) return delivery.id ? String(delivery.id) : "";
+    const padded = String(n).padStart(3, "0");
+    return `DEL-${padded}`;
+  }
+  function formatDeliveryStatus(status) {
+    const key = String(status || "");
+    const iconMap = {
+      new: "🆕",
+      ready: "✅",
+      in_transit: "🚚",
+      delivered: "📦"
+    };
+    const icon = iconMap[key] || "";
+    const label = t(key);
+    return icon ? `${icon} ${label}` : label;
+  }
   function formatEta(req) {
     if (!req) return "";
     if (req.deliveryEtaLabel) return req.deliveryEtaLabel;
@@ -2396,6 +2476,23 @@
       if (count > 0) navigator.setAppBadge(count).catch(() => {});
       else if (navigator.clearAppBadge) navigator.clearAppBadge().catch(() => {});
     }
+  }
+  function updateHistoryToggleLabels() {
+    document.querySelectorAll("button[data-history-toggle]").forEach((btn) => {
+      const state = btn.getAttribute("data-history-state") || "shown";
+      btn.textContent = state === "hidden" ? t("show_history") : t("hide_history");
+    });
+  }
+  function toggleHistorySection(btn) {
+    if (!btn) return;
+    const targetId = btn.getAttribute("data-history-toggle");
+    if (!targetId) return;
+    const target = document.getElementById(targetId);
+    if (!target) return;
+    const isHidden = target.style.display === "none";
+    target.style.display = isHidden ? "" : "none";
+    btn.setAttribute("data-history-state", isHidden ? "shown" : "hidden");
+    updateHistoryToggleLabels();
   }
   function showToast(message) {
     const container = document.getElementById("toastContainer");
@@ -3737,10 +3834,11 @@
     const historySelect = document.getElementById("requestHistoryBranchSelect");
     const historyBlock = document.getElementById("requestsHistoryBlock");
     if (historySelect && historyBlock) {
-      if (!["admin", "manager", "supervisor"].includes(state.user.role)) {
+      if (!["admin", "manager"].includes(state.user.role)) {
         historyBlock.style.display = "none";
         return;
       }
+      historyBlock.style.display = "block";
       const prev = historySelect.value;
       historySelect.innerHTML = "";
       if (state.user.role === "supervisor") {
@@ -3889,7 +3987,7 @@
     const tbody = document.getElementById("requestsHistoryTableBody");
     if (!block || !tbody) return;
 
-    if (!state.user || !["admin", "manager", "supervisor"].includes(state.user.role)) {
+    if (!state.user || !["admin", "manager"].includes(state.user.role)) {
       block.style.display = "none";
       return;
     }
@@ -3974,6 +4072,8 @@
     if (!state.user) return;
 
     const all = [...(state.deliveries || [])];
+    const orderMap = buildDeliveryOrderMap(all);
+    renderDeliveriesHistoryTable(orderMap);
     const active = all.filter((d) => d.status !== "delivered");
     const visible = getVisibleDeliveriesForUser(active);
 
@@ -3987,6 +4087,10 @@
     visible.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
 
     visible.forEach((d) => {
+      const orderLabel = getDeliveryOrderLabel(d, orderMap);
+      const idHtml = d.id
+        ? `<span title="${escapeHtml(d.id)}">${escapeHtml(orderLabel)}</span>`
+        : escapeHtml(orderLabel);
       const driverName = d.driverUserId ? getUserName(d.driverUserId) : "";
       const canDelete = state.user.role === "admin" || state.user.role === "manager";
       const canSet = ["admin", "manager", "supervisor"].includes(state.user.role);
@@ -4008,7 +4112,7 @@
 
       const tr = document.createElement("tr");
       tr.innerHTML = `
-        <td>${escapeHtml(d.id)}</td>
+        <td>${idHtml}</td>
         <td>${escapeHtml(formatDateTime(d.createdAt))}</td>
         <td>${escapeHtml(getBranchName(d.fromBranchId))}</td>
         <td>${escapeHtml(d.address || "")}</td>
@@ -4016,10 +4120,64 @@
         <td>${escapeHtml(d.dueDate || "")}</td>
         <td>${escapeHtml(d.customerName || "")}</td>
         <td>${escapeHtml(d.customerPhone || "")}</td>
-        <td><span class="pill pill-status ${escapeHtml(d.status)}">${t(d.status)}</span></td>
+        <td><span class="pill pill-status ${escapeHtml(d.status)}">${escapeHtml(formatDeliveryStatus(d.status))}</span></td>
         <td>${escapeHtml(driverName)}</td>
         <td>${escapeHtml(d.note || "")}</td>
         <td>${actionParts.join(" ") || "-"}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function renderDeliveriesHistoryTable(orderMap) {
+    const block = document.getElementById("deliveriesHistoryBlock");
+    const tbody = document.getElementById("deliveriesHistoryTableBody");
+    if (!block || !tbody) return;
+    if (!state.user || !["admin", "manager"].includes(state.user.role)) {
+      block.style.display = "none";
+      return;
+    }
+    block.style.display = "block";
+    tbody.innerHTML = "";
+
+    const delivered = (state.deliveries || []).filter((d) => d.status === "delivered");
+    const visible = getVisibleDeliveriesForUser(delivered);
+    const map = orderMap || buildDeliveryOrderMap(state.deliveries || []);
+
+    if (!visible.length) {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td colspan="12" class="text-muted">${t("no_deliveries_yet")}</td>`;
+      tbody.appendChild(tr);
+      return;
+    }
+
+    visible.sort(
+      (a, b) =>
+        new Date(b.deliveredAt || b.updatedAt || b.createdAt || 0) -
+        new Date(a.deliveredAt || a.updatedAt || a.createdAt || 0)
+    );
+
+    visible.forEach((d) => {
+      const deliveredAt = d.deliveredAt || d.updatedAt || "";
+      const orderLabel = getDeliveryOrderLabel(d, map);
+      const idHtml = d.id
+        ? `<span title="${escapeHtml(d.id)}">${escapeHtml(orderLabel)}</span>`
+        : escapeHtml(orderLabel);
+      const driverName = d.driverUserId ? getUserName(d.driverUserId) : "";
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${idHtml}</td>
+        <td>${escapeHtml(formatDateTime(d.createdAt))}</td>
+        <td>${escapeHtml(formatDateTime(deliveredAt))}</td>
+        <td>${escapeHtml(getBranchName(d.fromBranchId))}</td>
+        <td>${escapeHtml(d.address || "")}</td>
+        <td>${escapeHtml(d.invoiceNo || "")}</td>
+        <td>${escapeHtml(d.dueDate || "")}</td>
+        <td>${escapeHtml(d.customerName || "")}</td>
+        <td>${escapeHtml(d.customerPhone || "")}</td>
+        <td><span class="pill pill-status ${escapeHtml(d.status)}">${escapeHtml(formatDeliveryStatus(d.status))}</span></td>
+        <td>${escapeHtml(driverName)}</td>
+        <td>${escapeHtml(d.note || "")}</td>
       `;
       tbody.appendChild(tr);
     });
@@ -4114,10 +4272,15 @@
   }
 
   function renderTransferHistoryTable() {
+    const block = document.getElementById("transferHistoryBlock");
     const tbody = document.getElementById("transferHistoryTableBody");
-    if (!tbody) return;
+    if (!block || !tbody) return;
+    if (!state.user || !["admin", "manager"].includes(state.user.role)) {
+      block.style.display = "none";
+      return;
+    }
+    block.style.display = "block";
     tbody.innerHTML = "";
-    if (!state.user) return;
 
     const history = (state.transfers || []).filter((trf) => trf.status === "delivered_back");
     const visible = getVisibleTransfersForUser(history);
@@ -4244,6 +4407,7 @@
     tbody.innerHTML = "";
     if (!state.user) return;
 
+    const orderMap = buildDeliveryOrderMap(state.deliveries || []);
     const list = (state.deliveries || [])
       .filter((d) => d.status !== "delivered")
       .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
@@ -4256,6 +4420,10 @@
     }
 
     list.forEach((d) => {
+      const orderLabel = getDeliveryOrderLabel(d, orderMap);
+      const idHtml = d.id
+        ? `<span title="${escapeHtml(d.id)}">${escapeHtml(orderLabel)}</span>`
+        : escapeHtml(orderLabel);
       const useIcons = state.phoneMode && state.user && state.user.role === "driver";
       const actionParts = [];
       if (d.status === "new" || d.status === "ready") {
@@ -4268,7 +4436,7 @@
 
       const tr = document.createElement("tr");
       tr.innerHTML = `
-        <td class="col-id">${escapeHtml(d.id)}</td>
+        <td class="col-id">${idHtml}</td>
         <td class="col-created">${escapeHtml(formatDateTime(d.createdAt))}</td>
         <td class="col-from">${escapeHtml(getBranchName(d.fromBranchId))}</td>
         <td class="col-address">${escapeHtml(d.address || "")}</td>
@@ -4276,7 +4444,7 @@
         <td class="col-phone">${escapeHtml(d.customerPhone || "")}</td>
         <td class="col-due">${escapeHtml(d.dueDate || "")}</td>
         <td class="col-invoice">${escapeHtml(d.invoiceNo || "")}</td>
-        <td class="col-status"><span class="pill pill-status ${escapeHtml(d.status)}">${t(d.status)}</span></td>
+        <td class="col-status"><span class="pill pill-status ${escapeHtml(d.status)}">${escapeHtml(formatDeliveryStatus(d.status))}</span></td>
         <td class="col-note">${escapeHtml(d.note || "")}</td>
         <td class="col-action"><div class="driver-actions">${actionParts.join(" ") || "-"}</div></td>
       `;
@@ -6083,6 +6251,9 @@
   if (requestHistoryBranchSelect) {
     requestHistoryBranchSelect.addEventListener("change", renderRequestsHistoryTable);
   }
+  document.querySelectorAll("button[data-history-toggle]").forEach((btn) => {
+    btn.addEventListener("click", () => toggleHistorySection(btn));
+  });
 
   document.getElementById("driverRequestsTableBody").addEventListener("change", (e) => {
     const sel = e.target.closest("select[data-eta-type]");
