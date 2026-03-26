@@ -28,11 +28,12 @@ async function loadData() {
         items: [],
         movements: [],
         budgets: [],
-        requests: [],
-        transfers: [],
-        trips: [],
-        vehicles: [],
-        vehicleReminders: [],
+      requests: [],
+      transfers: [],
+      deliveries: [],
+      trips: [],
+      vehicles: [],
+      vehicleReminders: [],
         carAssignments: [],
         carMaintenances: []
       };
@@ -79,6 +80,7 @@ function ensureDataShape(parsed) {
   parsed.budgets ||= [];
   parsed.requests ||= [];
   parsed.transfers ||= [];
+  parsed.deliveries ||= [];
   parsed.trips ||= [];
   parsed.vehicles ||= [];
   parsed.vehicleReminders ||= [];
@@ -268,6 +270,7 @@ app.get("/api/state", async (req, res) => {
       budgets: data.budgets || [],
       requests: data.requests || [],
       transfers: data.transfers || [],
+      deliveries: data.deliveries || [],
       trips: data.trips || [],
       vehicles: data.vehicles || [],
       vehicleReminders: data.vehicleReminders || [],
@@ -1197,6 +1200,124 @@ app.post("/api/transfers/:id/deliver-back", async (req, res) => {
   } catch (err) {
     console.error("Deliver back transfer error", err);
     res.status(500).json({ error: "Failed to deliver back" });
+  }
+});
+
+// ---------- DELIVERIES ----------
+app.post("/api/deliveries", async (req, res) => {
+  try {
+    const {
+      userId,
+      address,
+      invoiceNo,
+      dueDate,
+      customerName,
+      customerPhone,
+      note,
+      status,
+      fromBranchId
+    } = req.body || {};
+
+    const data = await loadData();
+    const user = findUserById(data, userId);
+    if (!user) return res.status(400).json({ error: "User not found" });
+    if (user.role === "driver") return res.status(403).json({ error: "Drivers cannot create deliveries" });
+
+    const addr = String(address || "").trim();
+    const custName = String(customerName || "").trim();
+    const custPhone = String(customerPhone || "").trim();
+    if (!addr || !custName || !custPhone) {
+      return res.status(400).json({ error: "address, customerName, customerPhone are required" });
+    }
+
+    let branchId = user.branchId || "";
+    if (!branchId && fromBranchId && requireRole(user, ["admin", "manager", "supervisor"])) {
+      branchId = String(fromBranchId).trim();
+    }
+    if (!branchId) return res.status(400).json({ error: "User is not assigned to a branch" });
+
+    const allowedStatus = ["new", "ready"];
+    const initStatus = allowedStatus.includes(String(status || "").toLowerCase()) ? String(status).toLowerCase() : "new";
+
+    const delivery = {
+      id: "DEL-" + Date.now(),
+      fromBranchId: branchId,
+      address: addr,
+      invoiceNo: String(invoiceNo || "").trim(),
+      dueDate: dueDate || "",
+      customerName: custName,
+      customerPhone: custPhone,
+      note: String(note || "").trim(),
+      status: initStatus,
+      driverUserId: null,
+      createdByUserId: userId,
+      createdAt: new Date().toISOString(),
+      updatedAt: null
+    };
+
+    data.deliveries.push(delivery);
+    await saveData(data);
+    res.status(201).json(delivery);
+  } catch (err) {
+    console.error("Create delivery error", err);
+    res.status(500).json({ error: "Failed to create delivery" });
+  }
+});
+
+app.post("/api/deliveries/:id/status", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { userId, status } = req.body || {};
+    const data = await loadData();
+    const user = findUserById(data, userId);
+    if (!user) return res.status(400).json({ error: "User not found" });
+
+    const delivery = (data.deliveries || []).find((d) => d.id === id);
+    if (!delivery) return res.status(404).json({ error: "Delivery not found" });
+
+    const next = String(status || "").toLowerCase();
+    const allStatuses = ["new", "ready", "in_transit", "delivered"];
+    if (!allStatuses.includes(next)) return res.status(400).json({ error: "Invalid status" });
+
+    if (user.role === "driver") {
+      if (!["in_transit", "delivered"].includes(next)) {
+        return res.status(403).json({ error: "Drivers can only set in_transit or delivered" });
+      }
+      delivery.driverUserId = user.id;
+    } else if (["staff", "supervisor"].includes(user.role)) {
+      if (!["new", "ready"].includes(next)) {
+        return res.status(403).json({ error: "Only admin/manager can set this status" });
+      }
+    }
+
+    delivery.status = next;
+    delivery.updatedAt = new Date().toISOString();
+    await saveData(data);
+    res.json(delivery);
+  } catch (err) {
+    console.error("Update delivery status error", err);
+    res.status(500).json({ error: "Failed to update delivery" });
+  }
+});
+
+app.delete("/api/deliveries/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { userId } = req.body || {};
+    const data = await loadData();
+    const user = findUserById(data, userId);
+    if (!requireRole(user, ["admin", "manager"])) {
+      return res.status(403).json({ error: "Only admin/manager can delete deliveries" });
+    }
+
+    const idx = (data.deliveries || []).findIndex((d) => d.id === id);
+    if (idx === -1) return res.status(404).json({ error: "Delivery not found" });
+    data.deliveries.splice(idx, 1);
+    await saveData(data);
+    res.json({ ok: true });
+  } catch (err) {
+    console.error("Delete delivery error", err);
+    res.status(500).json({ error: "Failed to delete delivery" });
   }
 });
 

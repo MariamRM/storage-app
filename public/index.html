@@ -53,11 +53,17 @@
     .driver-transfers-table .col-to,
     .driver-transfers-table .col-note,
     .driver-transfers-table .col-image { }
+    .driver-deliveries-table .col-created,
+    .driver-deliveries-table .col-from,
+    .driver-deliveries-table .col-due,
+    .driver-deliveries-table .col-invoice,
+    .driver-deliveries-table .col-note { }
     th { font-size: 0.72rem; font-weight: 700; color: #6b7280; background: #f9fafb; }
     tr:nth-child(even) td { background: #f9fafb; }
     .pill { display: inline-flex; align-items: center; padding: 0.08rem 0.55rem; border-radius: 999px; font-size: 0.72rem; }
     .pill-status { background: #e5e7eb; color: #111827; }
     .pill-status.pending { background: #fef3c7; color: #92400e; }
+    .pill-status.new { background: #e0e7ff; color: #3730a3; }
     .pill-status.delivered { background: #dcfce7; color: #166534; }
     .pill-status.assigned { background: #dbeafe; color: #1e3a8a; }
     .pill-status.in_transit { background: #fde68a; color: #92400e; }
@@ -105,7 +111,9 @@
     body.phone-mode .driver-requests-table th,
     body.phone-mode .driver-requests-table td,
     body.phone-mode .driver-transfers-table th,
-    body.phone-mode .driver-transfers-table td {
+    body.phone-mode .driver-transfers-table td,
+    body.phone-mode .driver-deliveries-table th,
+    body.phone-mode .driver-deliveries-table td {
       padding: 0.3rem 0.35rem;
       font-size: 0.78rem;
     }
@@ -124,8 +132,16 @@
     body.phone-mode .driver-transfers-table .col-image {
       display: none;
     }
+    body.phone-mode .driver-deliveries-table .col-created,
+    body.phone-mode .driver-deliveries-table .col-from,
+    body.phone-mode .driver-deliveries-table .col-due,
+    body.phone-mode .driver-deliveries-table .col-invoice,
+    body.phone-mode .driver-deliveries-table .col-note {
+      display: none;
+    }
     body.phone-mode .driver-requests-table .btn,
-    body.phone-mode .driver-transfers-table .btn {
+    body.phone-mode .driver-transfers-table .btn,
+    body.phone-mode .driver-deliveries-table .btn {
       border-radius: 0.5rem;
       padding: 0.5rem 0.7rem;
       font-size: 0.82rem;
@@ -657,6 +673,85 @@
     </div>
   </section>
 
+  <!-- Deliveries panel -->
+  <section id="deliveriesPanel" class="panel" style="display:none;">
+    <div class="panel-header">
+      <div>
+        <div class="panel-title" data-i18n="deliveries_title">Deliveries</div>
+        <div class="panel-subtitle" data-i18n="deliveries_subtitle">Create delivery requests from branches to customer addresses. Drivers deliver.</div>
+      </div>
+    </div>
+
+    <div class="panel-section-title" data-i18n="new_delivery">New delivery</div>
+    <div class="grid mt-xs">
+      <div>
+        <label data-i18n="delivery_from_branch">From branch</label>
+        <select id="deliveryFromBranchSelect"></select>
+      </div>
+      <div>
+        <label data-i18n="delivery_status">Status</label>
+        <select id="deliveryStatusSelect">
+          <option value="new" data-i18n="new">New</option>
+          <option value="ready" data-i18n="ready">Ready</option>
+        </select>
+      </div>
+      <div>
+        <label data-i18n="delivery_due_date">Due date</label>
+        <input id="deliveryDueDateInput" type="date" />
+      </div>
+    </div>
+    <div class="grid mt-xs">
+      <div>
+        <label data-i18n="delivery_address">Address</label>
+        <input id="deliveryAddressInput" />
+      </div>
+      <div>
+        <label data-i18n="delivery_invoice">Invoice #</label>
+        <input id="deliveryInvoiceInput" />
+      </div>
+      <div>
+        <label data-i18n="note">Note</label>
+        <input id="deliveryNoteInput" />
+      </div>
+    </div>
+    <div class="grid mt-xs">
+      <div>
+        <label data-i18n="delivery_customer_name">Customer name</label>
+        <input id="deliveryCustomerNameInput" />
+      </div>
+      <div>
+        <label data-i18n="delivery_customer_phone">Customer phone</label>
+        <input id="deliveryCustomerPhoneInput" />
+      </div>
+      <div style="display:flex;align-items:flex-end;">
+        <button id="createDeliveryBtn" class="btn btn-primary" style="width:100%;" data-i18n="create_delivery_btn">Create delivery</button>
+      </div>
+    </div>
+
+    <div class="panel-section-title mt-md" data-i18n="deliveries_list">Deliveries list</div>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+        <tr>
+          <th data-i18n="th_id">ID</th>
+          <th data-i18n="th_created_at">Created</th>
+          <th data-i18n="th_from">From</th>
+          <th data-i18n="th_address">Address</th>
+          <th data-i18n="th_invoice">Invoice</th>
+          <th data-i18n="th_due">Due</th>
+          <th data-i18n="th_customer">Customer</th>
+          <th data-i18n="th_phone">Phone</th>
+          <th data-i18n="th_status">Status</th>
+          <th data-i18n="th_driver">Driver</th>
+          <th data-i18n="th_note">Note</th>
+          <th data-i18n="th_action">Action</th>
+        </tr>
+        </thead>
+        <tbody id="deliveriesTableBody"></tbody>
+      </table>
+    </div>
+  </section>
+
   <!-- Driver panel -->
   <section id="driverPanel" class="panel" style="display:none;">
     <div class="panel-header">
@@ -701,6 +796,28 @@
         </tr>
         </thead>
         <tbody id="driverRequestsTableBody"></tbody>
+      </table>
+    </div>
+
+    <div class="panel-section-title mt-md" data-i18n="driver_deliveries_title">Customer deliveries</div>
+    <div class="table-wrapper">
+      <table class="driver-deliveries-table">
+        <thead>
+        <tr>
+          <th class="col-id" data-i18n="th_id">ID</th>
+          <th class="col-created" data-i18n="th_created_at">Created</th>
+          <th class="col-from" data-i18n="th_from">From</th>
+          <th class="col-address" data-i18n="th_address">Address</th>
+          <th class="col-customer" data-i18n="th_customer">Customer</th>
+          <th class="col-phone" data-i18n="th_phone">Phone</th>
+          <th class="col-due" data-i18n="th_due">Due</th>
+          <th class="col-invoice" data-i18n="th_invoice">Invoice</th>
+          <th class="col-status" data-i18n="th_status">Status</th>
+          <th class="col-note" data-i18n="th_note">Note</th>
+          <th class="col-action" data-i18n="th_action">Action</th>
+        </tr>
+        </thead>
+        <tbody id="driverDeliveriesTableBody"></tbody>
       </table>
     </div>
 
@@ -1223,6 +1340,7 @@
       menu_inventory: "Inventory",
       menu_requests: "Requests",
       menu_transfers: "Transfers",
+      menu_deliveries: "Deliveries",
       menu_driver: "Driver",
       menu_movements: "Movements",
       menu_analytics: "Analytics",
@@ -1233,6 +1351,7 @@
       toast_new_requests: "New requests: {count}",
       toast_new_assigned: "New assigned to you: {count}",
       toast_new_transfers: "New transfers: {count}",
+      toast_new_deliveries: "New deliveries: {count}",
       toast_ready_transfers: "Transfers ready: {count}",
       mute_sound: "Mute",
 
@@ -1249,6 +1368,11 @@
       th_item: "Item",
       th_from: "From",
       th_to: "To",
+      th_address: "Address",
+      th_invoice: "Invoice",
+      th_due: "Due",
+      th_customer: "Customer",
+      th_phone: "Phone",
       th_priority: "Priority",
       th_eta: "ETA",
       th_status: "Status",
@@ -1341,6 +1465,25 @@
       active_transfers: "Active transfers",
       transfer_history: "Transfer history",
       driver_transfers: "Driver transfers",
+      deliveries_title: "Deliveries",
+      deliveries_subtitle: "Create delivery requests from branches to customer addresses. Drivers deliver.",
+      new_delivery: "New delivery",
+      deliveries_list: "Deliveries list",
+      delivery_from_branch: "From branch",
+      delivery_status: "Status",
+      delivery_due_date: "Due date",
+      delivery_address: "Address",
+      delivery_invoice: "Invoice #",
+      delivery_customer_name: "Customer name",
+      delivery_customer_phone: "Customer phone",
+      create_delivery_btn: "Create delivery",
+      delete_delivery: "Delete delivery",
+      delete_delivery_confirm: "Delete this delivery?",
+      delivery_required_fields: "Address, customer name, and phone are required.",
+      driver_deliveries_title: "Customer deliveries",
+      mark_in_transit: "In transit",
+      mark_delivered: "Delivered",
+      new: "new",
       requests_history: "Requests history",
       filter_by_branch: "Filter by branch",
       assign: "Assign",
@@ -1471,6 +1614,7 @@
       mark_delivered_confirm: "Confirm receipt of this request?",
       no_requests_yet: "No requests yet.",
       no_pending_requests: "No pending requests.",
+      no_deliveries_yet: "No deliveries yet.",
       no_history_requests: "No delivered requests yet.",
       delete_request: "Delete request",
       delete_request_confirm: "Delete this pending request?",
@@ -1804,7 +1948,35 @@
       reopen: "إعادة فتح",
       done: "تم",
       delete_reminder: "حذف",
-      delete_reminder_confirm: "حذف هذا التذكير؟"
+      delete_reminder_confirm: "حذف هذا التذكير؟",
+
+      menu_deliveries: "Deliveries",
+      toast_new_deliveries: "New deliveries: {count}",
+      th_address: "Address",
+      th_invoice: "Invoice",
+      th_due: "Due",
+      th_customer: "Customer",
+      th_phone: "Phone",
+      deliveries_title: "Deliveries",
+      deliveries_subtitle: "Create delivery requests from branches to customer addresses. Drivers deliver.",
+      new_delivery: "New delivery",
+      deliveries_list: "Deliveries list",
+      delivery_from_branch: "From branch",
+      delivery_status: "Status",
+      delivery_due_date: "Due date",
+      delivery_address: "Address",
+      delivery_invoice: "Invoice #",
+      delivery_customer_name: "Customer name",
+      delivery_customer_phone: "Customer phone",
+      create_delivery_btn: "Create delivery",
+      delete_delivery: "Delete delivery",
+      delete_delivery_confirm: "Delete this delivery?",
+      delivery_required_fields: "Address, customer name, and phone are required.",
+      driver_deliveries_title: "Customer deliveries",
+      mark_in_transit: "In transit",
+      mark_delivered: "Delivered",
+      no_deliveries_yet: "No deliveries yet.",
+      new: "new"
     }
   };
 
@@ -1892,6 +2064,7 @@
     budgets: [],
     requests: [],
     transfers: [],
+    deliveries: [],
     vehicles: [],
     vehicleReminders: [],
     carAssignments: [],
@@ -1903,6 +2076,7 @@
     activePageId: "",
     phoneMode: false,
     lastNotifiedCount: 0,
+    lastNotifiedDeliveryCount: 0,
     lastNotifiedTransferCount: 0,
     lastNotifiedReadyCount: 0,
     muteNotifications: false
@@ -1910,6 +2084,7 @@
   const SESSION_STORAGE_KEY = "APP_SESSION";
   const PHONE_MODE_KEY = "PHONE_MODE";
   const REQ_SEEN_KEY_PREFIX = "REQ_SEEN_AT_";
+  const DEL_SEEN_KEY_PREFIX = "DEL_SEEN_AT_";
   const TRF_SEEN_KEY_PREFIX = "TRF_SEEN_AT_";
   const READY_SEEN_KEY_PREFIX = "READY_SEEN_AT_";
   const NOTIFY_MUTE_KEY = "NOTIFY_MUTE";
@@ -1939,6 +2114,9 @@
       return true;
     }
     if (el.closest("#transferPanel") && el.matches("select[data-transfer-assign]")) {
+      return true;
+    }
+    if (el.closest("#deliveriesPanel") && el.matches("select[data-delivery-status]")) {
       return true;
     }
     return false;
@@ -2162,6 +2340,25 @@
     }
     return [];
   }
+  function getRelevantDeliveriesForNotify() {
+    if (!state.user) return [];
+    const role = state.user.role;
+    const list = state.deliveries || [];
+    if (role === "driver") {
+      return list.filter((d) => d.status !== "delivered");
+    }
+    if (role === "admin" || role === "manager") {
+      return list.filter((d) => d.status !== "delivered");
+    }
+    if (role === "supervisor") {
+      const allowed = getSupervisorAllowedBranches(state.user);
+      return list.filter((d) => d.status !== "delivered" && allowed.includes(d.fromBranchId));
+    }
+    if (role === "staff") {
+      return list.filter((d) => d.status !== "delivered" && d.fromBranchId === state.user.branchId);
+    }
+    return [];
+  }
   function updateFaviconBadge(count) {
     const favicon = document.getElementById("favicon");
     if (!favicon) return;
@@ -2190,6 +2387,15 @@
       ctx.fillText(badgeText, 78, 22);
     }
     favicon.href = canvas.toDataURL("image/png");
+  }
+  function updateBadgeCount(count) {
+    const baseTitle = t("app_title");
+    document.title = count > 0 ? `${baseTitle} (${count})` : baseTitle;
+    updateFaviconBadge(count);
+    if ("setAppBadge" in navigator && typeof navigator.setAppBadge === "function") {
+      if (count > 0) navigator.setAppBadge(count).catch(() => {});
+      else if (navigator.clearAppBadge) navigator.clearAppBadge().catch(() => {});
+    }
   }
   function showToast(message) {
     const container = document.getElementById("toastContainer");
@@ -2221,6 +2427,10 @@
   function formatToastMessage(count) {
     const key = (state.user && state.user.role === "driver") ? "toast_new_assigned" : "toast_new_requests";
     return t(key).replace("{count}", String(count));
+  }
+
+  function formatDeliveryToastMessage(count) {
+    return t("toast_new_deliveries").replace("{count}", String(count));
   }
 
   function formatTransferToastMessage(count) {
@@ -2256,7 +2466,7 @@
 
   function updateRequestNotifications(opts = {}) {
     const notify = opts.notify !== false;
-    if (!state.user) return;
+    if (!state.user) return 0;
     const key = REQ_SEEN_KEY_PREFIX + state.user.id;
     const seenAt = Number(localStorage.getItem(key) || "0");
     const relevant = getRelevantRequestsForNotify();
@@ -2265,21 +2475,33 @@
       return created > seenAt;
     }).length;
 
-    const baseTitle = t("app_title");
-    document.title = newCount > 0 ? `${baseTitle} (${newCount})` : baseTitle;
-    updateFaviconBadge(newCount);
-
-    if ("setAppBadge" in navigator && typeof navigator.setAppBadge === "function") {
-      if (newCount > 0) navigator.setAppBadge(newCount).catch(() => {});
-      else if (navigator.clearAppBadge) navigator.clearAppBadge().catch(() => {});
-    }
-
     if (notify && newCount > state.lastNotifiedCount) {
       const diff = newCount - state.lastNotifiedCount;
       showToast(formatToastMessage(diff));
       playNotificationSound();
     }
     state.lastNotifiedCount = newCount;
+    return newCount;
+  }
+
+  function updateDeliveryNotifications(opts = {}) {
+    const notify = opts.notify !== false;
+    if (!state.user) return 0;
+    const key = DEL_SEEN_KEY_PREFIX + state.user.id;
+    const seenAt = Number(localStorage.getItem(key) || "0");
+    const relevant = getRelevantDeliveriesForNotify();
+    const newCount = relevant.filter((d) => {
+      const created = d.createdAt ? new Date(d.createdAt).getTime() : 0;
+      return created > seenAt;
+    }).length;
+
+    if (notify && newCount > state.lastNotifiedDeliveryCount) {
+      const diff = newCount - state.lastNotifiedDeliveryCount;
+      showToast(formatDeliveryToastMessage(diff));
+      playNotificationSound();
+    }
+    state.lastNotifiedDeliveryCount = newCount;
+    return newCount;
   }
 
   function updateTransferNotifications(opts = {}) {
@@ -2321,9 +2543,11 @@
   }
 
   function updateAllNotifications(opts = {}) {
-    updateRequestNotifications(opts);
+    const requestCount = updateRequestNotifications(opts);
+    const deliveryCount = updateDeliveryNotifications(opts);
     updateTransferNotifications(opts);
     updateReadyTransferNotifications(opts);
+    updateBadgeCount(requestCount + deliveryCount);
   }
 
   function markRequestsSeen() {
@@ -2331,7 +2555,15 @@
     const key = REQ_SEEN_KEY_PREFIX + state.user.id;
     localStorage.setItem(key, String(Date.now()));
     state.lastNotifiedCount = 0;
-    updateRequestNotifications({ notify: false });
+    updateAllNotifications({ notify: false });
+  }
+
+  function markDeliveriesSeen() {
+    if (!state.user) return;
+    const key = DEL_SEEN_KEY_PREFIX + state.user.id;
+    localStorage.setItem(key, String(Date.now()));
+    state.lastNotifiedDeliveryCount = 0;
+    updateAllNotifications({ notify: false });
   }
 
   function markTransfersSeen() {
@@ -2356,6 +2588,7 @@
       inventoryPanel: ["admin", "manager"],
       requestsPanel: ["staff", "supervisor", "manager", "admin"],
       transferPanel: ["staff", "supervisor", "manager", "admin"],
+      deliveriesPanel: ["supervisor", "manager", "admin"],
       driverPanel: ["driver"],
       movementsPanel: ["admin", "manager"],
       analyticsPanel: ["admin", "manager"],
@@ -2376,6 +2609,7 @@
       "inventoryPanel",
       "requestsPanel",
       "transferPanel",
+      "deliveriesPanel",
       "driverPanel",
       "movementsPanel",
       "analyticsPanel",
@@ -2396,12 +2630,18 @@
     if (pageId === "requestsPanel" || pageId === "driverPanel") {
       markRequestsSeen();
     }
+    if (pageId === "deliveriesPanel" || pageId === "driverPanel") {
+      markDeliveriesSeen();
+    }
     if (pageId === "transferPanel" || pageId === "driverPanel") {
       markTransfersSeen();
       markReadyTransfersSeen();
     }
     if (pageId === "transferPanel") {
       renderTransferTables();
+    }
+    if (pageId === "deliveriesPanel") {
+      renderDeliveriesTable();
     }
   }
   function renderMenu() {
@@ -2411,6 +2651,7 @@
       { id: "inventoryPanel", label: "menu_inventory" },
       { id: "requestsPanel", label: "menu_requests" },
       { id: "transferPanel", label: "menu_transfers" },
+      { id: "deliveriesPanel", label: "menu_deliveries" },
       { id: "driverPanel", label: "menu_driver" },
       { id: "movementsPanel", label: "menu_movements" },
       { id: "analyticsPanel", label: "menu_analytics" },
@@ -2739,6 +2980,39 @@
     return body;
   }
 
+  async function apiCreateDelivery(data) {
+    const res = await fetch(`${API_BASE}/deliveries`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...data, userId: state.user.id })
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(body.error || "Create delivery failed");
+    return body;
+  }
+
+  async function apiUpdateDeliveryStatus(id, status) {
+    const res = await fetch(`${API_BASE}/deliveries/${id}/status`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId: state.user.id, status })
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(body.error || "Update delivery failed");
+    return body;
+  }
+
+  async function apiDeleteDelivery(id) {
+    const res = await fetch(`${API_BASE}/deliveries/${id}`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId: state.user.id })
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(body.error || "Delete delivery failed");
+    return body;
+  }
+
   async function apiAssignTransfer(id, toBranchId) {
     const res = await fetch(`${API_BASE}/transfers/${id}/assign`, {
       method: "POST",
@@ -3055,6 +3329,33 @@
         opt.textContent = b.name;
         analyticsBranchSelect.appendChild(opt);
       });
+    }
+
+    const deliveryFromSelect = document.getElementById("deliveryFromBranchSelect");
+    if (deliveryFromSelect) {
+      const prev = deliveryFromSelect.value;
+      let branches = [...(state.branches || [])];
+      if (state.user) {
+        if (state.user.role === "supervisor") {
+          const allowed = getSupervisorAllowedBranches(state.user);
+          branches = branches.filter((b) => allowed.includes(b.id));
+        } else if (state.user.role === "staff" && state.user.branchId) {
+          branches = branches.filter((b) => b.id === state.user.branchId);
+        }
+      }
+      deliveryFromSelect.innerHTML = "";
+      branches.forEach((b, idx) => {
+        const opt = document.createElement("option");
+        opt.value = b.id;
+        opt.textContent = b.name;
+        if (idx === 0) opt.selected = true;
+        deliveryFromSelect.appendChild(opt);
+      });
+      if (prev && deliveryFromSelect.querySelector(`option[value="${prev}"]`)) {
+        deliveryFromSelect.value = prev;
+      } else if (state.user && state.user.branchId && deliveryFromSelect.querySelector(`option[value="${state.user.branchId}"]`)) {
+        deliveryFromSelect.value = state.user.branchId;
+      }
     }
 
     const driverBranchSel = document.getElementById("driverBranchFilterSelect");
@@ -3652,6 +3953,78 @@
     renderTransferHistoryTable();
   }
 
+  function getVisibleDeliveriesForUser(list) {
+    if (!state.user) return [];
+    const role = state.user.role;
+    if (role === "admin" || role === "manager") return list;
+    if (role === "supervisor") {
+      const allowed = getSupervisorAllowedBranches(state.user);
+      return list.filter((d) => allowed.includes(d.fromBranchId));
+    }
+    if (role === "staff") {
+      return list.filter((d) => d.fromBranchId === state.user.branchId);
+    }
+    return [];
+  }
+
+  function renderDeliveriesTable() {
+    const tbody = document.getElementById("deliveriesTableBody");
+    if (!tbody) return;
+    tbody.innerHTML = "";
+    if (!state.user) return;
+
+    const all = [...(state.deliveries || [])];
+    const active = all.filter((d) => d.status !== "delivered");
+    const visible = getVisibleDeliveriesForUser(active);
+
+    if (!visible.length) {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td colspan="12" class="text-muted">${t("no_deliveries_yet")}</td>`;
+      tbody.appendChild(tr);
+      return;
+    }
+
+    visible.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+
+    visible.forEach((d) => {
+      const driverName = d.driverUserId ? getUserName(d.driverUserId) : "";
+      const canDelete = state.user.role === "admin" || state.user.role === "manager";
+      const canSet = ["admin", "manager", "supervisor"].includes(state.user.role);
+      const canAdjust = canSet && (d.status === "new" || d.status === "ready");
+      const statusSelect = canAdjust
+        ? `<select data-delivery-status="${escapeHtml(d.id)}">
+            <option value="new"${d.status === "new" ? " selected" : ""}>${t("new")}</option>
+            <option value="ready"${d.status === "ready" ? " selected" : ""}>${t("ready")}</option>
+          </select>`
+        : "";
+      const actionParts = [];
+      if (statusSelect) {
+        actionParts.push(statusSelect);
+        actionParts.push(`<button class="btn btn-secondary btn-sm" data-delivery-set-status="${escapeHtml(d.id)}">${t("save_changes")}</button>`);
+      }
+      if (canDelete) {
+        actionParts.push(`<button class="btn btn-secondary btn-sm" data-delivery-delete="${escapeHtml(d.id)}">${t("delete_delivery")}</button>`);
+      }
+
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${escapeHtml(d.id)}</td>
+        <td>${escapeHtml(formatDateTime(d.createdAt))}</td>
+        <td>${escapeHtml(getBranchName(d.fromBranchId))}</td>
+        <td>${escapeHtml(d.address || "")}</td>
+        <td>${escapeHtml(d.invoiceNo || "")}</td>
+        <td>${escapeHtml(d.dueDate || "")}</td>
+        <td>${escapeHtml(d.customerName || "")}</td>
+        <td>${escapeHtml(d.customerPhone || "")}</td>
+        <td><span class="pill pill-status ${escapeHtml(d.status)}">${t(d.status)}</span></td>
+        <td>${escapeHtml(driverName)}</td>
+        <td>${escapeHtml(d.note || "")}</td>
+        <td>${actionParts.join(" ") || "-"}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
   function getVisibleTransfersForUser(list) {
     if (!state.user) return [];
     const role = state.user.role;
@@ -3860,6 +4233,52 @@
         <td class="col-driver">${escapeHtml(r.driverUserId ? getUserName(r.driverUserId) : "")}</td>
         <td class="col-requested-by">${escapeHtml(getUserName(r.createdByUserId))}</td>
         <td class="col-action"><div class="driver-actions">${claimBtn} ${etaSelect} ${etaBtn}</div></td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function renderDriverDeliveriesTable() {
+    const tbody = document.getElementById("driverDeliveriesTableBody");
+    if (!tbody) return;
+    tbody.innerHTML = "";
+    if (!state.user) return;
+
+    const list = (state.deliveries || [])
+      .filter((d) => d.status !== "delivered")
+      .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+
+    if (!list.length) {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td colspan="11" class="text-muted">${t("no_deliveries_yet")}</td>`;
+      tbody.appendChild(tr);
+      return;
+    }
+
+    list.forEach((d) => {
+      const useIcons = state.phoneMode && state.user && state.user.role === "driver";
+      const actionParts = [];
+      if (d.status === "new" || d.status === "ready") {
+        const label = useIcons ? "ðŸšš" : t("mark_in_transit");
+        actionParts.push(`<button class="btn btn-primary btn-sm" data-driver-delivery-action="${escapeHtml(d.id)}" data-delivery-next="in_transit">${label}</button>`);
+      } else if (d.status === "in_transit") {
+        const label = useIcons ? "âœ…" : t("mark_delivered");
+        actionParts.push(`<button class="btn btn-primary btn-sm" data-driver-delivery-action="${escapeHtml(d.id)}" data-delivery-next="delivered">${label}</button>`);
+      }
+
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td class="col-id">${escapeHtml(d.id)}</td>
+        <td class="col-created">${escapeHtml(formatDateTime(d.createdAt))}</td>
+        <td class="col-from">${escapeHtml(getBranchName(d.fromBranchId))}</td>
+        <td class="col-address">${escapeHtml(d.address || "")}</td>
+        <td class="col-customer">${escapeHtml(d.customerName || "")}</td>
+        <td class="col-phone">${escapeHtml(d.customerPhone || "")}</td>
+        <td class="col-due">${escapeHtml(d.dueDate || "")}</td>
+        <td class="col-invoice">${escapeHtml(d.invoiceNo || "")}</td>
+        <td class="col-status"><span class="pill pill-status ${escapeHtml(d.status)}">${t(d.status)}</span></td>
+        <td class="col-note">${escapeHtml(d.note || "")}</td>
+        <td class="col-action"><div class="driver-actions">${actionParts.join(" ") || "-"}</div></td>
       `;
       tbody.appendChild(tr);
     });
@@ -4727,6 +5146,8 @@
     state.movements = [];
     state.budgets = [];
     state.requests = [];
+    state.transfers = [];
+    state.deliveries = [];
     state.vehicles = [];
     state.vehicleReminders = [];
     state.carAssignments = [];
@@ -4761,6 +5182,7 @@
     state.budgets = all.budgets || [];
     state.requests = all.requests || [];
     state.transfers = all.transfers || [];
+    state.deliveries = all.deliveries || [];
     state.vehicles = all.vehicles || [];
     state.vehicleReminders = all.vehicleReminders || [];
     state.carAssignments = all.carAssignments || [];
@@ -4837,7 +5259,9 @@
       renderBranchesTable();
       renderRequestsTable();
       renderTransferTables();
+      renderDeliveriesTable();
       renderDriverRequestsTable();
+      renderDriverDeliveriesTable();
       renderDriverTransfersTable();
       renderMovementsTable();
       renderAnalytics();
@@ -4864,7 +5288,9 @@
       renderUsersTable();
       renderBranchesTable();
       renderRequestsTable();
+      renderDeliveriesTable();
       renderDriverRequestsTable();
+      renderDriverDeliveriesTable();
       renderMovementsTable();
       renderAnalytics();
       renderVehiclesUI();
@@ -4904,7 +5330,9 @@
       renderUsersTable();
       renderBranchesTable();
       renderRequestsTable();
+      renderDeliveriesTable();
       renderDriverRequestsTable();
+      renderDriverDeliveriesTable();
       renderMovementsTable();
       renderAnalytics();
       renderVehiclesUI();
@@ -4935,6 +5363,8 @@
     state.phoneMode = !state.phoneMode;
     applyPhoneMode();
     renderDriverRequestsTable();
+    renderDriverDeliveriesTable();
+    renderDriverTransfersTable();
   });
 
   const muteToggle = document.getElementById("muteNotificationsToggle");
@@ -4954,7 +5384,9 @@
       updateAllNotifications({ notify: true });
       if (state.activePageId === "requestsPanel") renderRequestsTable();
       if (state.activePageId === "transferPanel") renderTransferTables();
+      if (state.activePageId === "deliveriesPanel") renderDeliveriesTable();
       if (state.activePageId === "driverPanel") renderDriverRequestsTable();
+      if (state.activePageId === "driverPanel") renderDriverDeliveriesTable();
       if (state.activePageId === "driverPanel") renderDriverTransfersTable();
     } catch {}
   }, POLL_INTERVAL_MS);
@@ -5036,7 +5468,9 @@
     fillRequestItemsFromStorage();
     renderInventoryViewer();
     renderRequestsTable();
+    renderDeliveriesTable();
     renderDriverRequestsTable();
+    renderDriverDeliveriesTable();
     renderMovementsTable();
     renderAnalytics();
     renderVehiclesUI();
@@ -5352,6 +5786,52 @@
     });
   }
 
+  const createDeliveryBtn = document.getElementById("createDeliveryBtn");
+  if (createDeliveryBtn) {
+    createDeliveryBtn.addEventListener("click", async () => {
+      if (!state.user || state.user.role === "driver") { alert(t("drivers_cannot_create")); return; }
+
+      const fromBranchId = document.getElementById("deliveryFromBranchSelect")?.value || "";
+      const status = document.getElementById("deliveryStatusSelect")?.value || "new";
+      const dueDate = document.getElementById("deliveryDueDateInput")?.value || "";
+      const address = document.getElementById("deliveryAddressInput")?.value.trim() || "";
+      const invoiceNo = document.getElementById("deliveryInvoiceInput")?.value.trim() || "";
+      const note = document.getElementById("deliveryNoteInput")?.value.trim() || "";
+      const customerName = document.getElementById("deliveryCustomerNameInput")?.value.trim() || "";
+      const customerPhone = document.getElementById("deliveryCustomerPhoneInput")?.value.trim() || "";
+
+      if (!address || !customerName || !customerPhone) {
+        alert(t("delivery_required_fields"));
+        return;
+      }
+
+      try {
+        const delivery = await apiCreateDelivery({
+          fromBranchId,
+          address,
+          invoiceNo,
+          dueDate,
+          customerName,
+          customerPhone,
+          note,
+          status
+        });
+        state.deliveries.push(delivery);
+        renderDeliveriesTable();
+        renderDriverDeliveriesTable();
+        document.getElementById("deliveryAddressInput").value = "";
+        document.getElementById("deliveryInvoiceInput").value = "";
+        document.getElementById("deliveryDueDateInput").value = "";
+        document.getElementById("deliveryNoteInput").value = "";
+        document.getElementById("deliveryCustomerNameInput").value = "";
+        document.getElementById("deliveryCustomerPhoneInput").value = "";
+        if (document.getElementById("deliveryStatusSelect")) document.getElementById("deliveryStatusSelect").value = "new";
+      } catch (e) {
+        alert(e.message);
+      }
+    });
+  }
+
   document.getElementById("deleteItemBtn").addEventListener("click", async () => {
     if (!state.user || (state.user.role !== "admin" && state.user.role !== "manager")) {
       alert(t("only_admin_mgr_create_items"));
@@ -5485,6 +5965,43 @@
       alert(err.message);
     }
   });
+
+  const deliveriesTableBody = document.getElementById("deliveriesTableBody");
+  if (deliveriesTableBody) {
+    deliveriesTableBody.addEventListener("click", async (e) => {
+      const setBtn = e.target.closest("button[data-delivery-set-status]");
+      if (setBtn) {
+        const id = setBtn.getAttribute("data-delivery-set-status");
+        const select = document.querySelector(`select[data-delivery-status="${CSS.escape(id)}"]`);
+        const status = select ? select.value : "";
+        if (!status) return;
+        try {
+          const updated = await apiUpdateDeliveryStatus(id, status);
+          const idx = state.deliveries.findIndex((d) => d.id === id);
+          if (idx >= 0) state.deliveries[idx] = updated;
+          renderDeliveriesTable();
+          renderDriverDeliveriesTable();
+        } catch (err) {
+          alert(err.message);
+        }
+        return;
+      }
+
+      const delBtn = e.target.closest("button[data-delivery-delete]");
+      if (delBtn) {
+        const id = delBtn.getAttribute("data-delivery-delete");
+        if (!confirm(t("delete_delivery_confirm"))) return;
+        try {
+          await apiDeleteDelivery(id);
+          state.deliveries = state.deliveries.filter((d) => d.id !== id);
+          renderDeliveriesTable();
+          renderDriverDeliveriesTable();
+        } catch (err) {
+          alert(err.message);
+        }
+      }
+    });
+  }
 
   const transferTableBody = document.getElementById("transferTableBody");
   if (transferTableBody) {
@@ -5621,6 +6138,26 @@
       }
     }
   });
+
+  const driverDeliveriesTableBody = document.getElementById("driverDeliveriesTableBody");
+  if (driverDeliveriesTableBody) {
+    driverDeliveriesTableBody.addEventListener("click", async (e) => {
+      const actionBtn = e.target.closest("button[data-driver-delivery-action]");
+      if (!actionBtn) return;
+      const id = actionBtn.getAttribute("data-driver-delivery-action");
+      const next = actionBtn.getAttribute("data-delivery-next");
+      if (!id || !next) return;
+      try {
+        const updated = await apiUpdateDeliveryStatus(id, next);
+        const idx = state.deliveries.findIndex((d) => d.id === id);
+        if (idx >= 0) state.deliveries[idx] = updated;
+        renderDriverDeliveriesTable();
+        renderDeliveriesTable();
+      } catch (err) {
+        alert(err.message);
+      }
+    });
+  }
 
   const driverTransfersTableBody = document.getElementById("driverTransfersTableBody");
   if (driverTransfersTableBody) {
@@ -5949,3 +6486,5 @@
 </script>
 </body>
 </html>
+
+
