@@ -382,6 +382,7 @@
           <option value="supervisor">Supervisor</option>
           <option value="manager">Manager</option>
           <option value="driver">Driver</option>
+          <option value="driver_supervisor">Driver supervisor</option>
           <option value="admin">Admin</option>
         </select>
       </div>
@@ -452,6 +453,7 @@
           <option value="supervisor">Supervisor</option>
           <option value="manager">Manager</option>
           <option value="driver">Driver</option>
+          <option value="driver_supervisor">Driver supervisor</option>
           <option value="admin">Admin</option>
         </select>
       </div>
@@ -602,6 +604,13 @@
             <tbody id="requestsHistoryTableBody"></tbody>
           </table>
         </div>
+        <div class="pagination-controls">
+          <div class="page-buttons">
+            <button id="requestsHistoryPrevBtn" class="btn btn-secondary btn-sm">&lt;</button>
+            <span id="requestsHistoryPageInfo" class="text-muted"></span>
+            <button id="requestsHistoryNextBtn" class="btn btn-secondary btn-sm">&gt;</button>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -680,6 +689,13 @@
           </thead>
           <tbody id="transferHistoryTableBody"></tbody>
         </table>
+        <div class="pagination-controls">
+          <div class="page-buttons">
+            <button id="transferHistoryPrevBtn" class="btn btn-secondary btn-sm">&lt;</button>
+            <span id="transferHistoryPageInfo" class="text-muted"></span>
+            <button id="transferHistoryNextBtn" class="btn btn-secondary btn-sm">&gt;</button>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -786,6 +802,13 @@
           </thead>
           <tbody id="deliveriesHistoryTableBody"></tbody>
         </table>
+        <div class="pagination-controls">
+          <div class="page-buttons">
+            <button id="deliveriesHistoryPrevBtn" class="btn btn-secondary btn-sm">&lt;</button>
+            <span id="deliveriesHistoryPageInfo" class="text-muted"></span>
+            <button id="deliveriesHistoryNextBtn" class="btn btn-secondary btn-sm">&gt;</button>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -805,7 +828,7 @@
         <label data-i18n="filter_by_branch">Filter by branch</label>
         <select id="driverBranchFilterSelect"></select>
       </div>
-      <div>
+      <div id="driverAssignFilterWrap">
         <label data-i18n="filter_by_assignment">Filter by assignment</label>
         <select id="driverAssignFilterSelect">
           <option value="all" data-i18n="filter_all">All</option>
@@ -1545,7 +1568,8 @@
       filter_all: "All",
       filter_assigned_to_me: "Assigned to me",
       filter_unassigned: "Unassigned",
-      driver_subtitle: "Drivers see pending requests, can take any request and set ETA (staff confirm receipt).",
+      driver_subtitle: "Drivers see assigned requests and can set ETA (staff confirm receipt).",
+      assign_driver: "Assign driver",
 
       manual_movements: "Manual stock movements",
       movements_subtitle: "Only Admin & Manager can record IN / OUT movements that change stock.",
@@ -1845,7 +1869,8 @@
       filter_all: "الكل",
       filter_assigned_to_me: "معي",
       filter_unassigned: "غير معي",
-      driver_subtitle: "السائق يرى الطلبات المعلّقة ويمكنه استلام الطلب وتحديد وقت التسليم (تأكيد الاستلام من الموظف).",
+      driver_subtitle: "السائق يرى الطلبات المسندة له ويمكنه تحديد وقت التسليم (تأكيد الاستلام من الموظف).",
+      assign_driver: "إسناد سائق",
 
       manual_movements: "حركات مخزون يدوية",
       movements_subtitle: "فقط المشرف/المدير يمكنهم تسجيل إدخال/إخراج يؤثر على المخزون.",
@@ -2044,6 +2069,7 @@
       { value: "supervisor", en: "Supervisor", ar: "مراقب" },
       { value: "manager", en: "Manager", ar: "مدير" },
       { value: "driver", en: "Driver", ar: "سائق" },
+      { value: "driver_supervisor", en: "Driver supervisor", ar: "مشرف السائقين" },
       { value: "admin", en: "Admin", ar: "مشرف" }
     ];
     const roleSelects = [document.getElementById("newUserRole"), document.getElementById("editUserRole")].filter(Boolean);
@@ -2121,6 +2147,10 @@
     transferImageData: "",
     activePageId: "",
     phoneMode: false,
+    historyPageSize: 20,
+    requestsHistoryPage: 1,
+    transfersHistoryPage: 1,
+    deliveriesHistoryPage: 1,
     lastNotifiedCount: 0,
     lastNotifiedDeliveryCount: 0,
     lastNotifiedTransferCount: 0,
@@ -2159,10 +2189,10 @@
     if (el.closest("#transferPanel") && el.matches("input[data-ready-qty]")) {
       return true;
     }
-    if (el.closest("#transferPanel") && el.matches("select[data-transfer-assign]")) {
+    if (el.closest("#transferPanel") && (el.matches("select[data-transfer-assign]") || el.matches("select[data-transfer-assign-driver]"))) {
       return true;
     }
-    if (el.closest("#deliveriesPanel") && el.matches("select[data-delivery-status]")) {
+    if (el.closest("#deliveriesPanel") && (el.matches("select[data-delivery-status]") || el.matches("select[data-delivery-assign-driver]"))) {
       return true;
     }
     return false;
@@ -2412,7 +2442,7 @@
     if (role === "driver") {
       return list.filter((r) => (r.status === "pending" || r.status === "assigned") && r.driverUserId === state.user.id);
     }
-    if (role === "admin" || role === "manager") {
+    if (role === "admin" || role === "manager" || role === "driver_supervisor") {
       return list.filter((r) => r.status === "pending" || r.status === "assigned");
     }
     if (role === "staff" || role === "supervisor") {
@@ -2427,7 +2457,7 @@
     if (role === "driver") {
       return list.filter((d) => d.status !== "delivered");
     }
-    if (role === "admin" || role === "manager") {
+    if (role === "admin" || role === "manager" || role === "driver_supervisor") {
       return list.filter((d) => d.status !== "delivered");
     }
     if (role === "supervisor") {
@@ -2683,9 +2713,9 @@
     const role = state.user.role;
     const rules = {
       inventoryPanel: ["admin", "manager"],
-      requestsPanel: ["staff", "supervisor", "manager", "admin"],
-      transferPanel: ["staff", "supervisor", "manager", "admin"],
-      deliveriesPanel: ["supervisor", "manager", "admin"],
+      requestsPanel: ["staff", "supervisor", "driver_supervisor", "manager", "admin"],
+      transferPanel: ["staff", "supervisor", "driver_supervisor", "manager", "admin"],
+      deliveriesPanel: ["supervisor", "driver_supervisor", "manager", "admin"],
       driverPanel: ["driver"],
       movementsPanel: ["admin", "manager"],
       analyticsPanel: ["admin", "manager"],
@@ -2696,6 +2726,7 @@
   }
   function getDefaultPageForRole(role) {
     if (role === "driver") return "driverPanel";
+    if (role === "driver_supervisor") return "requestsPanel";
     if (role === "supervisor") return "requestsPanel";
     if (role === "staff") return "requestsPanel";
     return "inventoryPanel";
@@ -3099,6 +3130,17 @@
     return body;
   }
 
+  async function apiAssignDeliveryDriver(id, driverUserId) {
+    const res = await fetch(`${API_BASE}/deliveries/${id}/assign-driver`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId: state.user.id, driverUserId })
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(body.error || "Assign delivery driver failed");
+    return body;
+  }
+
   async function apiDeleteDelivery(id) {
     const res = await fetch(`${API_BASE}/deliveries/${id}`, {
       method: "DELETE",
@@ -3118,6 +3160,17 @@
     });
     const body = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(body.error || "Assign transfer failed");
+    return body;
+  }
+
+  async function apiAssignTransferDriver(id, driverUserId) {
+    const res = await fetch(`${API_BASE}/transfers/${id}/assign-driver`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId: state.user.id, driverUserId })
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(body.error || "Assign transfer driver failed");
     return body;
   }
 
@@ -3780,7 +3833,7 @@
     const filterBar = document.getElementById("requestsFilterBar");
     const filterSelect = document.getElementById("requestBranchFilterSelect");
     if (filterBar && filterSelect) {
-      const canFilter = ["admin", "manager", "supervisor"].includes(state.user.role);
+      const canFilter = ["admin", "manager", "supervisor", "driver_supervisor"].includes(state.user.role);
       filterBar.style.display = canFilter ? "flex" : "none";
 
       if (canFilter) {
@@ -3900,7 +3953,7 @@
 
     if (state.user.role === "driver") {
       visible = all; // (driver normally uses driver panel, but keep safe)
-    } else if (state.user.role === "admin" || state.user.role === "manager") {
+    } else if (state.user.role === "admin" || state.user.role === "manager" || state.user.role === "driver_supervisor") {
       // Admin & Manager see all non-delivered requests
       visible = all.filter((r) => r.status !== "delivered");
     } else if (state.user.role === "supervisor") {
@@ -3912,9 +3965,9 @@
     }
 
     const canDelete = state.user.role === "admin" || state.user.role === "manager";
-    const canAssign = state.user.role === "admin" || state.user.role === "manager";
+    const canAssign = ["admin", "manager", "driver_supervisor"].includes(state.user.role);
     const canReceive = ["staff", "supervisor"].includes(state.user.role);
-    const canFilter = ["admin", "manager", "supervisor"].includes(state.user.role);
+    const canFilter = ["admin", "manager", "supervisor", "driver_supervisor"].includes(state.user.role);
     const filterSelect = document.getElementById("requestBranchFilterSelect");
     const filterValue = canFilter && filterSelect ? filterSelect.value : "ALL";
     if (canFilter && filterValue && filterValue !== "ALL") {
@@ -4011,6 +4064,24 @@
 
     list.sort((a, b) => new Date(b.deliveredAt || b.createdAt || 0) - new Date(a.deliveredAt || a.createdAt || 0));
 
+    const pageSize = state.historyPageSize || 20;
+    const totalPages = Math.max(1, Math.ceil(list.length / pageSize));
+    if (!state.requestsHistoryPage || state.requestsHistoryPage > totalPages) {
+      state.requestsHistoryPage = totalPages;
+    }
+    const page = state.requestsHistoryPage || 1;
+    const start = (page - 1) * pageSize;
+    const paged = list.slice(start, start + pageSize);
+
+    const pageInfo = document.getElementById("requestsHistoryPageInfo");
+    const prevBtn = document.getElementById("requestsHistoryPrevBtn");
+    const nextBtn = document.getElementById("requestsHistoryNextBtn");
+    if (pageInfo) {
+      pageInfo.textContent = list.length ? `${page} / ${totalPages}` : "0 / 0";
+    }
+    if (prevBtn) prevBtn.disabled = !list.length || page <= 1;
+    if (nextBtn) nextBtn.disabled = !list.length || page >= totalPages;
+
     if (!list.length) {
       const tr = document.createElement("tr");
       tr.innerHTML = `<td colspan="12" class="text-muted">${t("no_history_requests")}</td>`;
@@ -4018,7 +4089,7 @@
       return;
     }
 
-    list.forEach((r) => {
+    paged.forEach((r) => {
       const item = getItemById(r.itemId);
       const orderLabel = getRequestOrderLabel(r, orderMap);
       const priority = r.priority === "urgent" ? "urgent" : "normal";
@@ -4054,7 +4125,7 @@
   function getVisibleDeliveriesForUser(list) {
     if (!state.user) return [];
     const role = state.user.role;
-    if (role === "admin" || role === "manager") return list;
+    if (role === "admin" || role === "manager" || role === "driver_supervisor") return list;
     if (role === "supervisor") {
       const allowed = getSupervisorAllowedBranches(state.user);
       return list.filter((d) => allowed.includes(d.fromBranchId));
@@ -4093,7 +4164,8 @@
         : escapeHtml(orderLabel);
       const driverName = d.driverUserId ? getUserName(d.driverUserId) : "";
       const canDelete = state.user.role === "admin" || state.user.role === "manager";
-      const canSet = ["admin", "manager", "supervisor"].includes(state.user.role);
+      const canSet = ["admin", "manager", "supervisor", "driver_supervisor"].includes(state.user.role);
+      const canAssignDriver = ["admin", "manager", "driver_supervisor"].includes(state.user.role);
       const canAdjust = canSet && (d.status === "new" || d.status === "ready");
       const statusSelect = canAdjust
         ? `<select data-delivery-status="${escapeHtml(d.id)}">
@@ -4102,6 +4174,12 @@
           </select>`
         : "";
       const actionParts = [];
+      if (canAssignDriver) {
+        actionParts.push(
+          `<select data-delivery-assign-driver="${escapeHtml(d.id)}">${getDriverOptionsHtml(d.driverUserId)}</select>`
+        );
+        actionParts.push(`<button class="btn btn-primary btn-sm" data-delivery-assign-driver-btn="${escapeHtml(d.id)}">${t("assign_driver")}</button>`);
+      }
       if (statusSelect) {
         actionParts.push(statusSelect);
         actionParts.push(`<button class="btn btn-secondary btn-sm" data-delivery-set-status="${escapeHtml(d.id)}">${t("save_changes")}</button>`);
@@ -4144,6 +4222,30 @@
     const visible = getVisibleDeliveriesForUser(delivered);
     const map = orderMap || buildDeliveryOrderMap(state.deliveries || []);
 
+    visible.sort(
+      (a, b) =>
+        new Date(b.deliveredAt || b.updatedAt || b.createdAt || 0) -
+        new Date(a.deliveredAt || a.updatedAt || a.createdAt || 0)
+    );
+
+    const pageSize = state.historyPageSize || 20;
+    const totalPages = Math.max(1, Math.ceil(visible.length / pageSize));
+    if (!state.deliveriesHistoryPage || state.deliveriesHistoryPage > totalPages) {
+      state.deliveriesHistoryPage = totalPages;
+    }
+    const page = state.deliveriesHistoryPage || 1;
+    const start = (page - 1) * pageSize;
+    const paged = visible.slice(start, start + pageSize);
+
+    const pageInfo = document.getElementById("deliveriesHistoryPageInfo");
+    const prevBtn = document.getElementById("deliveriesHistoryPrevBtn");
+    const nextBtn = document.getElementById("deliveriesHistoryNextBtn");
+    if (pageInfo) {
+      pageInfo.textContent = visible.length ? `${page} / ${totalPages}` : "0 / 0";
+    }
+    if (prevBtn) prevBtn.disabled = !visible.length || page <= 1;
+    if (nextBtn) nextBtn.disabled = !visible.length || page >= totalPages;
+
     if (!visible.length) {
       const tr = document.createElement("tr");
       tr.innerHTML = `<td colspan="12" class="text-muted">${t("no_deliveries_yet")}</td>`;
@@ -4151,13 +4253,7 @@
       return;
     }
 
-    visible.sort(
-      (a, b) =>
-        new Date(b.deliveredAt || b.updatedAt || b.createdAt || 0) -
-        new Date(a.deliveredAt || a.updatedAt || a.createdAt || 0)
-    );
-
-    visible.forEach((d) => {
+    paged.forEach((d) => {
       const deliveredAt = d.deliveredAt || d.updatedAt || "";
       const orderLabel = getDeliveryOrderLabel(d, map);
       const idHtml = d.id
@@ -4186,7 +4282,7 @@
   function getVisibleTransfersForUser(list) {
     if (!state.user) return [];
     const role = state.user.role;
-    if (role === "admin" || role === "manager") return list;
+    if (role === "admin" || role === "manager" || role === "driver_supervisor") return list;
     if (role === "supervisor") {
       const allowed = getSupervisorAllowedBranches(state.user);
       return list.filter((t) => allowed.includes(t.fromBranchId) || allowed.includes(t.toBranchId));
@@ -4217,7 +4313,8 @@
     visible.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
 
     visible.forEach((trf) => {
-      const canAssign = ["admin", "manager", "supervisor"].includes(state.user.role);
+      const canAssign = ["admin", "manager", "supervisor", "driver_supervisor"].includes(state.user.role);
+      const canAssignDriver = ["admin", "manager", "driver_supervisor"].includes(state.user.role) && trf.toBranchId;
       const canReady = ["admin", "manager", "supervisor", "staff"].includes(state.user.role)
         && (trf.status === "delivered_to_destination" || trf.status === "ready")
         && trf.toBranchId
@@ -4243,6 +4340,12 @@
       const actionParts = [];
       if (canAssign && trf.status === "pending") {
         actionParts.push(`<button class="btn btn-primary btn-sm" data-transfer-assign-btn="${escapeHtml(trf.id)}">${t("assign")}</button>`);
+      }
+      if (canAssignDriver) {
+        actionParts.push(
+          `<select data-transfer-assign-driver="${escapeHtml(trf.id)}">${getDriverOptionsHtml(trf.driverUserId)}</select>`
+        );
+        actionParts.push(`<button class="btn btn-primary btn-sm" data-transfer-assign-driver-btn="${escapeHtml(trf.id)}">${t("assign_driver")}</button>`);
       }
       if (readyInput) actionParts.push(readyInput);
       if (readyBtn) actionParts.push(readyBtn);
@@ -4284,6 +4387,25 @@
 
     const history = (state.transfers || []).filter((trf) => trf.status === "delivered_back");
     const visible = getVisibleTransfersForUser(history);
+    visible.sort((a, b) => new Date(b.deliveredBackAt || b.createdAt || 0) - new Date(a.deliveredBackAt || a.createdAt || 0));
+
+    const pageSize = state.historyPageSize || 20;
+    const totalPages = Math.max(1, Math.ceil(visible.length / pageSize));
+    if (!state.transfersHistoryPage || state.transfersHistoryPage > totalPages) {
+      state.transfersHistoryPage = totalPages;
+    }
+    const page = state.transfersHistoryPage || 1;
+    const start = (page - 1) * pageSize;
+    const paged = visible.slice(start, start + pageSize);
+
+    const pageInfo = document.getElementById("transferHistoryPageInfo");
+    const prevBtn = document.getElementById("transferHistoryPrevBtn");
+    const nextBtn = document.getElementById("transferHistoryNextBtn");
+    if (pageInfo) {
+      pageInfo.textContent = visible.length ? `${page} / ${totalPages}` : "0 / 0";
+    }
+    if (prevBtn) prevBtn.disabled = !visible.length || page <= 1;
+    if (nextBtn) nextBtn.disabled = !visible.length || page >= totalPages;
 
     if (!visible.length) {
       const tr = document.createElement("tr");
@@ -4292,9 +4414,7 @@
       return;
     }
 
-    visible.sort((a, b) => new Date(b.deliveredBackAt || b.createdAt || 0) - new Date(a.deliveredBackAt || a.createdAt || 0));
-
-    visible.forEach((trf) => {
+    paged.forEach((trf) => {
       const readyLabel = trf.readyStatus === "ready" ? t("ready") : t("not_ready");
       const imageBtn = getRequestImageButton(trf);
       const tr = document.createElement("tr");
@@ -4320,29 +4440,20 @@
     tbody.innerHTML = "";
     const orderMap = buildRequestOrderMap(state.requests || []);
     const branchFilter = document.getElementById("driverBranchFilterSelect")?.value || "ALL";
-    const assignFilter = document.getElementById("driverAssignFilterSelect")?.value || "all";
+    const assignWrap = document.getElementById("driverAssignFilterWrap");
+    if (assignWrap) assignWrap.style.display = "none";
     const pending = state.requests
       .filter((r) => r.status === "pending" || r.status === "assigned")
       .filter((r) => branchFilter === "ALL" || r.toBranchId === branchFilter)
-      .filter((r) => {
-        if (assignFilter === "mine") return r.driverUserId === state.user?.id;
-        if (assignFilter === "unassigned") return !r.driverUserId;
-        return true;
-      })
+      .filter((r) => r.driverUserId === state.user?.id)
       .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
 
     const notice = document.getElementById("driverNotice");
     if (notice && state.user) {
-      const assignedToMe = pending.filter((r) => r.driverUserId === state.user.id).length;
-      const unassigned = pending.filter((r) => !r.driverUserId).length;
       notice.innerHTML = `
         <div class="summary-card">
           <div class="summary-label">${t("assigned_to_you")}</div>
-          <div class="summary-value">${assignedToMe}</div>
-        </div>
-        <div class="summary-card">
-          <div class="summary-label">${t("unassigned_requests")}</div>
-          <div class="summary-value">${unassigned}</div>
+          <div class="summary-value">${pending.length}</div>
         </div>
       `;
     }
@@ -4367,9 +4478,8 @@
       const isMine = state.user && r.driverUserId === state.user.id;
       const canShowEta = isMine;
       const useIcons = state.phoneMode && state.user && state.user.role === "driver";
-      const claimLabel = useIcons ? "🚚" : t("take_request");
       const etaLabel = useIcons ? "⏱" : t("set_eta");
-      const claimBtn = !r.driverUserId ? `<button class="btn btn-primary btn-sm" data-claim-request="${escapeHtml(r.id)}">${claimLabel}</button>` : "";
+      const claimBtn = "";
       const etaSelect = canShowEta ? `
         <select data-eta-type="${escapeHtml(r.id)}">
           <option value="">${t("eta_select")}</option>
@@ -4425,8 +4535,10 @@
         ? `<span title="${escapeHtml(d.id)}">${escapeHtml(orderLabel)}</span>`
         : escapeHtml(orderLabel);
       const useIcons = state.phoneMode && state.user && state.user.role === "driver";
+      const assignedToOther = d.driverUserId && state.user && d.driverUserId !== state.user.id;
       const actionParts = [];
-      if (d.status === "new" || d.status === "ready") {
+      if (!assignedToOther) {
+        if (d.status === "new" || d.status === "ready") {
         const label = useIcons ? "ðŸšš" : t("mark_in_transit");
         actionParts.push(`<button class="btn btn-primary btn-sm" data-driver-delivery-action="${escapeHtml(d.id)}" data-delivery-next="in_transit">${label}</button>`);
       } else if (d.status === "in_transit") {
@@ -4434,6 +4546,7 @@
         actionParts.push(`<button class="btn btn-primary btn-sm" data-driver-delivery-action="${escapeHtml(d.id)}" data-delivery-next="delivered">${label}</button>`);
       }
 
+      }
       const tr = document.createElement("tr");
       tr.innerHTML = `
         <td class="col-id">${idHtml}</td>
@@ -6137,6 +6250,23 @@
   const deliveriesTableBody = document.getElementById("deliveriesTableBody");
   if (deliveriesTableBody) {
     deliveriesTableBody.addEventListener("click", async (e) => {
+      const assignBtn = e.target.closest("button[data-delivery-assign-driver-btn]");
+      if (assignBtn) {
+        const id = assignBtn.getAttribute("data-delivery-assign-driver-btn");
+        const select = document.querySelector(`select[data-delivery-assign-driver="${CSS.escape(id)}"]`);
+        const driverUserId = select ? select.value : "";
+        if (!driverUserId) { alert(t("select_driver_msg")); return; }
+        try {
+          const updated = await apiAssignDeliveryDriver(id, driverUserId);
+          const idx = state.deliveries.findIndex((d) => d.id === id);
+          if (idx >= 0) state.deliveries[idx] = updated;
+          renderDeliveriesTable();
+          renderDriverDeliveriesTable();
+        } catch (err) {
+          alert(err.message);
+        }
+        return;
+      }
       const setBtn = e.target.closest("button[data-delivery-set-status]");
       if (setBtn) {
         const id = setBtn.getAttribute("data-delivery-set-status");
@@ -6196,6 +6326,23 @@
           alert(err.message);
         }
       }
+      const assignDriverBtn = e.target.closest("button[data-transfer-assign-driver-btn]");
+      if (assignDriverBtn) {
+        const id = assignDriverBtn.getAttribute("data-transfer-assign-driver-btn");
+        const select = document.querySelector(`select[data-transfer-assign-driver="${CSS.escape(id)}"]`);
+        const driverUserId = select ? select.value : "";
+        if (!driverUserId) { alert(t("select_driver_msg")); return; }
+        try {
+          const updated = await apiAssignTransferDriver(id, driverUserId);
+          const idx = state.transfers.findIndex((t) => t.id === id);
+          if (idx >= 0) state.transfers[idx] = updated;
+          renderTransferTables();
+          renderDriverTransfersTable();
+        } catch (err) {
+          alert(err.message);
+        }
+        return;
+      }
       const readyBtn = e.target.closest("button[data-transfer-ready]");
       if (readyBtn) {
         const id = readyBtn.getAttribute("data-transfer-ready");
@@ -6249,7 +6396,52 @@
   }
   const requestHistoryBranchSelect = document.getElementById("requestHistoryBranchSelect");
   if (requestHistoryBranchSelect) {
-    requestHistoryBranchSelect.addEventListener("change", renderRequestsHistoryTable);
+    requestHistoryBranchSelect.addEventListener("change", () => {
+      state.requestsHistoryPage = 1;
+      renderRequestsHistoryTable();
+    });
+  }
+  const requestsHistoryPrevBtn = document.getElementById("requestsHistoryPrevBtn");
+  if (requestsHistoryPrevBtn) {
+    requestsHistoryPrevBtn.addEventListener("click", () => {
+      state.requestsHistoryPage = Math.max(1, (state.requestsHistoryPage || 1) - 1);
+      renderRequestsHistoryTable();
+    });
+  }
+  const requestsHistoryNextBtn = document.getElementById("requestsHistoryNextBtn");
+  if (requestsHistoryNextBtn) {
+    requestsHistoryNextBtn.addEventListener("click", () => {
+      state.requestsHistoryPage = (state.requestsHistoryPage || 1) + 1;
+      renderRequestsHistoryTable();
+    });
+  }
+  const transferHistoryPrevBtn = document.getElementById("transferHistoryPrevBtn");
+  if (transferHistoryPrevBtn) {
+    transferHistoryPrevBtn.addEventListener("click", () => {
+      state.transfersHistoryPage = Math.max(1, (state.transfersHistoryPage || 1) - 1);
+      renderTransferHistoryTable();
+    });
+  }
+  const transferHistoryNextBtn = document.getElementById("transferHistoryNextBtn");
+  if (transferHistoryNextBtn) {
+    transferHistoryNextBtn.addEventListener("click", () => {
+      state.transfersHistoryPage = (state.transfersHistoryPage || 1) + 1;
+      renderTransferHistoryTable();
+    });
+  }
+  const deliveriesHistoryPrevBtn = document.getElementById("deliveriesHistoryPrevBtn");
+  if (deliveriesHistoryPrevBtn) {
+    deliveriesHistoryPrevBtn.addEventListener("click", () => {
+      state.deliveriesHistoryPage = Math.max(1, (state.deliveriesHistoryPage || 1) - 1);
+      renderDeliveriesHistoryTable();
+    });
+  }
+  const deliveriesHistoryNextBtn = document.getElementById("deliveriesHistoryNextBtn");
+  if (deliveriesHistoryNextBtn) {
+    deliveriesHistoryNextBtn.addEventListener("click", () => {
+      state.deliveriesHistoryPage = (state.deliveriesHistoryPage || 1) + 1;
+      renderDeliveriesHistoryTable();
+    });
   }
   document.querySelectorAll("button[data-history-toggle]").forEach((btn) => {
     btn.addEventListener("click", () => toggleHistorySection(btn));
@@ -6271,7 +6463,7 @@
       openRequestImageById(id);
       return;
     }
-    const claimBtn = e.target.closest("button[data-claim-request]");
+      const claimBtn = "";
     if (claimBtn) {
       const id = claimBtn.getAttribute("data-claim-request");
       try {
@@ -6657,5 +6849,7 @@
 </script>
 </body>
 </html>
+
+
 
 

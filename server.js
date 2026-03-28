@@ -706,7 +706,7 @@ app.post("/api/requests/:id/assign", async (req, res) => {
 
     const data = await loadData();
     const actor = findUserById(data, userId);
-    if (!mustBe(actor, ["admin", "manager"], res)) return;
+    if (!mustBe(actor, ["admin", "manager", "driver_supervisor"], res)) return;
 
     const request = (data.requests || []).find((r) => r.id === id);
     if (!request) return res.status(404).json({ error: "Request not found" });
@@ -747,13 +747,15 @@ app.post("/api/requests/:id/claim", async (req, res) => {
     if (!request) return res.status(404).json({ error: "Request not found" });
     if (request.status === "delivered") return res.status(400).json({ error: "Request already delivered" });
 
-    if (request.driverUserId && request.driverUserId !== driver.id) {
+    if (!request.driverUserId) {
+      return res.status(403).json({ error: "Request must be assigned to a driver" });
+    }
+    if (request.driverUserId !== driver.id) {
       return res.status(403).json({ error: "Request already assigned to another driver" });
     }
 
-    request.driverUserId = driver.id;
-    request.assignedAt = new Date().toISOString();
-    request.assignedByUserId = driver.id;
+    request.assignedAt = request.assignedAt || new Date().toISOString();
+    request.assignedByUserId = request.assignedByUserId || driver.id;
     request.status = "assigned";
 
     if (typeof deliveryEta !== "undefined") request.deliveryEta = deliveryEta || null;
@@ -781,15 +783,13 @@ app.post("/api/requests/:id/eta", async (req, res) => {
     if (!request) return res.status(404).json({ error: "Request not found" });
     if (request.status === "delivered") return res.status(400).json({ error: "Request already delivered" });
 
-    if (actor.role === "driver" && request.driverUserId && request.driverUserId !== actor.id) {
-      return res.status(403).json({ error: "Drivers can only update ETA for their own request" });
-    }
-
-    if (actor.role === "driver" && !request.driverUserId) {
-      request.driverUserId = actor.id;
-      request.assignedAt = new Date().toISOString();
-      request.assignedByUserId = actor.id;
-      request.status = "assigned";
+    if (actor.role === "driver") {
+      if (!request.driverUserId) {
+        return res.status(403).json({ error: "Request must be assigned to a driver" });
+      }
+      if (request.driverUserId !== actor.id) {
+        return res.status(403).json({ error: "Drivers can only update ETA for their own request" });
+      }
     }
 
     request.deliveryEta = deliveryEta || null;
@@ -1007,7 +1007,7 @@ app.post("/api/transfers/:id/assign", async (req, res) => {
 
     const data = await loadData();
     const actor = findUserById(data, userId);
-    if (!mustBe(actor, ["admin", "manager", "supervisor"], res)) return;
+    if (!mustBe(actor, ["admin", "manager", "supervisor", "driver_supervisor"], res)) return;
 
     const transfer = (data.transfers || []).find((t) => t.id === id);
     if (!transfer) return res.status(404).json({ error: "Transfer not found" });
@@ -1027,6 +1027,42 @@ app.post("/api/transfers/:id/assign", async (req, res) => {
   }
 });
 
+// Assign driver to transfer (admin/manager/driver supervisor)
+app.post("/api/transfers/:id/assign-driver", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { userId, driverUserId } = req.body || {};
+
+    const data = await loadData();
+    const actor = findUserById(data, userId);
+    if (!mustBe(actor, ["admin", "manager", "driver_supervisor"], res)) return;
+
+    const transfer = (data.transfers || []).find((t) => t.id === id);
+    if (!transfer) return res.status(404).json({ error: "Transfer not found" });
+    if (transfer.status === "delivered_back") {
+      return res.status(400).json({ error: "Transfer already completed" });
+    }
+    if (!transfer.toBranchId) {
+      return res.status(400).json({ error: "Transfer destination must be assigned first" });
+    }
+
+    const driver = findUserById(data, driverUserId);
+    if (!driver || driver.role !== "driver") {
+      return res.status(400).json({ error: "driverUserId must be a valid driver" });
+    }
+
+    transfer.driverUserId = driver.id;
+    transfer.driverAssignedAt = new Date().toISOString();
+    transfer.driverAssignedByUserId = actor.id;
+
+    await saveData(data);
+    res.json(transfer);
+  } catch (err) {
+    console.error("Assign transfer driver error", err);
+    res.status(500).json({ error: "Failed to assign transfer driver" });
+  }
+});
+
 // Driver pickup to destination (driver)
 app.post("/api/transfers/:id/pickup", async (req, res) => {
   try {
@@ -1041,6 +1077,9 @@ app.post("/api/transfers/:id/pickup", async (req, res) => {
     if (!transfer) return res.status(404).json({ error: "Transfer not found" });
     if (transfer.status === "delivered_back") return res.status(400).json({ error: "Transfer already completed" });
     if (transfer.status !== "assigned") return res.status(400).json({ error: "Transfer not ready for pickup" });
+    if (transfer.driverUserId && transfer.driverUserId !== driver.id) {
+      return res.status(403).json({ error: "Transfer assigned to another driver" });
+    }
 
     transfer.driverUserId = driver.id;
     transfer.status = "in_transit";
@@ -1068,6 +1107,9 @@ app.post("/api/transfers/:id/deliver-destination", async (req, res) => {
     if (!transfer) return res.status(404).json({ error: "Transfer not found" });
     if (transfer.status === "delivered_back") return res.status(400).json({ error: "Transfer already completed" });
     if (transfer.status !== "in_transit") return res.status(400).json({ error: "Transfer not in transit" });
+    if (actor.role === "driver" && transfer.driverUserId && transfer.driverUserId !== actor.id) {
+      return res.status(403).json({ error: "Transfer assigned to another driver" });
+    }
 
     transfer.status = "delivered_to_destination";
     transfer.deliveredToDestinationAt = new Date().toISOString();
@@ -1145,6 +1187,9 @@ app.post("/api/transfers/:id/pickup-back", async (req, res) => {
     const transfer = (data.transfers || []).find((t) => t.id === id);
     if (!transfer) return res.status(404).json({ error: "Transfer not found" });
     if (transfer.status !== "ready") return res.status(400).json({ error: "Transfer not ready for return" });
+    if (transfer.driverUserId && transfer.driverUserId !== driver.id) {
+      return res.status(403).json({ error: "Transfer assigned to another driver" });
+    }
     const readyQty = Number(transfer.readyQty) || 0;
     if (readyQty <= 0) return res.status(400).json({ error: "No ready qty to return" });
 
@@ -1175,6 +1220,9 @@ app.post("/api/transfers/:id/deliver-back", async (req, res) => {
     const transfer = (data.transfers || []).find((t) => t.id === id);
     if (!transfer) return res.status(404).json({ error: "Transfer not found" });
     if (transfer.status !== "in_transit_back") return res.status(400).json({ error: "Transfer not returning" });
+    if (actor.role === "driver" && transfer.driverUserId && transfer.driverUserId !== actor.id) {
+      return res.status(403).json({ error: "Transfer assigned to another driver" });
+    }
     const totalQty = Number(transfer.qty) || 0;
     const inTransitBackQty = Number(transfer.inTransitBackQty) || 0;
     if (inTransitBackQty <= 0) return res.status(400).json({ error: "No qty in transit back" });
@@ -1231,7 +1279,7 @@ app.post("/api/deliveries", async (req, res) => {
     }
 
     let branchId = user.branchId || "";
-    if (!branchId && fromBranchId && requireRole(user, ["admin", "manager", "supervisor"])) {
+    if (!branchId && fromBranchId && requireRole(user, ["admin", "manager", "supervisor", "driver_supervisor"])) {
       branchId = String(fromBranchId).trim();
     }
     if (!branchId) return res.status(400).json({ error: "User is not assigned to a branch" });
@@ -1281,6 +1329,9 @@ app.post("/api/deliveries/:id/status", async (req, res) => {
     if (!allStatuses.includes(next)) return res.status(400).json({ error: "Invalid status" });
 
     if (user.role === "driver") {
+      if (delivery.driverUserId && delivery.driverUserId !== user.id) {
+        return res.status(403).json({ error: "Delivery assigned to another driver" });
+      }
       if (!["in_transit", "delivered"].includes(next)) {
         return res.status(403).json({ error: "Drivers can only set in_transit or delivered" });
       }
@@ -1304,6 +1355,36 @@ app.post("/api/deliveries/:id/status", async (req, res) => {
   } catch (err) {
     console.error("Update delivery status error", err);
     res.status(500).json({ error: "Failed to update delivery" });
+  }
+});
+
+// Assign driver to delivery (admin/manager/driver supervisor)
+app.post("/api/deliveries/:id/assign-driver", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { userId, driverUserId } = req.body || {};
+    const data = await loadData();
+    const actor = findUserById(data, userId);
+    if (!mustBe(actor, ["admin", "manager", "driver_supervisor"], res)) return;
+
+    const delivery = (data.deliveries || []).find((d) => d.id === id);
+    if (!delivery) return res.status(404).json({ error: "Delivery not found" });
+    if (delivery.status === "delivered") return res.status(400).json({ error: "Delivery already delivered" });
+
+    const driver = findUserById(data, driverUserId);
+    if (!driver || driver.role !== "driver") {
+      return res.status(400).json({ error: "driverUserId must be a valid driver" });
+    }
+
+    delivery.driverUserId = driver.id;
+    delivery.driverAssignedAt = new Date().toISOString();
+    delivery.driverAssignedByUserId = actor.id;
+
+    await saveData(data);
+    res.json(delivery);
+  } catch (err) {
+    console.error("Assign delivery driver error", err);
+    res.status(500).json({ error: "Failed to assign delivery driver" });
   }
 });
 
