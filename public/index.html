@@ -4209,7 +4209,7 @@
         : escapeHtml(orderLabel);
       const driverName = d.driverUserId ? getUserName(d.driverUserId) : "";
       const canDelete = state.user.role === "admin" || state.user.role === "manager";
-      const canSet = ["admin", "manager", "supervisor", "driver_supervisor"].includes(state.user.role);
+      const canSet = ["admin", "manager", "supervisor", "driver_supervisor", "staff"].includes(state.user.role);
       const canAssignDriver = ["admin", "manager", "driver_supervisor"].includes(state.user.role);
       const canAdjust = canSet && (d.status === "new" || d.status === "ready");
       const statusSelect = canAdjust
