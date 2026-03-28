@@ -4359,7 +4359,7 @@
 
     visible.forEach((trf) => {
       const canAssign = ["admin", "manager", "supervisor", "driver_supervisor"].includes(state.user.role);
-      const canAssignDriver = ["admin", "manager", "driver_supervisor"].includes(state.user.role) && trf.toBranchId;
+      const canAssignDriver = ["admin", "manager", "driver_supervisor"].includes(state.user.role);
       const canReady = ["admin", "manager", "supervisor", "staff"].includes(state.user.role)
         && (trf.status === "delivered_to_destination" || trf.status === "ready")
         && trf.toBranchId
@@ -4491,9 +4491,7 @@
     const requestScope = isDriver && state.user.requestsScope === "all" ? "all" : "assigned";
     const canSeeRequest = (r) => {
       if (!isDriver) return false;
-      if (requestScope === "all") {
-        return !r.driverUserId || r.driverUserId === state.user.id;
-      }
+      if (requestScope === "all") return true;
       return r.driverUserId === state.user.id;
     };
     const pending = state.requests

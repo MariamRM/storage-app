@@ -1062,10 +1062,6 @@ app.post("/api/transfers/:id/assign-driver", async (req, res) => {
     if (transfer.status === "delivered_back") {
       return res.status(400).json({ error: "Transfer already completed" });
     }
-    if (!transfer.toBranchId) {
-      return res.status(400).json({ error: "Transfer destination must be assigned first" });
-    }
-
     const driver = findUserById(data, driverUserId);
     if (!driver || driver.role !== "driver") {
       return res.status(400).json({ error: "driverUserId must be a valid driver" });
