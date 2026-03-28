@@ -392,7 +392,13 @@
         <label data-i18n="th_branch">Branch</label>
         <select id="newUserBranchSelect"></select>
       </div>
-      <div></div>
+      <div id="newUserRequestsScopeWrap" style="display:none;">
+        <label data-i18n="driver_requests_scope">Driver requests visibility</label>
+        <select id="newUserRequestsScope">
+          <option value="assigned" data-i18n="requests_scope_assigned">Assigned only</option>
+          <option value="all" data-i18n="requests_scope_all">All requests</option>
+        </select>
+      </div>
       <div style="display:flex;align-items:flex-end;">
         <button id="addUserBtn" class="btn btn-primary" style="width:100%;" data-i18n="create_user_btn">Create user</button>
       </div>
@@ -479,6 +485,17 @@
         <button id="saveUserChangesBtn" class="btn btn-primary" style="flex:1;" data-i18n="save_changes">Save changes</button>
         <button id="deleteUserBtn" class="btn btn-secondary" style="flex:1;" data-i18n="delete_user">Delete user</button>
       </div>
+    </div>
+    <div class="grid mt-xs" id="editUserRequestsScopeWrap" style="display:none;">
+      <div>
+        <label data-i18n="driver_requests_scope">Driver requests visibility</label>
+        <select id="editUserRequestsScope">
+          <option value="assigned" data-i18n="requests_scope_assigned">Assigned only</option>
+          <option value="all" data-i18n="requests_scope_all">All requests</option>
+        </select>
+      </div>
+      <div></div>
+      <div></div>
     </div>
   </section>
 
@@ -1552,6 +1569,10 @@
       filter_by_branch: "Filter by branch",
       assign: "Assign",
       assigned_to_you: "Assigned to you",
+      requests_visible: "Visible to you",
+      driver_requests_scope: "Driver requests visibility",
+      requests_scope_assigned: "Assigned only",
+      requests_scope_all: "All requests",
       unassigned_requests: "Unassigned requests",
       take_request: "Take request",
       set_eta: "Set ETA",
@@ -1853,6 +1874,10 @@
       filter_by_branch: "تصفية حسب الفرع",
       assign: "تعيين",
       assigned_to_you: "مُعيّن لك",
+      requests_visible: "مرئية لك",
+      driver_requests_scope: "رؤية طلبات السائق",
+      requests_scope_assigned: "مُعيّن فقط",
+      requests_scope_all: "كل الطلبات",
       unassigned_requests: "غير مُعيّن",
       take_request: "استلام الطلب",
       set_eta: "تحديد الوقت",
@@ -2273,7 +2298,11 @@
     return user.allowedBranchScope || "own";
   }
   function getSupervisorAccessLabel(user) {
-    if (!user || user.role !== "supervisor") return "-";
+    if (!user) return "-";
+    if (user.role === "driver") {
+      return user.requestsScope === "all" ? t("requests_scope_all") : t("requests_scope_assigned");
+    }
+    if (user.role !== "supervisor") return "-";
     const scope = getSupervisorAllowedScope(user);
     if (scope === "all") return t("scope_all");
     if (scope === "multiple") {
@@ -2319,6 +2348,22 @@
           opt.selected = branchId ? opt.value === branchId : false;
         });
       }
+    }
+  }
+  function applyDriverRequestsScopeUI(prefix, role, scope) {
+    const wrap = document.getElementById(`${prefix}UserRequestsScopeWrap`);
+    const select = document.getElementById(`${prefix}UserRequestsScope`);
+    if (!wrap || !select) return;
+    const isDriver = role === "driver";
+    wrap.style.display = isDriver ? "block" : "none";
+    if (!isDriver) {
+      select.value = "assigned";
+      return;
+    }
+    if (scope) {
+      select.value = scope;
+    } else if (!select.value) {
+      select.value = "assigned";
     }
   }
   function getDriverOptionsHtml(selectedId) {
@@ -2977,11 +3022,11 @@
     return body.nextId;
   }
 
-  async function apiCreateUser(name, role, password, branchId) {
+  async function apiCreateUser(name, role, password, branchId, requestsScope) {
     const res = await fetch(`${API_BASE}/users`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, role, password, branchId, adminUserId: state.user.id })
+      body: JSON.stringify({ name, role, password, branchId, requestsScope, adminUserId: state.user.id })
     });
     const body = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(body.error || "Create user failed");
@@ -4442,17 +4487,27 @@
     const branchFilter = document.getElementById("driverBranchFilterSelect")?.value || "ALL";
     const assignWrap = document.getElementById("driverAssignFilterWrap");
     if (assignWrap) assignWrap.style.display = "none";
+    const isDriver = state.user && state.user.role === "driver";
+    const requestScope = isDriver && state.user.requestsScope === "all" ? "all" : "assigned";
+    const canSeeRequest = (r) => {
+      if (!isDriver) return false;
+      if (requestScope === "all") {
+        return !r.driverUserId || r.driverUserId === state.user.id;
+      }
+      return r.driverUserId === state.user.id;
+    };
     const pending = state.requests
       .filter((r) => r.status === "pending" || r.status === "assigned")
       .filter((r) => branchFilter === "ALL" || r.toBranchId === branchFilter)
-      .filter((r) => r.driverUserId === state.user?.id)
+      .filter(canSeeRequest)
       .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
 
     const notice = document.getElementById("driverNotice");
     if (notice && state.user) {
+      const label = requestScope === "all" ? t("requests_visible") : t("assigned_to_you");
       notice.innerHTML = `
         <div class="summary-card">
-          <div class="summary-label">${t("assigned_to_you")}</div>
+          <div class="summary-label">${label}</div>
           <div class="summary-value">${pending.length}</div>
         </div>
       `;
@@ -5787,21 +5842,33 @@
     const role = document.getElementById("newUserRole").value;
     const password = document.getElementById("newUserPassword").value.trim();
     const branchId = document.getElementById("newUserBranchSelect").value;
+    const requestsScope = role === "driver"
+      ? document.getElementById("newUserRequestsScope")?.value || "assigned"
+      : undefined;
 
     if (!name || !password) {
       alert(t("name_password_required"));
       return;
     }
     try {
-      const newUser = await apiCreateUser(name, role, password, branchId);
+      const newUser = await apiCreateUser(name, role, password, branchId, requestsScope);
       state.users.push(newUser);
       renderUsersTable();
       document.getElementById("newUserName").value = "";
       document.getElementById("newUserPassword").value = "";
+      const scopeSelect = document.getElementById("newUserRequestsScope");
+      if (scopeSelect) scopeSelect.value = "assigned";
     } catch (e) {
       alert(e.message);
     }
   });
+  const newUserRoleSelect = document.getElementById("newUserRole");
+  if (newUserRoleSelect) {
+    applyDriverRequestsScopeUI("new", newUserRoleSelect.value);
+    newUserRoleSelect.addEventListener("change", () => {
+      applyDriverRequestsScopeUI("new", newUserRoleSelect.value);
+    });
+  }
 
   document.getElementById("editUserSelect").addEventListener("change", () => {
     const id = document.getElementById("editUserSelect").value;
@@ -5810,6 +5877,7 @@
       document.getElementById("editUserName").value = "";
       document.getElementById("editUserPassword").value = "";
       applySupervisorAccessUI("", "own", "", []);
+      applyDriverRequestsScopeUI("edit", "", "assigned");
       return;
     }
     document.getElementById("editUserName").value = user.name;
@@ -5822,7 +5890,15 @@
       user.branchId,
       getSupervisorAllowedBranches(user)
     );
+    applyDriverRequestsScopeUI("edit", user.role, user.requestsScope || "assigned");
   });
+
+  const editUserRoleSelect = document.getElementById("editUserRole");
+  if (editUserRoleSelect) {
+    editUserRoleSelect.addEventListener("change", () => {
+      applyDriverRequestsScopeUI("edit", editUserRoleSelect.value);
+    });
+  }
 
   document.getElementById("saveUserChangesBtn").addEventListener("click", async () => {
     const id = document.getElementById("editUserSelect").value;
@@ -5841,6 +5917,11 @@
     const allowedBranchIds = (role === "supervisor" && allowedBranchScope === "multiple") ? selectedIds : [];
 
     const updates = { name, role, branchId, allowedBranchScope, allowedBranchIds };
+    if (role === "driver") {
+      updates.requestsScope = document.getElementById("editUserRequestsScope")?.value || "assigned";
+    } else {
+      updates.requestsScope = "";
+    }
     if (password) updates.password = password;
 
     try {

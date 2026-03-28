@@ -370,7 +370,7 @@ app.post("/api/state-import", async (req, res) => {
 // ---------- USERS (Admin create) ----------
 app.post("/api/users", async (req, res) => {
   try {
-    const { name, role, password, adminUserId, branchId } = req.body;
+    const { name, role, password, adminUserId, branchId, requestsScope } = req.body;
     if (!name || !role || !password) {
       return res.status(400).json({ error: "name, role, password are required" });
     }
@@ -392,6 +392,9 @@ app.post("/api/users", async (req, res) => {
       password,
       branchId: branchId || null
     };
+    if (role === "driver") {
+      newUser.requestsScope = requestsScope === "all" ? "all" : "assigned";
+    }
     data.users.push(newUser);
     await saveData(data);
 
@@ -407,7 +410,16 @@ app.post("/api/users", async (req, res) => {
 app.patch("/api/users/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    const { adminUserId, name, role, password, branchId, allowedBranchIds, allowedBranchScope } = req.body;
+    const {
+      adminUserId,
+      name,
+      role,
+      password,
+      branchId,
+      allowedBranchIds,
+      allowedBranchScope,
+      requestsScope
+    } = req.body;
 
     const data = await loadData();
     const admin = findUserById(data, adminUserId);
@@ -427,6 +439,14 @@ app.patch("/api/users/:id", async (req, res) => {
     }
     if (typeof allowedBranchScope !== "undefined") {
       user.allowedBranchScope = allowedBranchScope;
+    }
+    if (typeof requestsScope !== "undefined") {
+      const nextRole = role || user.role;
+      if (nextRole === "driver") {
+        user.requestsScope = requestsScope === "all" ? "all" : "assigned";
+      } else if (user.requestsScope) {
+        delete user.requestsScope;
+      }
     }
 
     await saveData(data);
