@@ -1345,13 +1345,15 @@ app.post("/api/deliveries/:id/status", async (req, res) => {
     if (!allStatuses.includes(next)) return res.status(400).json({ error: "Invalid status" });
 
     if (user.role === "driver") {
-      if (delivery.driverUserId && delivery.driverUserId !== user.id) {
+      if (!delivery.driverUserId) {
+        return res.status(403).json({ error: "Delivery must be assigned to a driver" });
+      }
+      if (delivery.driverUserId !== user.id) {
         return res.status(403).json({ error: "Delivery assigned to another driver" });
       }
       if (!["in_transit", "delivered"].includes(next)) {
         return res.status(403).json({ error: "Drivers can only set in_transit or delivered" });
       }
-      delivery.driverUserId = user.id;
     } else if (["staff", "supervisor"].includes(user.role)) {
       if (!["new", "ready"].includes(next)) {
         return res.status(403).json({ error: "Only admin/manager can set this status" });
