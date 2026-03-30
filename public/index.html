@@ -891,6 +891,7 @@
           <th class="col-due" data-i18n="th_due">Due</th>
           <th class="col-invoice" data-i18n="th_invoice">Invoice</th>
           <th class="col-status" data-i18n="th_status">Status</th>
+          <th class="col-driver" data-i18n="th_driver">Driver</th>
           <th class="col-note" data-i18n="th_note">Note</th>
           <th class="col-action" data-i18n="th_action">Action</th>
         </tr>
@@ -4578,7 +4579,7 @@
 
     if (!list.length) {
       const tr = document.createElement("tr");
-      tr.innerHTML = `<td colspan="11" class="text-muted">${t("no_deliveries_yet")}</td>`;
+      tr.innerHTML = `<td colspan="12" class="text-muted">${t("no_deliveries_yet")}</td>`;
       tbody.appendChild(tr);
       return;
     }
@@ -4612,6 +4613,7 @@
         <td class="col-due">${escapeHtml(d.dueDate || "")}</td>
         <td class="col-invoice">${escapeHtml(d.invoiceNo || "")}</td>
         <td class="col-status"><span class="pill pill-status ${escapeHtml(d.status)}">${escapeHtml(formatDeliveryStatus(d.status))}</span></td>
+        <td class="col-driver">${escapeHtml(d.driverUserId ? getUserName(d.driverUserId) : "")}</td>
         <td class="col-note">${escapeHtml(d.note || "")}</td>
         <td class="col-action"><div class="driver-actions">${actionParts.join(" ") || "-"}</div></td>
       `;
