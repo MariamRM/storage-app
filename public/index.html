@@ -4132,8 +4132,6 @@
 
     if (!list.length) {
       const tr = document.createElement("tr");
-      if (isMine) tr.className = "assigned-row";
-      const assignedTag = isMine ? ` <span class="pill pill-status assigned">${t("assigned_to_you")}</span>` : "";
       tr.innerHTML = `<td colspan="12" class="text-muted">${t("no_history_requests")}</td>`;
       tbody.appendChild(tr);
       return;
@@ -4593,7 +4591,6 @@
         ? `<span title="${escapeHtml(d.id)}">${escapeHtml(orderLabel)}</span>`
         : escapeHtml(orderLabel);
       const useIcons = state.phoneMode && state.user && state.user.role === "driver";
-      const assignedToOther = d.driverUserId && state.user && d.driverUserId !== state.user.id;
       const isMine = d.driverUserId && state.user && d.driverUserId === state.user.id;
       const actionParts = [];
       if (isMine) {
@@ -4607,6 +4604,7 @@
 
       }
       const tr = document.createElement("tr");
+      if (isMine) tr.className = "assigned-row";
       tr.innerHTML = `
         <td class="col-id">${idHtml}</td>
         <td class="col-created">${escapeHtml(formatDateTime(d.createdAt))}</td>
@@ -4616,7 +4614,7 @@
         <td class="col-phone">${escapeHtml(d.customerPhone || "")}</td>
         <td class="col-due">${escapeHtml(d.dueDate || "")}</td>
         <td class="col-invoice">${escapeHtml(d.invoiceNo || "")}</td>
-        <td class="col-status"><span class="pill pill-status ${escapeHtml(d.status)}">${escapeHtml(formatDeliveryStatus(d.status))}</span>${assignedTag}</td>
+        <td class="col-status"><span class="pill pill-status ${escapeHtml(d.status)}">${escapeHtml(formatDeliveryStatus(d.status))}</span></td>
         <td class="col-driver">${escapeHtml(d.driverUserId ? getUserName(d.driverUserId) : "")}</td>
         <td class="col-note">${escapeHtml(d.note || "")}</td>
         <td class="col-action"><div class="driver-actions">${actionParts.join(" ") || "-"}</div></td>
