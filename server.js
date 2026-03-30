@@ -1093,7 +1093,10 @@ app.post("/api/transfers/:id/pickup", async (req, res) => {
     if (!transfer) return res.status(404).json({ error: "Transfer not found" });
     if (transfer.status === "delivered_back") return res.status(400).json({ error: "Transfer already completed" });
     if (transfer.status !== "assigned") return res.status(400).json({ error: "Transfer not ready for pickup" });
-    if (transfer.driverUserId && transfer.driverUserId !== driver.id) {
+    if (!transfer.driverUserId) {
+      return res.status(403).json({ error: "Transfer must be assigned to a driver" });
+    }
+    if (transfer.driverUserId !== driver.id) {
       return res.status(403).json({ error: "Transfer assigned to another driver" });
     }
 
@@ -1123,8 +1126,13 @@ app.post("/api/transfers/:id/deliver-destination", async (req, res) => {
     if (!transfer) return res.status(404).json({ error: "Transfer not found" });
     if (transfer.status === "delivered_back") return res.status(400).json({ error: "Transfer already completed" });
     if (transfer.status !== "in_transit") return res.status(400).json({ error: "Transfer not in transit" });
-    if (actor.role === "driver" && transfer.driverUserId && transfer.driverUserId !== actor.id) {
-      return res.status(403).json({ error: "Transfer assigned to another driver" });
+    if (actor.role === "driver") {
+      if (!transfer.driverUserId) {
+        return res.status(403).json({ error: "Transfer must be assigned to a driver" });
+      }
+      if (transfer.driverUserId !== actor.id) {
+        return res.status(403).json({ error: "Transfer assigned to another driver" });
+      }
     }
 
     transfer.status = "delivered_to_destination";
@@ -1203,7 +1211,10 @@ app.post("/api/transfers/:id/pickup-back", async (req, res) => {
     const transfer = (data.transfers || []).find((t) => t.id === id);
     if (!transfer) return res.status(404).json({ error: "Transfer not found" });
     if (transfer.status !== "ready") return res.status(400).json({ error: "Transfer not ready for return" });
-    if (transfer.driverUserId && transfer.driverUserId !== driver.id) {
+    if (!transfer.driverUserId) {
+      return res.status(403).json({ error: "Transfer must be assigned to a driver" });
+    }
+    if (transfer.driverUserId !== driver.id) {
       return res.status(403).json({ error: "Transfer assigned to another driver" });
     }
     const readyQty = Number(transfer.readyQty) || 0;
@@ -1236,8 +1247,13 @@ app.post("/api/transfers/:id/deliver-back", async (req, res) => {
     const transfer = (data.transfers || []).find((t) => t.id === id);
     if (!transfer) return res.status(404).json({ error: "Transfer not found" });
     if (transfer.status !== "in_transit_back") return res.status(400).json({ error: "Transfer not returning" });
-    if (actor.role === "driver" && transfer.driverUserId && transfer.driverUserId !== actor.id) {
-      return res.status(403).json({ error: "Transfer assigned to another driver" });
+    if (actor.role === "driver") {
+      if (!transfer.driverUserId) {
+        return res.status(403).json({ error: "Transfer must be assigned to a driver" });
+      }
+      if (transfer.driverUserId !== actor.id) {
+        return res.status(403).json({ error: "Transfer assigned to another driver" });
+      }
     }
     const totalQty = Number(transfer.qty) || 0;
     const inTransitBackQty = Number(transfer.inTransitBackQty) || 0;

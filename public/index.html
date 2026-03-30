@@ -4578,7 +4578,6 @@
     const orderMap = buildDeliveryOrderMap(state.deliveries || []);
     const list = (state.deliveries || [])
       .filter((d) => d.status !== "delivered")
-      .filter((d) => d.driverUserId === state.user.id)
       .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
 
     if (!list.length) {
@@ -4597,7 +4596,7 @@
       const assignedToOther = d.driverUserId && state.user && d.driverUserId !== state.user.id;
       const isMine = d.driverUserId && state.user && d.driverUserId === state.user.id;
       const actionParts = [];
-      if (!assignedToOther) {
+      if (isMine) {
         if (d.status === "new" || d.status === "ready") {
         const label = useIcons ? "ðŸšš" : t("mark_in_transit");
         actionParts.push(`<button class="btn btn-primary btn-sm" data-driver-delivery-action="${escapeHtml(d.id)}" data-delivery-next="in_transit">${label}</button>`);
@@ -4649,17 +4648,18 @@
       const readyLabel = trf.readyStatus === "ready" ? t("ready") : t("not_ready");
       const imageBtn = getRequestImageButton(trf);
       const rowClass = (trf.status === "ready" || trf.status === "in_transit_back") ? "transfer-ready" : "transfer-row";
+      const isMine = trf.driverUserId && state.user && trf.driverUserId === state.user.id;
       const actionParts = [];
-      if (trf.status === "assigned") {
+      if (isMine && trf.status === "assigned") {
         actionParts.push(`<button class="btn btn-primary btn-sm" data-transfer-pickup="${escapeHtml(trf.id)}">${t("take_request")}</button>`);
       }
-      if (trf.status === "in_transit") {
+      if (isMine && trf.status === "in_transit") {
         actionParts.push(`<button class="btn btn-primary btn-sm" data-transfer-deliver-dest="${escapeHtml(trf.id)}">${t("deliver_destination")}</button>`);
       }
-      if (trf.status === "ready") {
+      if (isMine && trf.status === "ready") {
         actionParts.push(`<button class="btn btn-primary btn-sm" data-transfer-pickup-back="${escapeHtml(trf.id)}">${t("pickup_back")}</button>`);
       }
-      if (trf.status === "in_transit_back") {
+      if (isMine && trf.status === "in_transit_back") {
         actionParts.push(`<button class="btn btn-primary btn-sm" data-transfer-deliver-back="${escapeHtml(trf.id)}">${t("deliver_back")}</button>`);
       }
       const totalQty = Number(trf.qty) || 0;
