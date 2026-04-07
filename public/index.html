@@ -2503,7 +2503,7 @@
     const role = state.user.role;
     const list = state.deliveries || [];
     if (role === "driver") {
-      return list.filter((d) => d.status !== "delivered");
+      return list.filter((d) => d.status !== "delivered" && d.driverUserId === state.user.id);
     }
     if (role === "admin" || role === "manager" || role === "driver_supervisor") {
       return list.filter((d) => d.status !== "delivered");
@@ -2667,7 +2667,10 @@
     const relevant = getRelevantDeliveriesForNotify();
     const newCount = relevant.filter((d) => {
       const created = d.createdAt ? new Date(d.createdAt).getTime() : 0;
-      return created > seenAt;
+      const assignedAt = d.driverAssignedAt ? new Date(d.driverAssignedAt).getTime() : 0;
+      const role = state.user.role;
+      const ts = role === "driver" ? (assignedAt || created) : created;
+      return ts > seenAt;
     }).length;
 
     if (notify && newCount > state.lastNotifiedDeliveryCount) {
