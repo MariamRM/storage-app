@@ -237,6 +237,9 @@
       <div>
         <button id="inventoryRefreshBtn" class="btn btn-secondary" data-i18n="refresh">Refresh</button>
       </div>
+      <div>
+        <button id="inventoryExportExcelBtn" class="btn btn-secondary" data-i18n="export_inventory_excel">Export Excel</button>
+      </div>
     </div>
 
     <div class="table-wrapper mt-sm">
@@ -497,6 +500,21 @@
         </select>
       </div>
       <div></div>
+      <div></div>
+    </div>
+    <div class="grid mt-xs">
+      <div id="editUserAnalyticsScopeWrap" style="display:none;">
+        <label data-i18n="analytics_scope">Analytics scope (Supervisor)</label>
+        <select id="editUserAnalyticsScope">
+          <option value="own" data-i18n="scope_own">Own branch only</option>
+          <option value="multiple" data-i18n="scope_multiple">Multiple branches</option>
+          <option value="all" data-i18n="scope_all">All branches</option>
+        </select>
+      </div>
+      <div id="editUserAnalyticsBranchesWrap" style="display:none;">
+        <label data-i18n="analytics_branches">Analytics branches (Supervisor)</label>
+        <select id="editUserAnalyticsBranches" multiple size="4"></select>
+      </div>
       <div></div>
     </div>
   </section>
@@ -1025,6 +1043,11 @@
     </div>
 
     <div class="panel-section-title mt-md" data-i18n="most_ordered">Most ordered items (by cost)</div>
+    <div class="panel" style="padding:0.8rem; margin-top:0.5rem;">
+      <div class="panel-section-title" data-i18n="top_requests_chart">Top requested items chart</div>
+      <canvas id="analyticsTopChart" height="240"></canvas>
+      <div id="analyticsChartEmpty" class="text-muted" style="display:none;"></div>
+    </div>
     <div class="table-wrapper">
       <table>
         <thead>
@@ -1418,6 +1441,7 @@
       select_list: "Select list",
       search_items: "Search items",
       refresh: "Refresh",
+      export_inventory_excel: "Export Excel",
       menu_inventory: "Inventory",
       menu_requests: "Requests",
       menu_transfers: "Transfers",
@@ -1509,6 +1533,8 @@
       delete_user: "Delete user",
       allowed_branches: "Allowed branches (Supervisor)",
       allowed_scope: "Allowed scope (Supervisor)",
+      analytics_scope: "Analytics scope (Supervisor)",
+      analytics_branches: "Analytics branches (Supervisor)",
       scope_own: "Own branch only",
       scope_multiple: "Multiple branches",
       scope_all: "All branches",
@@ -1611,6 +1637,8 @@
       order_prefix: "Order #",
       total_quantity: "Total quantity",
       most_ordered: "Most ordered items (by cost)",
+      top_requests_chart: "Top requested items chart",
+      no_chart_data: "No chart data for this filter.",
       export_monthly_report: "Export monthly report",
       report_date_required: "Select both dates before exporting.",
       no_orders_in_range: "No delivered orders in this range.",
@@ -1757,6 +1785,7 @@
       select_list: "اختر القائمة",
       search_items: "بحث عن صنف",
       refresh: "تحديث",
+      export_inventory_excel: "تصدير إكسل",
       menu_inventory: "المخزون",
       menu_requests: "الطلبات",
       menu_transfers: "النقل",
@@ -1836,6 +1865,8 @@
       delete_user: "حذف المستخدم",
       allowed_branches: "الفروع المسموحة (للمراقب)",
       allowed_scope: "نطاق الصلاحية (للمراقب)",
+      analytics_scope: "نطاق التقارير (للمراقب)",
+      analytics_branches: "فروع التقارير (للمراقب)",
       scope_own: "فرع واحد فقط",
       scope_multiple: "عدة فروع",
       scope_all: "كل الفروع",
@@ -1916,6 +1947,8 @@
       order_prefix: "طلب #",
       total_quantity: "إجمالي الكمية",
       most_ordered: "الأكثر طلبًا (حسب التكلفة)",
+      top_requests_chart: "رسم أكثر الأصناف طلبًا",
+      no_chart_data: "لا توجد بيانات للرسم حسب الفلتر.",
 
       vehicle_reminders: "تنبيهات المركبات",
       vehicle_subtitle: "تغيير زيت، عداد، تجديد سنوي. المدير/المشرف يضيفون؛ السائق يعلّم منجز.",
@@ -2300,6 +2333,24 @@
     if (!user || user.role !== "supervisor") return "own";
     return user.allowedBranchScope || "own";
   }
+  function getSupervisorAnalyticsScope(user) {
+    if (!user || user.role !== "supervisor") return "own";
+    return user.analyticsAllowedBranchScope || "own";
+  }
+  function getSupervisorAnalyticsBranches(user) {
+    if (!user || user.role !== "supervisor") return [];
+    const scope = getSupervisorAnalyticsScope(user);
+    if (scope === "all") return (state.branches || []).map((b) => b.id);
+    if (scope === "multiple") {
+      const list = Array.isArray(user.analyticsAllowedBranchIds) ? user.analyticsAllowedBranchIds.filter(Boolean) : [];
+      if (list.length) return list;
+    }
+    return user.branchId ? [user.branchId] : [];
+  }
+  function formatBranchAccessLabel(branchIds, emptyLabel) {
+    const names = (branchIds || []).map((id) => getBranchName(id)).filter(Boolean);
+    return names.length ? names.join(", ") : emptyLabel;
+  }
   function getSupervisorAccessLabel(user) {
     if (!user) return "-";
     if (user.role === "driver") {
@@ -2307,12 +2358,18 @@
     }
     if (user.role !== "supervisor") return "-";
     const scope = getSupervisorAllowedScope(user);
-    if (scope === "all") return t("scope_all");
-    if (scope === "multiple") {
-      const names = getSupervisorAllowedBranches(user).map((id) => getBranchName(id));
-      return names.length ? names.join(", ") : t("scope_multiple");
-    }
-    return user.branchId ? getBranchName(user.branchId) : t("scope_own");
+    const analyticsScope = getSupervisorAnalyticsScope(user);
+    let mainAccess = "";
+    if (scope === "all") mainAccess = t("scope_all");
+    else if (scope === "multiple") mainAccess = formatBranchAccessLabel(getSupervisorAllowedBranches(user), t("scope_multiple"));
+    else mainAccess = user.branchId ? getBranchName(user.branchId) : t("scope_own");
+
+    let analyticsAccess = "";
+    if (analyticsScope === "all") analyticsAccess = t("scope_all");
+    else if (analyticsScope === "multiple") analyticsAccess = formatBranchAccessLabel(getSupervisorAnalyticsBranches(user), t("scope_multiple"));
+    else analyticsAccess = user.branchId ? getBranchName(user.branchId) : t("scope_own");
+
+    return `${mainAccess} | ${t("menu_analytics")}: ${analyticsAccess}`;
   }
   function applySupervisorAccessUI(role, scope, branchId, allowedIds) {
     const scopeSel = document.getElementById("editUserAllowedScope");
@@ -2367,6 +2424,45 @@
       select.value = scope;
     } else if (!select.value) {
       select.value = "assigned";
+    }
+  }
+  function applySupervisorAnalyticsUI(role, scope, branchId, allowedIds) {
+    const scopeSel = document.getElementById("editUserAnalyticsScope");
+    const allowedSel = document.getElementById("editUserAnalyticsBranches");
+    const scopeWrap = document.getElementById("editUserAnalyticsScopeWrap");
+    const allowedWrap = document.getElementById("editUserAnalyticsBranchesWrap");
+
+    const isSupervisor = role === "supervisor";
+    if (scopeWrap) scopeWrap.style.display = isSupervisor ? "block" : "none";
+    if (allowedWrap) allowedWrap.style.display = isSupervisor ? "block" : "none";
+
+    if (!isSupervisor) {
+      if (allowedSel) {
+        allowedSel.disabled = true;
+        Array.from(allowedSel.options).forEach((opt) => { opt.selected = false; });
+      }
+      return;
+    }
+
+    const nextScope = scope || "own";
+    if (scopeSel) scopeSel.value = nextScope;
+
+    if (allowedSel) {
+      if (nextScope === "multiple") {
+        allowedSel.disabled = false;
+        const allowedSet = new Set(allowedIds || []);
+        Array.from(allowedSel.options).forEach((opt) => {
+          opt.selected = allowedSet.has(opt.value);
+        });
+      } else if (nextScope === "all") {
+        allowedSel.disabled = true;
+        Array.from(allowedSel.options).forEach((opt) => { opt.selected = false; });
+      } else {
+        allowedSel.disabled = true;
+        Array.from(allowedSel.options).forEach((opt) => {
+          opt.selected = branchId ? opt.value === branchId : false;
+        });
+      }
     }
   }
   function getDriverOptionsHtml(selectedId) {
@@ -2762,6 +2858,9 @@
   function isPageAllowed(pageId) {
     if (!state.user) return false;
     const role = state.user.role;
+    if (pageId === "analyticsPanel" && role === "supervisor") {
+      return getSupervisorAnalyticsBranches(state.user).length > 0;
+    }
     const rules = {
       inventoryPanel: ["admin", "manager"],
       requestsPanel: ["staff", "supervisor", "driver_supervisor", "manager", "admin"],
@@ -2769,7 +2868,7 @@
       deliveriesPanel: ["staff", "supervisor", "driver_supervisor", "manager", "admin"],
       driverPanel: ["driver"],
       movementsPanel: ["admin", "manager"],
-      analyticsPanel: ["admin", "manager"],
+      analyticsPanel: ["admin", "manager", "supervisor"],
       vehiclePanel: ["admin", "manager", "driver"],
       usersPanel: ["admin"]
     };
@@ -3494,6 +3593,19 @@
       });
     }
 
+    const analyticsAllowedSel = document.getElementById("editUserAnalyticsBranches");
+    if (analyticsAllowedSel) {
+      const prev = new Set(Array.from(analyticsAllowedSel.selectedOptions || []).map((o) => o.value));
+      analyticsAllowedSel.innerHTML = "";
+      (state.branches || []).forEach((b) => {
+        const opt = document.createElement("option");
+        opt.value = b.id;
+        opt.textContent = b.name;
+        if (prev.has(b.id)) opt.selected = true;
+        analyticsAllowedSel.appendChild(opt);
+      });
+    }
+
     const invSel = document.getElementById("inventoryViewBranchSelect");
     if (invSel) {
       invSel.innerHTML = "";
@@ -3519,17 +3631,25 @@
 
     const analyticsBranchSelect = document.getElementById("analyticsBranchSelect");
     if (analyticsBranchSelect) {
+      const prev = analyticsBranchSelect.value;
       analyticsBranchSelect.innerHTML = "";
+      let branches = [...(state.branches || [])];
+      if (state.user && state.user.role === "supervisor") {
+        const allowed = getSupervisorAnalyticsBranches(state.user);
+        branches = branches.filter((b) => allowed.includes(b.id));
+      }
       const allOpt = document.createElement("option");
       allOpt.value = "ALL";
       allOpt.textContent = (currentLang === "ar") ? "كل الفروع" : "All branches";
       analyticsBranchSelect.appendChild(allOpt);
-      state.branches.forEach((b) => {
+      branches.forEach((b) => {
         const opt = document.createElement("option");
         opt.value = b.id;
         opt.textContent = b.name;
         analyticsBranchSelect.appendChild(opt);
       });
+      if (prev && analyticsBranchSelect.querySelector(`option[value="${prev}"]`)) analyticsBranchSelect.value = prev;
+      else analyticsBranchSelect.value = "ALL";
     }
 
     const deliveryFromSelect = document.getElementById("deliveryFromBranchSelect");
@@ -3694,30 +3814,17 @@
 
     const mainId = getMainStorageId();
     const selectedBranchId = invSel ? invSel.value : mainId;
+    const query = (searchInput && searchInput.value ? searchInput.value : "").trim().toLowerCase();
 
     const itemsSelected = (state.items || []).filter(it => it.branchId === selectedBranchId);
     const itemsMain = (state.items || []).filter(it => it.branchId === mainId);
-
-    const query = (searchInput && searchInput.value ? searchInput.value : "").trim().toLowerCase();
-    const filteredSelected = query
-      ? itemsSelected.filter((it) => {
-          const haystack = [
-            it.id,
-            it.name,
-            it.nameEn,
-            it.nameAr
-          ].map((v) => String(v || "").toLowerCase());
-          return haystack.some((v) => v.includes(query));
-        })
-      : itemsSelected;
+    const sorted = getCurrentInventoryRows();
 
     const selectedTotal = itemsSelected.reduce((sum, it) => sum + (Number(it.baseQty)||0)*(Number(it.unitCost)||0), 0);
     const storageTotal = itemsMain.reduce((sum, it) => sum + (Number(it.baseQty)||0)*(Number(it.unitCost)||0), 0);
 
     if (selectedValueEl) selectedValueEl.textContent = selectedTotal.toFixed(3);
     if (storageTotalEl) storageTotalEl.textContent = storageTotal.toFixed(3);
-
-    const sorted = [...filteredSelected].sort((a,b)=> (a.name||"").localeCompare(b.name||""));
 
     const pageSize = Number(state.inventoryPageSize) || 40;
     const pageSizeSelect = document.getElementById("inventoryPageSizeSelect");
@@ -4723,9 +4830,13 @@
     const toDate = toInput && toInput.value ? new Date(toInput.value + "T23:59:59") : null;
 
     const storageId = getMainStorageId();
+    const allowedAnalyticsBranches = state.user && state.user.role === "supervisor"
+      ? new Set(getSupervisorAnalyticsBranches(state.user))
+      : null;
 
     const delivered = state.requests.filter((r) => {
       if (r.status !== "delivered") return false;
+      if (allowedAnalyticsBranches && !allowedAnalyticsBranches.has(r.toBranchId)) return false;
       if (branchId !== "ALL" && r.toBranchId !== branchId) return false;
       if (!r.createdAt) return false;
       const d = new Date(r.createdAt);
@@ -4737,6 +4848,7 @@
     let totalCost = 0;
     let totalQty = 0;
     const itemStats = new Map();
+    const branchStats = new Map();
 
     delivered.forEach((r) => {
       const storageItem = state.items.find((it) => it.id === r.itemId && it.branchId === storageId);
@@ -4754,10 +4866,21 @@
       }
       stat.qty += qty;
       stat.cost += cost;
+
+      const branchKey = r.toBranchId || "UNKNOWN";
+      let branchStat = branchStats.get(branchKey);
+      if (!branchStat) {
+        branchStat = { name: getBranchName(branchKey), requests: 0, qty: 0, cost: 0 };
+        branchStats.set(branchKey, branchStat);
+      }
+      branchStat.requests += 1;
+      branchStat.qty += qty;
+      branchStat.cost += cost;
     });
 
     const itemsArray = Array.from(itemStats.values()).sort((a,b)=> b.cost - a.cost);
-    return { totalCost, totalQty, totalRequests: delivered.length, items: itemsArray };
+    const branchArray = Array.from(branchStats.values()).sort((a, b) => b.requests - a.requests || b.qty - a.qty);
+    return { totalCost, totalQty, totalRequests: delivered.length, items: itemsArray, branches: branchArray };
   }
 
   function csvEscape(value) {
@@ -4768,9 +4891,127 @@
     return str;
   }
 
+  function getCurrentInventoryRows() {
+    const invSel = document.getElementById("inventoryViewBranchSelect");
+    const searchInput = document.getElementById("inventorySearchInput");
+    const selectedBranchId = invSel ? invSel.value : getMainStorageId();
+    const query = (searchInput && searchInput.value ? searchInput.value : "").trim().toLowerCase();
+    const itemsSelected = (state.items || []).filter((it) => it.branchId === selectedBranchId);
+    const filteredSelected = query
+      ? itemsSelected.filter((it) => {
+          const haystack = [it.id, it.name, it.nameEn, it.nameAr].map((v) => String(v || "").toLowerCase());
+          return haystack.some((v) => v.includes(query));
+        })
+      : itemsSelected;
+
+    return [...filteredSelected].sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+  }
+
+  function exportInventoryExcel() {
+    const rows = getCurrentInventoryRows();
+    if (!rows.length) {
+      alert(t("no_items"));
+      return;
+    }
+
+    const branchName = getBranchName(document.getElementById("inventoryViewBranchSelect")?.value || getMainStorageId());
+    const htmlRows = rows.map((it) => {
+      const value = (Number(it.baseQty) || 0) * (Number(it.unitCost) || 0);
+      return `
+        <tr>
+          <td>${escapeHtml(it.id)}</td>
+          <td>${escapeHtml(it.name)}</td>
+          <td>${escapeHtml(getBranchName(it.branchId))}</td>
+          <td>${escapeHtml(it.baseQty)}</td>
+          <td>${escapeHtml(it.minQty)}</td>
+          <td>${escapeHtml(it.unitCost)}</td>
+          <td>${value.toFixed(3)}</td>
+        </tr>
+      `;
+    }).join("");
+
+    const html = `
+      <html>
+      <head><meta charset="utf-8" /></head>
+      <body>
+        <table border="1">
+          <tr><th colspan="7">${escapeHtml(branchName)}</th></tr>
+          <tr>
+            <th>${escapeHtml(t("th_id"))}</th>
+            <th>${escapeHtml(t("th_name"))}</th>
+            <th>${escapeHtml(t("th_branch"))}</th>
+            <th>${escapeHtml(t("th_qty"))}</th>
+            <th>${escapeHtml(t("th_min"))}</th>
+            <th>${escapeHtml(t("th_unit_cost"))}</th>
+            <th>${escapeHtml(t("th_value"))}</th>
+          </tr>
+          ${htmlRows}
+        </table>
+      </body>
+      </html>
+    `;
+
+    const blob = new Blob([html], { type: "application/vnd.ms-excel;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `inventory-${branchName.replace(/[^a-z0-9_-]+/gi, "-").toLowerCase() || "list"}.xls`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }
+
+  function renderAnalyticsChart(entries) {
+    const canvas = document.getElementById("analyticsTopChart");
+    const empty = document.getElementById("analyticsChartEmpty");
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const data = (entries || []).slice(0, 6);
+    if (empty) {
+      empty.style.display = data.length ? "none" : "block";
+      empty.textContent = t("no_chart_data");
+    }
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (!data.length) return;
+
+    const width = canvas.clientWidth || 640;
+    const height = canvas.height || 240;
+    canvas.width = width;
+    canvas.height = height;
+    ctx.clearRect(0, 0, width, height);
+
+    const maxValue = Math.max(...data.map((b) => b.value), 1);
+    const left = 110;
+    const right = 20;
+    const top = 20;
+    const rowHeight = 32;
+    const barHeight = 18;
+
+    ctx.font = "12px sans-serif";
+    ctx.textBaseline = "middle";
+
+    data.forEach((item, idx) => {
+      const y = top + idx * rowHeight;
+      const barWidth = ((width - left - right) * item.value) / maxValue;
+      ctx.fillStyle = "#dbeafe";
+      ctx.fillRect(left, y, width - left - right, barHeight);
+      ctx.fillStyle = "#111827";
+      ctx.fillText(item.name, 8, y + barHeight / 2);
+      ctx.fillStyle = "#2563eb";
+      ctx.fillRect(left, y, barWidth, barHeight);
+      ctx.fillStyle = "#111827";
+      ctx.fillText(String(item.value), left + barWidth + 8, y + barHeight / 2);
+    });
+  }
+
   function exportMonthlyReport() {
     const fromInput = document.getElementById("analyticsFromDate");
     const toInput = document.getElementById("analyticsToDate");
+    const branchSel = document.getElementById("analyticsBranchSelect");
     if (!fromInput || !toInput || !fromInput.value || !toInput.value) {
       alert(t("report_date_required"));
       return;
@@ -4784,8 +5025,14 @@
     }
 
     const storageId = getMainStorageId();
+    const branchId = branchSel ? branchSel.value : "ALL";
+    const allowedAnalyticsBranches = state.user && state.user.role === "supervisor"
+      ? new Set(getSupervisorAnalyticsBranches(state.user))
+      : null;
     const filtered = (state.requests || []).filter((r) => {
       if (r.status !== "delivered" || !r.createdAt) return false;
+      if (allowedAnalyticsBranches && !allowedAnalyticsBranches.has(r.toBranchId)) return false;
+      if (branchId !== "ALL" && r.toBranchId !== branchId) return false;
       const created = new Date(r.createdAt);
       if (Number.isNaN(created.getTime())) return false;
       return created >= fromDate && created <= toDate;
@@ -4852,7 +5099,7 @@
   }
 
   function renderAnalytics() {
-    const { totalCost, totalQty, totalRequests, items } = computeAnalytics();
+    const { totalCost, totalQty, totalRequests, items, branches } = computeAnalytics();
 
     const totalCostEl = document.getElementById("analyticsTotalCost");
     const totalQtyEl = document.getElementById("analyticsTotalQty");
@@ -4865,6 +5112,11 @@
 
     if (!tbody) return;
     tbody.innerHTML = "";
+    const branchSel = document.getElementById("analyticsBranchSelect");
+    const chartEntries = (branchSel && branchSel.value !== "ALL")
+      ? items.map((it) => ({ name: it.name, value: it.qty }))
+      : branches.map((it) => ({ name: it.name, value: it.requests }));
+    renderAnalyticsChart(chartEntries);
     if (!items.length) {
       const tr = document.createElement("tr");
       tr.innerHTML = `<td colspan="3" class="text-muted">${t("no_delivered_period")}</td>`;
@@ -5819,6 +6071,7 @@
     renderVehiclesUI();
     await updateItemIdField();
   });
+  document.getElementById("inventoryExportExcelBtn").addEventListener("click", exportInventoryExcel);
 
   document.getElementById("inventoryPrevBtn").addEventListener("click", () => {
     if (state.inventoryPage > 1) {
@@ -5884,6 +6137,7 @@
       document.getElementById("editUserName").value = "";
       document.getElementById("editUserPassword").value = "";
       applySupervisorAccessUI("", "own", "", []);
+      applySupervisorAnalyticsUI("", "own", "", []);
       applyDriverRequestsScopeUI("edit", "", "assigned");
       return;
     }
@@ -5897,12 +6151,21 @@
       user.branchId,
       getSupervisorAllowedBranches(user)
     );
+    applySupervisorAnalyticsUI(
+      user.role,
+      getSupervisorAnalyticsScope(user),
+      user.branchId,
+      getSupervisorAnalyticsBranches(user)
+    );
     applyDriverRequestsScopeUI("edit", user.role, user.requestsScope || "assigned");
   });
 
   const editUserRoleSelect = document.getElementById("editUserRole");
   if (editUserRoleSelect) {
     editUserRoleSelect.addEventListener("change", () => {
+      const branchId = document.getElementById("editUserBranchSelect").value;
+      applySupervisorAccessUI(editUserRoleSelect.value, "own", branchId, []);
+      applySupervisorAnalyticsUI(editUserRoleSelect.value, "own", branchId, []);
       applyDriverRequestsScopeUI("edit", editUserRoleSelect.value);
     });
   }
@@ -5922,8 +6185,23 @@
       ? Array.from(allowedSel ? allowedSel.selectedOptions : []).map((o) => o.value).filter(Boolean)
       : [];
     const allowedBranchIds = (role === "supervisor" && allowedBranchScope === "multiple") ? selectedIds : [];
+    const analyticsAllowedSel = document.getElementById("editUserAnalyticsBranches");
+    const analyticsScopeSel = document.getElementById("editUserAnalyticsScope");
+    const analyticsAllowedBranchScope = role === "supervisor" ? (analyticsScopeSel ? analyticsScopeSel.value : "own") : "";
+    const analyticsSelectedIds = role === "supervisor"
+      ? Array.from(analyticsAllowedSel ? analyticsAllowedSel.selectedOptions : []).map((o) => o.value).filter(Boolean)
+      : [];
+    const analyticsAllowedBranchIds = (role === "supervisor" && analyticsAllowedBranchScope === "multiple") ? analyticsSelectedIds : [];
 
-    const updates = { name, role, branchId, allowedBranchScope, allowedBranchIds };
+    const updates = {
+      name,
+      role,
+      branchId,
+      allowedBranchScope,
+      allowedBranchIds,
+      analyticsAllowedBranchScope,
+      analyticsAllowedBranchIds
+    };
     if (role === "driver") {
       updates.requestsScope = document.getElementById("editUserRequestsScope")?.value || "assigned";
     } else {
@@ -6011,6 +6289,7 @@
     const role = document.getElementById("editUserRole").value;
     const branchId = document.getElementById("editUserBranchSelect").value;
     applySupervisorAccessUI(role, "own", branchId, []);
+    applySupervisorAnalyticsUI(role, "own", branchId, []);
   });
 
   const editUserAllowedScope = document.getElementById("editUserAllowedScope");
@@ -6022,6 +6301,32 @@
       const allowedSel = document.getElementById("editUserAllowedBranches");
       const selectedIds = Array.from(allowedSel ? allowedSel.selectedOptions : []).map((o) => o.value);
       applySupervisorAccessUI(role, scope, branchId, selectedIds);
+    });
+  }
+
+  const editUserBranchSelect = document.getElementById("editUserBranchSelect");
+  if (editUserBranchSelect) {
+    editUserBranchSelect.addEventListener("change", () => {
+      const role = document.getElementById("editUserRole").value;
+      const branchId = editUserBranchSelect.value;
+      const allowedSel = document.getElementById("editUserAllowedBranches");
+      const analyticsAllowedSel = document.getElementById("editUserAnalyticsBranches");
+      const allowedIds = Array.from(allowedSel ? allowedSel.selectedOptions : []).map((o) => o.value);
+      const analyticsIds = Array.from(analyticsAllowedSel ? analyticsAllowedSel.selectedOptions : []).map((o) => o.value);
+      applySupervisorAccessUI(role, document.getElementById("editUserAllowedScope").value, branchId, allowedIds);
+      applySupervisorAnalyticsUI(role, document.getElementById("editUserAnalyticsScope").value, branchId, analyticsIds);
+    });
+  }
+
+  const editUserAnalyticsScope = document.getElementById("editUserAnalyticsScope");
+  if (editUserAnalyticsScope) {
+    editUserAnalyticsScope.addEventListener("change", () => {
+      const role = document.getElementById("editUserRole").value;
+      const branchId = document.getElementById("editUserBranchSelect").value;
+      const scope = editUserAnalyticsScope.value;
+      const allowedSel = document.getElementById("editUserAnalyticsBranches");
+      const selectedIds = Array.from(allowedSel ? allowedSel.selectedOptions : []).map((o) => o.value);
+      applySupervisorAnalyticsUI(role, scope, branchId, selectedIds);
     });
   }
 

@@ -370,7 +370,16 @@ app.post("/api/state-import", async (req, res) => {
 // ---------- USERS (Admin create) ----------
 app.post("/api/users", async (req, res) => {
   try {
-    const { name, role, password, adminUserId, branchId, requestsScope } = req.body;
+    const {
+      name,
+      role,
+      password,
+      adminUserId,
+      branchId,
+      requestsScope,
+      analyticsAllowedBranchIds,
+      analyticsAllowedBranchScope
+    } = req.body;
     if (!name || !role || !password) {
       return res.status(400).json({ error: "name, role, password are required" });
     }
@@ -395,6 +404,10 @@ app.post("/api/users", async (req, res) => {
     if (role === "driver") {
       newUser.requestsScope = requestsScope === "all" ? "all" : "assigned";
     }
+    if (role === "supervisor") {
+      newUser.analyticsAllowedBranchScope = analyticsAllowedBranchScope || "own";
+      newUser.analyticsAllowedBranchIds = Array.isArray(analyticsAllowedBranchIds) ? analyticsAllowedBranchIds : [];
+    }
     data.users.push(newUser);
     await saveData(data);
 
@@ -418,7 +431,9 @@ app.patch("/api/users/:id", async (req, res) => {
       branchId,
       allowedBranchIds,
       allowedBranchScope,
-      requestsScope
+      requestsScope,
+      analyticsAllowedBranchIds,
+      analyticsAllowedBranchScope
     } = req.body;
 
     const data = await loadData();
@@ -446,6 +461,20 @@ app.patch("/api/users/:id", async (req, res) => {
         user.requestsScope = requestsScope === "all" ? "all" : "assigned";
       } else if (user.requestsScope) {
         delete user.requestsScope;
+      }
+    }
+    if (typeof analyticsAllowedBranchScope !== "undefined" || typeof analyticsAllowedBranchIds !== "undefined") {
+      const nextRole = role || user.role;
+      if (nextRole === "supervisor") {
+        if (typeof analyticsAllowedBranchScope !== "undefined") {
+          user.analyticsAllowedBranchScope = analyticsAllowedBranchScope || "own";
+        }
+        if (Array.isArray(analyticsAllowedBranchIds)) {
+          user.analyticsAllowedBranchIds = analyticsAllowedBranchIds;
+        }
+      } else {
+        delete user.analyticsAllowedBranchScope;
+        delete user.analyticsAllowedBranchIds;
       }
     }
 
