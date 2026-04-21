@@ -485,6 +485,7 @@
       <div>
         <label data-i18n="allowed_branches">Allowed branches (Supervisor)</label>
         <select id="editUserAllowedBranches" multiple size="4"></select>
+        <div class="text-muted" id="editUserAllowedBranchesHelp" style="font-size:0.72rem; margin-top:0.25rem;" data-i18n="multiple_select_help">Use Ctrl/Cmd or tap multiple items to choose more than one branch.</div>
       </div>
       <div style="display:flex;align-items:flex-end;gap:0.4rem;">
         <button id="saveUserChangesBtn" class="btn btn-primary" style="flex:1;" data-i18n="save_changes">Save changes</button>
@@ -514,6 +515,7 @@
       <div id="editUserAnalyticsBranchesWrap" style="display:none;">
         <label data-i18n="analytics_branches">Analytics branches (Supervisor)</label>
         <select id="editUserAnalyticsBranches" multiple size="4"></select>
+        <div class="text-muted" style="font-size:0.72rem; margin-top:0.25rem;" data-i18n="multiple_select_help">Use Ctrl/Cmd or tap multiple items to choose more than one branch.</div>
       </div>
       <div></div>
     </div>
@@ -1021,6 +1023,13 @@
         <label data-i18n="to_date">To date</label>
         <input id="analyticsToDate" type="date" />
       </div>
+      <div>
+        <label data-i18n="chart_measure">Chart measure</label>
+        <select id="analyticsChartMeasureSelect">
+          <option value="requests" data-i18n="chart_measure_requests">By requests</option>
+          <option value="qty" data-i18n="chart_measure_qty">By quantity</option>
+        </select>
+      </div>
     </div>
     <div style="display:flex;gap:0.6rem;flex-wrap:wrap;margin-top:0.6rem;">
       <button id="analyticsApplyBtn" class="btn btn-primary" data-i18n="apply_filters">Apply filters</button>
@@ -1058,6 +1067,21 @@
           </tr>
         </thead>
         <tbody id="analyticsItemsTableBody"></tbody>
+      </table>
+    </div>
+
+    <div class="panel-section-title mt-md" data-i18n="top_item_by_branch">Top item by branch</div>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th data-i18n="th_branch">Branch</th>
+            <th data-i18n="th_item">Item</th>
+            <th data-i18n="chart_measure_requests">By requests</th>
+            <th data-i18n="chart_measure_qty">By quantity</th>
+          </tr>
+        </thead>
+        <tbody id="analyticsTopBranchItemsBody"></tbody>
       </table>
     </div>
   </section>
@@ -1535,6 +1559,7 @@
       allowed_scope: "Allowed scope (Supervisor)",
       analytics_scope: "Analytics scope (Supervisor)",
       analytics_branches: "Analytics branches (Supervisor)",
+      multiple_select_help: "Use Ctrl/Cmd or tap multiple items to choose more than one branch.",
       scope_own: "Own branch only",
       scope_multiple: "Multiple branches",
       scope_all: "All branches",
@@ -1629,6 +1654,9 @@
 
       analytics_title: "Budget & usage dashboard",
       analytics_subtitle: "Automatic spend calculation from delivered requests (qty × item price), filter by date and branch.",
+      chart_measure: "Chart measure",
+      chart_measure_requests: "By requests",
+      chart_measure_qty: "By quantity",
       from_date: "From date",
       to_date: "To date",
       apply_filters: "Apply filters",
@@ -1638,6 +1666,7 @@
       total_quantity: "Total quantity",
       most_ordered: "Most ordered items (by cost)",
       top_requests_chart: "Top requested items chart",
+      top_item_by_branch: "Top item by branch",
       no_chart_data: "No chart data for this filter.",
       export_monthly_report: "Export monthly report",
       report_date_required: "Select both dates before exporting.",
@@ -1867,6 +1896,7 @@
       allowed_scope: "نطاق الصلاحية (للمراقب)",
       analytics_scope: "نطاق التقارير (للمراقب)",
       analytics_branches: "فروع التقارير (للمراقب)",
+      multiple_select_help: "استخدم Ctrl/Cmd أو اختر أكثر من فرع لتحديد عدة فروع.",
       scope_own: "فرع واحد فقط",
       scope_multiple: "عدة فروع",
       scope_all: "كل الفروع",
@@ -1939,6 +1969,9 @@
 
       analytics_title: "لوحة الميزانية والاستخدام",
       analytics_subtitle: "حساب الصرف تلقائيًا من الطلبات المسلّمة (الكمية × السعر)، مع فلترة بالتاريخ والفرع.",
+      chart_measure: "نوع الرسم",
+      chart_measure_requests: "حسب عدد الطلبات",
+      chart_measure_qty: "حسب الكمية",
       from_date: "من تاريخ",
       to_date: "إلى تاريخ",
       apply_filters: "تطبيق الفلاتر",
@@ -1948,6 +1981,7 @@
       total_quantity: "إجمالي الكمية",
       most_ordered: "الأكثر طلبًا (حسب التكلفة)",
       top_requests_chart: "رسم أكثر الأصناف طلبًا",
+      top_item_by_branch: "الصنف الأعلى طلبًا لكل فرع",
       no_chart_data: "لا توجد بيانات للرسم حسب الفلتر.",
 
       vehicle_reminders: "تنبيهات المركبات",
@@ -2395,7 +2429,8 @@
     if (allowedSel) {
       if (nextScope === "multiple") {
         allowedSel.disabled = false;
-        const allowedSet = new Set(allowedIds || []);
+        const normalizedIds = (allowedIds && allowedIds.length) ? allowedIds : (branchId ? [branchId] : []);
+        const allowedSet = new Set(normalizedIds);
         Array.from(allowedSel.options).forEach((opt) => {
           opt.selected = allowedSet.has(opt.value);
         });
@@ -2450,7 +2485,8 @@
     if (allowedSel) {
       if (nextScope === "multiple") {
         allowedSel.disabled = false;
-        const allowedSet = new Set(allowedIds || []);
+        const normalizedIds = (allowedIds && allowedIds.length) ? allowedIds : (branchId ? [branchId] : []);
+        const allowedSet = new Set(normalizedIds);
         Array.from(allowedSel.options).forEach((opt) => {
           opt.selected = allowedSet.has(opt.value);
         });
@@ -4849,6 +4885,7 @@
     let totalQty = 0;
     const itemStats = new Map();
     const branchStats = new Map();
+    const topItemByBranch = new Map();
 
     delivered.forEach((r) => {
       const storageItem = state.items.find((it) => it.id === r.itemId && it.branchId === storageId);
@@ -4861,11 +4898,12 @@
       const key = r.itemId;
       let stat = itemStats.get(key);
       if (!stat) {
-        stat = { name: storageItem ? storageItem.name : r.itemId, qty: 0, cost: 0 };
+        stat = { name: storageItem ? storageItem.name : r.itemId, qty: 0, cost: 0, requests: 0 };
         itemStats.set(key, stat);
       }
       stat.qty += qty;
       stat.cost += cost;
+      stat.requests += 1;
 
       const branchKey = r.toBranchId || "UNKNOWN";
       let branchStat = branchStats.get(branchKey);
@@ -4876,11 +4914,41 @@
       branchStat.requests += 1;
       branchStat.qty += qty;
       branchStat.cost += cost;
+
+      const topKey = `${branchKey}::${r.itemId}`;
+      let topStat = topItemByBranch.get(topKey);
+      if (!topStat) {
+        topStat = {
+          branchId: branchKey,
+          branchName: getBranchName(branchKey),
+          itemName: storageItem ? storageItem.name : r.itemId,
+          qty: 0,
+          requests: 0
+        };
+        topItemByBranch.set(topKey, topStat);
+      }
+      topStat.qty += qty;
+      topStat.requests += 1;
     });
 
     const itemsArray = Array.from(itemStats.values()).sort((a,b)=> b.cost - a.cost);
     const branchArray = Array.from(branchStats.values()).sort((a, b) => b.requests - a.requests || b.qty - a.qty);
-    return { totalCost, totalQty, totalRequests: delivered.length, items: itemsArray, branches: branchArray };
+    const topBranchItems = Array.from(topItemByBranch.values())
+      .reduce((acc, entry) => {
+        const existing = acc.get(entry.branchId);
+        if (!existing || entry.requests > existing.requests || (entry.requests === existing.requests && entry.qty > existing.qty)) {
+          acc.set(entry.branchId, entry);
+        }
+        return acc;
+      }, new Map());
+    return {
+      totalCost,
+      totalQty,
+      totalRequests: delivered.length,
+      items: itemsArray,
+      branches: branchArray,
+      topBranchItems: Array.from(topBranchItems.values()).sort((a, b) => a.branchName.localeCompare(b.branchName))
+    };
   }
 
   function csvEscape(value) {
@@ -5099,12 +5167,13 @@
   }
 
   function renderAnalytics() {
-    const { totalCost, totalQty, totalRequests, items, branches } = computeAnalytics();
+    const { totalCost, totalQty, totalRequests, items, branches, topBranchItems } = computeAnalytics();
 
     const totalCostEl = document.getElementById("analyticsTotalCost");
     const totalQtyEl = document.getElementById("analyticsTotalQty");
     const totalReqEl = document.getElementById("analyticsTotalRequests");
     const tbody = document.getElementById("analyticsItemsTableBody");
+    const topBranchBody = document.getElementById("analyticsTopBranchItemsBody");
 
     if (totalCostEl) totalCostEl.textContent = totalCost.toFixed(3);
     if (totalQtyEl) totalQtyEl.textContent = totalQty;
@@ -5113,10 +5182,33 @@
     if (!tbody) return;
     tbody.innerHTML = "";
     const branchSel = document.getElementById("analyticsBranchSelect");
+    const measureSel = document.getElementById("analyticsChartMeasureSelect");
+    const measure = measureSel ? measureSel.value : "requests";
     const chartEntries = (branchSel && branchSel.value !== "ALL")
-      ? items.map((it) => ({ name: it.name, value: it.qty }))
-      : branches.map((it) => ({ name: it.name, value: it.requests }));
+      ? items.map((it) => ({ name: it.name, value: measure === "qty" ? it.qty : it.requests }))
+      : branches.map((it) => ({ name: it.name, value: measure === "qty" ? it.qty : it.requests }));
     renderAnalyticsChart(chartEntries);
+
+    if (topBranchBody) {
+      topBranchBody.innerHTML = "";
+      if (!topBranchItems.length) {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td colspan="4" class="text-muted">${t("no_delivered_period")}</td>`;
+        topBranchBody.appendChild(tr);
+      } else {
+        topBranchItems.forEach((entry) => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${escapeHtml(entry.branchName)}</td>
+            <td>${escapeHtml(entry.itemName)}</td>
+            <td>${escapeHtml(entry.requests)}</td>
+            <td>${escapeHtml(entry.qty)}</td>
+          `;
+          topBranchBody.appendChild(tr);
+        });
+      }
+    }
+
     if (!items.length) {
       const tr = document.createElement("tr");
       tr.innerHTML = `<td colspan="3" class="text-muted">${t("no_delivered_period")}</td>`;
@@ -6982,6 +7074,10 @@
   document.getElementById("analyticsApplyBtn").addEventListener("click", () => {
     renderAnalytics();
   });
+  const analyticsChartMeasureSelect = document.getElementById("analyticsChartMeasureSelect");
+  if (analyticsChartMeasureSelect) {
+    analyticsChartMeasureSelect.addEventListener("change", renderAnalytics);
+  }
   document.getElementById("exportMonthlyReportBtn").addEventListener("click", exportMonthlyReport);
 
   document.getElementById("addVehicleBtn").addEventListener("click", async () => {
