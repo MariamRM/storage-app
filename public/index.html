@@ -1084,6 +1084,40 @@
         <tbody id="analyticsTopBranchItemsBody"></tbody>
       </table>
     </div>
+
+    <div class="panel-section-title mt-md" data-i18n="repeated_items_by_branch">Repeated items by branch</div>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th data-i18n="th_rank">Rank</th>
+            <th data-i18n="th_branch">Branch</th>
+            <th data-i18n="th_item">Item</th>
+            <th data-i18n="chart_measure_requests">By requests</th>
+            <th data-i18n="chart_measure_qty">By quantity</th>
+          </tr>
+        </thead>
+        <tbody id="analyticsRepeatedItemsBody"></tbody>
+      </table>
+    </div>
+
+    <div class="panel-section-title mt-md" data-i18n="monthly_forecast">Monthly forecast</div>
+    <div class="panel-subtitle" data-i18n="monthly_forecast_subtitle">Read-only forecast from the last 3 complete months of delivered requests (50% / 30% / 20%).</div>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th data-i18n="th_branch">Branch</th>
+            <th data-i18n="th_item">Item</th>
+            <th data-i18n="three_months_ago">3 months ago</th>
+            <th data-i18n="two_months_ago">2 months ago</th>
+            <th data-i18n="last_month">Last month</th>
+            <th data-i18n="forecast_next_month">Forecast next month</th>
+          </tr>
+        </thead>
+        <tbody id="analyticsForecastBody"></tbody>
+      </table>
+    </div>
   </section>
 
   <!-- Vehicle reminders (Admin/Manager/Driver) -->
@@ -1667,6 +1701,14 @@
       most_ordered: "Most ordered items (by cost)",
       top_requests_chart: "Top requested items chart",
       top_item_by_branch: "Top item by branch",
+      repeated_items_by_branch: "Repeated items by branch",
+      monthly_forecast: "Monthly forecast",
+      monthly_forecast_subtitle: "Read-only forecast from the last 3 complete months of delivered requests (50% / 30% / 20%).",
+      three_months_ago: "3 months ago",
+      two_months_ago: "2 months ago",
+      last_month: "Last month",
+      forecast_next_month: "Forecast next month",
+      th_rank: "Rank",
       no_chart_data: "No chart data for this filter.",
       export_monthly_report: "Export monthly report",
       report_date_required: "Select both dates before exporting.",
@@ -4856,6 +4898,25 @@
     });
   }
 
+  function getRequestAnalyticsDate(request) {
+    const raw = request && (request.deliveredAt || request.createdAt);
+    if (!raw) return null;
+    const value = new Date(raw);
+    return Number.isNaN(value.getTime()) ? null : value;
+  }
+
+  function getMonthKey(date) {
+    if (!(date instanceof Date) || Number.isNaN(date.getTime())) return "";
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    return `${date.getFullYear()}-${month}`;
+  }
+
+  function getPreviousCompleteMonthKeys(anchorDate) {
+    const safeAnchor = anchorDate instanceof Date && !Number.isNaN(anchorDate.getTime()) ? anchorDate : new Date();
+    const anchorMonthStart = new Date(safeAnchor.getFullYear(), safeAnchor.getMonth(), 1);
+    return [3, 2, 1].map((offset) => getMonthKey(new Date(anchorMonthStart.getFullYear(), anchorMonthStart.getMonth() - offset, 1)));
+  }
+
   function computeAnalytics() {
     const branchSel = document.getElementById("analyticsBranchSelect");
     const fromInput = document.getElementById("analyticsFromDate");
@@ -4874,8 +4935,8 @@
       if (r.status !== "delivered") return false;
       if (allowedAnalyticsBranches && !allowedAnalyticsBranches.has(r.toBranchId)) return false;
       if (branchId !== "ALL" && r.toBranchId !== branchId) return false;
-      if (!r.createdAt) return false;
-      const d = new Date(r.createdAt);
+      const d = getRequestAnalyticsDate(r);
+      if (!d) return false;
       if (fromDate && d < fromDate) return false;
       if (toDate && d > toDate) return false;
       return true;
@@ -4886,6 +4947,7 @@
     const itemStats = new Map();
     const branchStats = new Map();
     const topItemByBranch = new Map();
+    const repeatedItemsByBranch = new Map();
 
     delivered.forEach((r) => {
       const storageItem = state.items.find((it) => it.id === r.itemId && it.branchId === storageId);
@@ -4929,6 +4991,21 @@
       }
       topStat.qty += qty;
       topStat.requests += 1;
+
+      let repeatedStat = repeatedItemsByBranch.get(topKey);
+      if (!repeatedStat) {
+        repeatedStat = {
+          branchId: branchKey,
+          branchName: getBranchName(branchKey),
+          itemId: r.itemId,
+          itemName: storageItem ? storageItem.name : r.itemId,
+          qty: 0,
+          requests: 0
+        };
+        repeatedItemsByBranch.set(topKey, repeatedStat);
+      }
+      repeatedStat.qty += qty;
+      repeatedStat.requests += 1;
     });
 
     const itemsArray = Array.from(itemStats.values()).sort((a,b)=> b.cost - a.cost);
@@ -4941,13 +5018,73 @@
         }
         return acc;
       }, new Map());
+    const repeatedBranchItems = Array.from(repeatedItemsByBranch.values())
+      .sort((a, b) =>
+        a.branchName.localeCompare(b.branchName)
+        || b.requests - a.requests
+        || b.qty - a.qty
+        || a.itemName.localeCompare(b.itemName)
+      )
+      .reduce((acc, entry) => {
+        const count = acc.counts.get(entry.branchId) || 0;
+        if (count < 3) {
+          acc.rows.push({ ...entry, rank: count + 1 });
+          acc.counts.set(entry.branchId, count + 1);
+        }
+        return acc;
+      }, { rows: [], counts: new Map() }).rows;
+
+    const forecastMonthKeys = getPreviousCompleteMonthKeys(toDate || new Date());
+    const forecastWeights = [0.2, 0.3, 0.5];
+    const forecastMap = new Map();
+    (state.requests || []).forEach((r) => {
+      if (r.status !== "delivered") return;
+      if (allowedAnalyticsBranches && !allowedAnalyticsBranches.has(r.toBranchId)) return;
+      if (branchId !== "ALL" && r.toBranchId !== branchId) return;
+      const requestDate = getRequestAnalyticsDate(r);
+      if (!requestDate || requestDate > (toDate || new Date())) return;
+      const monthKey = getMonthKey(requestDate);
+      const monthIndex = forecastMonthKeys.indexOf(monthKey);
+      if (monthIndex === -1) return;
+      const storageItem = state.items.find((it) => it.id === r.itemId && it.branchId === storageId) || getItemById(r.itemId);
+      const key = `${r.toBranchId || "UNKNOWN"}::${r.itemId}`;
+      let row = forecastMap.get(key);
+      if (!row) {
+        row = {
+          branchId: r.toBranchId || "UNKNOWN",
+          branchName: getBranchName(r.toBranchId || "UNKNOWN"),
+          itemId: r.itemId,
+          itemName: storageItem ? storageItem.name : r.itemId,
+          months: [0, 0, 0],
+          requests: 0
+        };
+        forecastMap.set(key, row);
+      }
+      row.months[monthIndex] += Number(r.qty || 0);
+      row.requests += 1;
+    });
+    const forecastRows = Array.from(forecastMap.values())
+      .map((entry) => ({
+        branchName: entry.branchName,
+        itemName: entry.itemName,
+        month3: entry.months[0],
+        month2: entry.months[1],
+        month1: entry.months[2],
+        forecastQty: (entry.months[0] * forecastWeights[0]) + (entry.months[1] * forecastWeights[1]) + (entry.months[2] * forecastWeights[2]),
+        requests: entry.requests
+      }))
+      .filter((entry) => entry.month3 || entry.month2 || entry.month1)
+      .sort((a, b) => b.forecastQty - a.forecastQty || b.month1 - a.month1 || b.requests - a.requests || a.branchName.localeCompare(b.branchName) || a.itemName.localeCompare(b.itemName));
+
     return {
       totalCost,
       totalQty,
       totalRequests: delivered.length,
       items: itemsArray,
       branches: branchArray,
-      topBranchItems: Array.from(topBranchItems.values()).sort((a, b) => a.branchName.localeCompare(b.branchName))
+      topBranchItems: Array.from(topBranchItems.values()).sort((a, b) => a.branchName.localeCompare(b.branchName)),
+      repeatedBranchItems,
+      forecastRows
     };
   }
 
@@ -5167,13 +5304,15 @@
   }
 
   function renderAnalytics() {
-    const { totalCost, totalQty, totalRequests, items, branches, topBranchItems } = computeAnalytics();
+    const { totalCost, totalQty, totalRequests, items, branches, topBranchItems, repeatedBranchItems, forecastRows } = computeAnalytics();
 
     const totalCostEl = document.getElementById("analyticsTotalCost");
     const totalQtyEl = document.getElementById("analyticsTotalQty");
     const totalReqEl = document.getElementById("analyticsTotalRequests");
     const tbody = document.getElementById("analyticsItemsTableBody");
     const topBranchBody = document.getElementById("analyticsTopBranchItemsBody");
+    const repeatedBody = document.getElementById("analyticsRepeatedItemsBody");
+    const forecastBody = document.getElementById("analyticsForecastBody");
 
     if (totalCostEl) totalCostEl.textContent = totalCost.toFixed(3);
     if (totalQtyEl) totalQtyEl.textContent = totalQty;
@@ -5205,6 +5344,49 @@
             <td>${escapeHtml(entry.qty)}</td>
           `;
           topBranchBody.appendChild(tr);
+        });
+      }
+    }
+
+    if (repeatedBody) {
+      repeatedBody.innerHTML = "";
+      if (!repeatedBranchItems.length) {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td colspan="5" class="text-muted">${t("no_delivered_period")}</td>`;
+        repeatedBody.appendChild(tr);
+      } else {
+        repeatedBranchItems.forEach((entry) => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${escapeHtml(entry.rank)}</td>
+            <td>${escapeHtml(entry.branchName)}</td>
+            <td>${escapeHtml(entry.itemName)}</td>
+            <td>${escapeHtml(entry.requests)}</td>
+            <td>${escapeHtml(entry.qty)}</td>
+          `;
+          repeatedBody.appendChild(tr);
+        });
+      }
+    }
+
+    if (forecastBody) {
+      forecastBody.innerHTML = "";
+      if (!forecastRows.length) {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td colspan="6" class="text-muted">${t("no_delivered_period")}</td>`;
+        forecastBody.appendChild(tr);
+      } else {
+        forecastRows.slice(0, 30).forEach((entry) => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${escapeHtml(entry.branchName)}</td>
+            <td>${escapeHtml(entry.itemName)}</td>
+            <td>${escapeHtml(entry.month3)}</td>
+            <td>${escapeHtml(entry.month2)}</td>
+            <td>${escapeHtml(entry.month1)}</td>
+            <td>${entry.forecastQty.toFixed(2)}</td>
+          `;
+          forecastBody.appendChild(tr);
         });
       }
     }
