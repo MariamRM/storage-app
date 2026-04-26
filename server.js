@@ -10,6 +10,7 @@ const PORT = process.env.PORT || 4000;
 const DATA_FILE = process.env.DATA_FILE || path.join(__dirname, "data.json");
 const DATA_BACKUP_ON_SAVE = process.env.DATA_BACKUP_ON_SAVE === "1";
 const MAIN_STORAGE_BRANCH_ID = process.env.MAIN_STORAGE_BRANCH_ID || "B001"; // change if needed
+const ITEM_DELETE_PIN = String(process.env.ITEM_DELETE_PIN || "1234");
 
 app.use(cors());
 app.use(express.json({ limit: "50mb" }));
@@ -76,6 +77,7 @@ function ensureDataShape(parsed) {
   parsed.branches ||= [];
   parsed.users ||= [];
   parsed.items ||= [];
+  parsed.itemImportRuns ||= [];
   parsed.movements ||= [];
   parsed.budgets ||= [];
   parsed.requests ||= [];
@@ -119,6 +121,77 @@ function findUserByName(data, name) {
 
 function requireRole(user, roles) {
   return user && roles.includes(user.role);
+}
+
+function isActiveItem(item) {
+  return item && !item.deletedAt;
+}
+
+function normalizePriceImportRows(rows) {
+  if (!Array.isArray(rows)) return [];
+  const out = [];
+  for (const row of rows) {
+    if (!row || typeof row !== "object") continue;
+    const id = String(row.id || "").trim();
+    const unitCost = Number(row.unitCost);
+    if (!id || !Number.isFinite(unitCost)) continue;
+    out.push({
+      id,
+      unitCost,
+      sourceSheet: String(row.sourceSheet || "").trim(),
+      name: String(row.name || "").trim()
+    });
+  }
+  return out;
+}
+
+function buildPriceImportSummary(data, rows, branchId) {
+  const normalizedBranchId = String(branchId || MAIN_STORAGE_BRANCH_ID).trim();
+  const byId = new Map();
+  rows.forEach((row) => byId.set(row.id, row));
+
+  const matched = [];
+  const updated = [];
+  const alreadySame = [];
+  const missing = [];
+
+  for (const [id, row] of byId.entries()) {
+    const item = (data.items || []).find((it) => it.id === id && it.branchId === normalizedBranchId && isActiveItem(it));
+    if (!item) {
+      missing.push({
+        id,
+        name: row.name || "",
+        unitCost: row.unitCost,
+        sourceSheet: row.sourceSheet || ""
+      });
+      continue;
+    }
+    const oldUnitCost = Number(item.unitCost || 0);
+    const entry = {
+      id,
+      name: item.name || row.name || "",
+      branchId: normalizedBranchId,
+      oldUnitCost,
+      newUnitCost: Number(row.unitCost),
+      sourceSheet: row.sourceSheet || ""
+    };
+    matched.push(entry);
+    if (Number(entry.newUnitCost.toFixed(6)) === Number(oldUnitCost.toFixed(6))) alreadySame.push(entry);
+    else updated.push(entry);
+  }
+
+  return {
+    branchId: normalizedBranchId,
+    sourceRows: rows.length,
+    uniqueRows: byId.size,
+    matchedCount: matched.length,
+    updatedCount: updated.length,
+    alreadySameCount: alreadySame.length,
+    missingCount: missing.length,
+    updated,
+    alreadySame,
+    missing
+  };
 }
 
 // UPDATED: supports ITEM-001 and ITM-001 (but will generate ITEM-###)
@@ -538,8 +611,24 @@ app.post("/api/items", async (req, res) => {
       return res.status(400).json({ error: "name (or nameEn/nameAr) required" });
     }
 
-    if (data.items.find((x) => x.id === String(id).trim() && x.branchId === branchId)) {
+    const existing = data.items.find((x) => x.id === String(id).trim() && x.branchId === branchId);
+    if (existing && !existing.deletedAt) {
       return res.status(400).json({ error: "Item ID already exists in this branch" });
+    }
+
+    if (existing && existing.deletedAt) {
+      existing.name = names.name;
+      existing.nameEn = names.nameEn;
+      existing.nameAr = names.nameAr;
+      existing.branchId = String(branchId).trim();
+      existing.minQty = Number(minQty) || 0;
+      existing.baseQty = Number(baseQty) || 0;
+      existing.unitCost = Number(unitCost) || 0;
+      delete existing.deletedAt;
+      delete existing.deletedByUserId;
+      delete existing.deleteNote;
+      await saveData(data);
+      return res.status(201).json(existing);
     }
 
     const newItem = {
@@ -580,7 +669,7 @@ app.patch("/api/items/:id", async (req, res) => {
       (it) => it.id === String(id).trim() && it.branchId === String(branchId).trim()
     );
 
-    if (!item) {
+    if (!item || item.deletedAt) {
       return res.status(404).json({ error: "Item not found for this branch" });
     }
     if (String(item.branchId) !== String(MAIN_STORAGE_BRANCH_ID)) {
@@ -612,7 +701,7 @@ app.patch("/api/items/:id", async (req, res) => {
 app.delete("/api/items/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    const { userId, branchId } = req.body || {};
+    const { userId, branchId, deletePin } = req.body || {};
 
     const data = await loadData();
     const user = findUserById(data, userId);
@@ -623,6 +712,9 @@ app.delete("/api/items/:id", async (req, res) => {
     if (!branchId) {
       return res.status(400).json({ error: "branchId is required to delete item" });
     }
+    if (String(deletePin || "").trim() !== ITEM_DELETE_PIN) {
+      return res.status(403).json({ error: "Invalid delete PIN" });
+    }
 
     const idx = (data.items || []).findIndex(
       (it) => it.id === String(id).trim() && it.branchId === String(branchId).trim()
@@ -632,12 +724,55 @@ app.delete("/api/items/:id", async (req, res) => {
       return res.status(403).json({ error: "Only Main Storage items can be deleted" });
     }
 
-    data.items.splice(idx, 1);
+    const item = data.items[idx];
+    if (item.deletedAt) return res.json({ ok: true, alreadyDeleted: true });
+    item.deletedAt = new Date().toISOString();
+    item.deletedByUserId = user.id;
     await saveData(data);
     res.json({ ok: true });
   } catch (err) {
     console.error("Delete item error", err);
     res.status(500).json({ error: "Failed to delete item" });
+  }
+});
+
+app.post("/api/items/import-prices", async (req, res) => {
+  try {
+    const { userId, rows, branchId, apply } = req.body || {};
+    const data = await loadData();
+    const user = findUserById(data, userId);
+    if (!requireRole(user, ["admin", "manager"])) {
+      return res.status(403).json({ error: "Only admin/manager can import item prices" });
+    }
+
+    const normalizedRows = normalizePriceImportRows(rows);
+    if (!normalizedRows.length) {
+      return res.status(400).json({ error: "No valid price rows found" });
+    }
+
+    const summary = buildPriceImportSummary(data, normalizedRows, branchId);
+    if (!apply) {
+      return res.json({ ok: true, summary });
+    }
+
+    summary.updated.forEach((entry) => {
+      const item = (data.items || []).find((it) => it.id === entry.id && it.branchId === summary.branchId && isActiveItem(it));
+      if (item) item.unitCost = Number(entry.newUnitCost);
+    });
+    data.itemImportRuns.push({
+      id: `IMPORT-${Date.now()}`,
+      branchId: summary.branchId,
+      updatedCount: summary.updatedCount,
+      sourceRows: summary.sourceRows,
+      createdAt: new Date().toISOString(),
+      createdByUserId: user.id
+    });
+    await backupCurrentDataFile();
+    await saveData(data);
+    res.json({ ok: true, summary });
+  } catch (err) {
+    console.error("Import item prices error", err);
+    res.status(500).json({ error: "Failed to import item prices" });
   }
 });
 

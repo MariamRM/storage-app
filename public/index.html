@@ -97,6 +97,7 @@
     .summary-value { font-size: 0.95rem; font-weight: 800; margin-top: 0.2rem; }
 
     .toolbar { display:flex; gap:0.6rem; flex-wrap:wrap; align-items:flex-end; }
+    .import-summary { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 0.75rem; padding: 0.75rem; white-space: pre-wrap; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 0.82rem; }
     .toolbar > div { min-width: 220px; flex: 1 1 220px; }
 
     .menu { display:flex; gap:0.5rem; flex-wrap:wrap; }
@@ -166,6 +167,7 @@
       .toolbar > div { min-width: 100%; }
     }
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 </head>
 <body>
 <header>
@@ -358,6 +360,24 @@
       <button id="updateItemBtn" class="btn btn-secondary" data-i18n="update_item">Update item</button>
       <button id="deleteItemBtn" class="btn btn-secondary" data-i18n="delete_item">Cancel item</button>
     </div>
+
+    <div class="panel-section-title mt-md" data-i18n="price_import_title">Price import (Admin & Manager)</div>
+    <div class="panel-subtitle" data-i18n="price_import_subtitle">Upload an Excel file to preview and apply Main Storage price updates only. No users, history, or requests are changed.</div>
+    <div class="grid mt-xs">
+      <div>
+        <label data-i18n="price_import_file">Excel file</label>
+        <input id="priceImportFileInput" type="file" accept=".xlsx,.xls" />
+      </div>
+      <div>
+        <label data-i18n="price_import_branch">Target branch</label>
+        <select id="priceImportBranchSelect"></select>
+      </div>
+    </div>
+    <div class="mt-sm" style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+      <button id="priceImportPreviewBtn" class="btn btn-secondary" data-i18n="price_import_preview">Preview price changes</button>
+      <button id="priceImportApplyBtn" class="btn btn-primary" data-i18n="price_import_apply">Apply price changes</button>
+    </div>
+    <div id="priceImportSummaryBox" class="import-summary mt-sm" style="display:none;"></div>
     </div>
   </section>
 
@@ -1560,6 +1580,10 @@
       select_item_to_edit: "Select item to edit (optional)",
       update_item: "Update item",
       delete_item: "Cancel item",
+      delete_item_pin_prompt: "Enter delete PIN to hide this item from active inventory.",
+      delete_item_pin_invalid: "Wrong delete PIN.",
+      delete_item_still_in_history: "This removes the item from active inventory only. History stays unchanged.",
+      delete_item_confirm_final: "Are you sure you want to hide this item from active inventory?",
       item_type: "Item type",
       item_type_regular: "Regular (ITEM)",
       item_type_thread: "Thread (THR)",
@@ -1606,9 +1630,30 @@
       item_from_storage: "Item (from storage)",
       search_items_placeholder: "Type to filter items",
       search_item_edit_placeholder: "Type to search items",
+      search_item_edit_placeholder_strict: "Search by ID or name, for example ITEM-001",
       no_items_match_search: "No items match your search.",
       delete_item_confirm: "Cancel this item?",
-      item_deleted: "Item canceled.",
+      item_deleted: "Item hidden from active inventory.",
+      price_import_title: "Price import (Admin & Manager)",
+      price_import_subtitle: "Upload an Excel file to preview and apply Main Storage price updates only. No users, history, or requests are changed.",
+      price_import_file: "Excel file",
+      price_import_branch: "Target branch",
+      price_import_preview: "Preview price changes",
+      price_import_apply: "Apply price changes",
+      price_import_no_file: "Choose an Excel file first.",
+      price_import_xlsx_missing: "Excel parser did not load. Refresh the page and try again.",
+      price_import_preview_first: "Preview the price changes first.",
+      price_import_preview_title: "Price import preview",
+      price_import_summary_rows: "Rows with price",
+      price_import_summary_unique: "Unique items",
+      price_import_summary_matched: "Matched active items",
+      price_import_summary_updated: "Items to update",
+      price_import_summary_same: "Already same price",
+      price_import_summary_missing: "Missing in target branch",
+      price_import_done: "Price import completed.",
+      price_import_apply_confirm: "Apply these price changes to the live inventory now?",
+      price_import_sheet_filter: "Using safe sheets: inventory-main-storage + Threads",
+      price_import_no_valid_rows: "No valid price rows were found in this file.",
       quantity: "Quantity",
       priority: "Priority",
       priority_normal: "Normal",
@@ -2258,7 +2303,7 @@
     if (inventorySearchInput) inventorySearchInput.placeholder = t("search_items_placeholder");
 
     const editSearchInput = document.getElementById("itemEditSearchInput");
-    if (editSearchInput) editSearchInput.placeholder = t("search_item_edit_placeholder");
+    if (editSearchInput) editSearchInput.placeholder = t("search_item_edit_placeholder_strict");
 
     updateHistoryToggleLabels();
   }
@@ -2288,6 +2333,8 @@
     requestsHistoryPage: 1,
     transfersHistoryPage: 1,
     deliveriesHistoryPage: 1,
+    priceImportRows: [],
+    priceImportSummary: null,
     lastNotifiedCount: 0,
     lastNotifiedDeliveryCount: 0,
     lastNotifiedTransferCount: 0,
@@ -2564,6 +2611,38 @@
   }
   function getItemById(id) {
     return state.items.find((x) => x.id === id);
+  }
+  function isActiveItem(item) {
+    return !!(item && !item.deletedAt);
+  }
+  function getActiveItems() {
+    return (state.items || []).filter(isActiveItem);
+  }
+  function scoreItemSearch(item, query) {
+    const q = String(query || "").trim().toLowerCase();
+    if (!q) return 1;
+    const id = String(item.id || "").toLowerCase();
+    const name = String(item.name || "").toLowerCase();
+    const nameEn = String(item.nameEn || "").toLowerCase();
+    const nameAr = String(item.nameAr || "").toLowerCase();
+    const branch = String(getBranchName(item.branchId) || "").toLowerCase();
+    const haystack = [id, name, nameEn, nameAr, branch];
+    if (id === q) return 100;
+    if (name === q || nameEn === q || nameAr === q) return 95;
+    if (id.startsWith(q)) return 90;
+    if (name.startsWith(q) || nameEn.startsWith(q) || nameAr.startsWith(q)) return 80;
+    if (haystack.some((v) => v.includes(q))) return 50;
+    return 0;
+  }
+  function filterItemsByQuery(items, query) {
+    const q = String(query || "").trim().toLowerCase();
+    const list = Array.isArray(items) ? items.slice() : [];
+    if (!q) return list.sort((a, b) => (a.name || "").localeCompare(b.name || "") || (a.id || "").localeCompare(b.id || ""));
+    return list
+      .map((item) => ({ item, score: scoreItemSearch(item, q) }))
+      .filter((entry) => entry.score > 0)
+      .sort((a, b) => b.score - a.score || (a.item.name || "").localeCompare(b.item.name || "") || (a.item.id || "").localeCompare(b.item.id || ""))
+      .map((entry) => entry.item);
   }
   function getItemTypeFromId(id) {
     if (!id) return "ITEM";
@@ -3280,6 +3359,16 @@
     if (!res.ok) throw new Error(body.error || "Delete item failed");
     return body;
   }
+  async function apiImportItemPrices(data) {
+    const res = await fetch(`${API_BASE}/items/import-prices`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data || {})
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(body.error || "Import item prices failed");
+    return body;
+  }
 
   async function apiCreateMovement(itemId, type, qty, note) {
     const res = await fetch(`${API_BASE}/movements`, {
@@ -3642,6 +3731,7 @@
   function renderBranchSelects() {
     const selects = [
       document.getElementById("itemBranchSelect"),
+      document.getElementById("priceImportBranchSelect"),
       document.getElementById("newUserBranchSelect"),
       document.getElementById("editUserBranchSelect")
     ];
@@ -3656,6 +3746,9 @@
         if (idx === 0) opt.selected = true;
         sel.appendChild(opt);
       });
+      if (sel.id === "priceImportBranchSelect" && sel.querySelector(`option[value="${getMainStorageId()}"]`)) {
+        sel.value = getMainStorageId();
+      }
     });
 
     const allowedSel = document.getElementById("editUserAllowedBranches");
@@ -3798,22 +3891,8 @@
       : "Select item to edit";
     sel.appendChild(placeholder);
 
-    const all = (state.items || [])
-      .filter((it) => it.branchId === storageId)
-      .sort((a, b) => (a.name || "").localeCompare(b.name || ""));
-
-    const filtered = query
-      ? all.filter((it) => {
-          const haystack = [
-            it.id,
-            it.name,
-            it.nameEn,
-            it.nameAr
-          ]
-            .map((v) => String(v || "").toLowerCase());
-          return haystack.some((v) => v.includes(query));
-        })
-      : all;
+    const all = getActiveItems().filter((it) => it.branchId === storageId);
+    const filtered = filterItemsByQuery(all, query);
 
     if (!filtered.length) {
       const empty = document.createElement("option");
@@ -3825,7 +3904,7 @@
       filtered.forEach((it) => {
         const opt = document.createElement("option");
         opt.value = `${it.id}::${it.branchId}`;
-        opt.textContent = `${it.name} (${getBranchName(it.branchId)})`;
+        opt.textContent = `${it.id} - ${it.name} (${getBranchName(it.branchId)})`;
         sel.appendChild(opt);
       });
     }
@@ -3894,8 +3973,8 @@
     const selectedBranchId = invSel ? invSel.value : mainId;
     const query = (searchInput && searchInput.value ? searchInput.value : "").trim().toLowerCase();
 
-    const itemsSelected = (state.items || []).filter(it => it.branchId === selectedBranchId);
-    const itemsMain = (state.items || []).filter(it => it.branchId === mainId);
+    const itemsSelected = getActiveItems().filter((it) => it.branchId === selectedBranchId);
+    const itemsMain = getActiveItems().filter((it) => it.branchId === mainId);
     const sorted = getCurrentInventoryRows();
 
     const selectedTotal = itemsSelected.reduce((sum, it) => sum + (Number(it.baseQty)||0)*(Number(it.unitCost)||0), 0);
@@ -3977,11 +4056,11 @@
     const moveSelect = document.getElementById("movementItemSelect");
     if (moveSelect) {
       moveSelect.innerHTML = "";
-      const all = [...state.items].sort((a,b)=>(a.name||"").localeCompare(b.name||""));
+      const all = [...getActiveItems()].sort((a,b)=>(a.name||"").localeCompare(b.name||""));
       all.forEach((it, idx) => {
         const opt = document.createElement("option");
         opt.value = it.id;
-        opt.textContent = `${it.name} (${getBranchName(it.branchId)})`;
+        opt.textContent = `${it.id} - ${it.name} (${getBranchName(it.branchId)})`;
         if (idx === 0) opt.selected = true;
         moveSelect.appendChild(opt);
       });
@@ -3998,14 +4077,8 @@
     const term = (searchInput?.value || "").trim().toLowerCase();
     const prev = itemSel.value;
 
-    const items = state.items.filter((it) => it.branchId === storageId);
-    items.sort((a,b)=>(a.name||"").localeCompare(b.name||""));
-    const filtered = term
-      ? items.filter((it) => {
-          const hay = `${it.id || ""} ${it.name || ""}`.toLowerCase();
-          return hay.includes(term);
-        })
-      : items;
+    const items = getActiveItems().filter((it) => it.branchId === storageId);
+    const filtered = filterItemsByQuery(items, term);
 
     itemSel.innerHTML = "";
 
@@ -4023,7 +4096,7 @@
     filtered.forEach((it) => {
       const opt = document.createElement("option");
       opt.value = it.id;
-      opt.textContent = `${it.name} (${t("main_storage")})`;
+      opt.textContent = `${it.id} - ${it.name} (${t("main_storage")})`;
       if (it.id === prev) selectedValue = prev;
       itemSel.appendChild(opt);
     });
@@ -5101,15 +5174,8 @@
     const searchInput = document.getElementById("inventorySearchInput");
     const selectedBranchId = invSel ? invSel.value : getMainStorageId();
     const query = (searchInput && searchInput.value ? searchInput.value : "").trim().toLowerCase();
-    const itemsSelected = (state.items || []).filter((it) => it.branchId === selectedBranchId);
-    const filteredSelected = query
-      ? itemsSelected.filter((it) => {
-          const haystack = [it.id, it.name, it.nameEn, it.nameAr].map((v) => String(v || "").toLowerCase());
-          return haystack.some((v) => v.includes(query));
-        })
-      : itemsSelected;
-
-    return [...filteredSelected].sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+    const itemsSelected = getActiveItems().filter((it) => it.branchId === selectedBranchId);
+    return filterItemsByQuery(itemsSelected, query);
   }
 
   function exportInventoryExcel() {
@@ -5165,6 +5231,70 @@
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
+  }
+
+  async function parsePriceImportWorkbook(file) {
+    if (!window.XLSX) throw new Error(t("price_import_xlsx_missing"));
+    const buffer = await file.arrayBuffer();
+    const workbook = XLSX.read(buffer, { type: "array" });
+    const safeSheets = new Set(["inventory-main-storage", "Threads"]);
+    const rows = [];
+
+    workbook.SheetNames.forEach((sheetName) => {
+      if (!safeSheets.has(sheetName)) return;
+      const sheet = workbook.Sheets[sheetName];
+      const matrix = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
+      const headerRow = matrix.find((row) => Array.isArray(row) && row.some((cell) => String(cell || "").trim().toLowerCase() === "id"));
+      if (!headerRow) return;
+      const headerMap = headerRow.reduce((acc, cell, idx) => {
+        acc[String(cell || "").trim().toLowerCase()] = idx;
+        return acc;
+      }, {});
+      const idIdx = headerMap.id;
+      const nameIdx = headerMap.name;
+      const costIdx = typeof headerMap["unit cost"] === "number" ? headerMap["unit cost"] : headerMap.price;
+      if (typeof idIdx !== "number" || typeof costIdx !== "number") return;
+      const startIndex = matrix.indexOf(headerRow) + 1;
+      matrix.slice(startIndex).forEach((row) => {
+        if (!Array.isArray(row)) return;
+        const id = String(row[idIdx] || "").trim();
+        const name = String(row[nameIdx] || "").trim();
+        const unitCost = Number(row[costIdx]);
+        if (!id || !Number.isFinite(unitCost)) return;
+        rows.push({ id, name, unitCost, sourceSheet: sheetName });
+      });
+    });
+
+    return rows;
+  }
+
+  function renderPriceImportSummary(summary) {
+    const box = document.getElementById("priceImportSummaryBox");
+    if (!box) return;
+    if (!summary) {
+      box.style.display = "none";
+      box.textContent = "";
+      return;
+    }
+    const lines = [
+      `${t("price_import_preview_title")}`,
+      `${t("price_import_sheet_filter")}`,
+      `${t("price_import_summary_rows")}: ${summary.sourceRows}`,
+      `${t("price_import_summary_unique")}: ${summary.uniqueRows}`,
+      `${t("price_import_summary_matched")}: ${summary.matchedCount}`,
+      `${t("price_import_summary_updated")}: ${summary.updatedCount}`,
+      `${t("price_import_summary_same")}: ${summary.alreadySameCount}`,
+      `${t("price_import_summary_missing")}: ${summary.missingCount}`,
+      ""
+    ];
+    (summary.updated || []).slice(0, 12).forEach((row) => {
+      lines.push(`${row.id} | ${row.name} | ${row.oldUnitCost} -> ${row.newUnitCost}`);
+    });
+    if ((summary.updated || []).length > 12) {
+      lines.push(`... +${summary.updated.length - 12} more`);
+    }
+    box.textContent = lines.join("\n");
+    box.style.display = "block";
   }
 
   function renderAnalyticsChart(entries) {
@@ -6793,11 +6923,19 @@
       alert(currentLang === "ar" ? "اختر صنفًا أولًا" : "Select an item first");
       return;
     }
-    if (!confirm(t("delete_item_confirm"))) return;
+    alert(t("delete_item_still_in_history"));
+    const deletePin = window.prompt(t("delete_item_pin_prompt"), "");
+    if (deletePin === null) return;
+    if (String(deletePin).trim() !== "1234") {
+      alert(t("delete_item_pin_invalid"));
+      return;
+    }
+    if (!confirm(t("delete_item_confirm_final"))) return;
 
     try {
-      await apiDeleteItem(id, { userId: state.user.id, branchId });
-      state.items = state.items.filter((it) => !(it.id === id && it.branchId === branchId));
+      await apiDeleteItem(id, { userId: state.user.id, branchId, deletePin });
+      const item = state.items.find((it) => it.id === id && it.branchId === branchId);
+      if (item) item.deletedAt = new Date().toISOString();
       renderInventoryViewer();
       fillRequestItemsFromStorage();
       renderItemEditSelect();
@@ -6814,6 +6952,73 @@
       alert(e.message);
     }
   });
+
+  const priceImportFileInput = document.getElementById("priceImportFileInput");
+  if (priceImportFileInput) {
+    priceImportFileInput.addEventListener("change", () => {
+      state.priceImportRows = [];
+      state.priceImportSummary = null;
+      renderPriceImportSummary(null);
+    });
+  }
+
+  const priceImportPreviewBtn = document.getElementById("priceImportPreviewBtn");
+  if (priceImportPreviewBtn) {
+    priceImportPreviewBtn.addEventListener("click", async () => {
+      if (!state.user || !["admin", "manager"].includes(state.user.role)) {
+        alert(t("only_admin_mgr_create_items"));
+        return;
+      }
+      const file = document.getElementById("priceImportFileInput")?.files?.[0];
+      if (!file) {
+        alert(t("price_import_no_file"));
+        return;
+      }
+      try {
+        const rows = await parsePriceImportWorkbook(file);
+        if (!rows.length) {
+          alert(t("price_import_no_valid_rows"));
+          return;
+        }
+        const branchId = document.getElementById("priceImportBranchSelect")?.value || getMainStorageId();
+        const result = await apiImportItemPrices({ userId: state.user.id, branchId, rows, apply: false });
+        state.priceImportRows = rows;
+        state.priceImportSummary = result.summary || null;
+        renderPriceImportSummary(state.priceImportSummary);
+      } catch (e) {
+        alert(e.message);
+      }
+    });
+  }
+
+  const priceImportApplyBtn = document.getElementById("priceImportApplyBtn");
+  if (priceImportApplyBtn) {
+    priceImportApplyBtn.addEventListener("click", async () => {
+      if (!state.user || !["admin", "manager"].includes(state.user.role)) {
+        alert(t("only_admin_mgr_create_items"));
+        return;
+      }
+      if (!state.priceImportRows.length || !state.priceImportSummary) {
+        alert(t("price_import_preview_first"));
+        return;
+      }
+      if (!confirm(t("price_import_apply_confirm"))) return;
+      try {
+        const branchId = document.getElementById("priceImportBranchSelect")?.value || getMainStorageId();
+        const result = await apiImportItemPrices({ userId: state.user.id, branchId, rows: state.priceImportRows, apply: true });
+        state.priceImportSummary = result.summary || null;
+        await refreshAllState();
+        renderBranchSelects();
+        renderInventoryViewer();
+        fillRequestItemsFromStorage();
+        renderAnalytics();
+        renderPriceImportSummary(state.priceImportSummary);
+        alert(t("price_import_done"));
+      } catch (e) {
+        alert(e.message);
+      }
+    });
+  }
 
   document.getElementById("addBranchBtn").addEventListener("click", async () => {
     if (!state.user || state.user.role !== "admin") {
