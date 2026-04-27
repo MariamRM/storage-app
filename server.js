@@ -133,13 +133,21 @@ function normalizePriceImportRows(rows) {
   for (const row of rows) {
     if (!row || typeof row !== "object") continue;
     const id = String(row.id || "").trim();
-    const unitCost = Number(row.unitCost);
-    if (!id || !Number.isFinite(unitCost)) continue;
+    const hasBaseQty = row.baseQty !== null && row.baseQty !== "" && typeof row.baseQty !== "undefined";
+    const hasUnitCost = row.unitCost !== null && row.unitCost !== "" && typeof row.unitCost !== "undefined";
+    const baseQty = hasBaseQty ? Number(row.baseQty) : null;
+    const unitCost = hasUnitCost ? Number(row.unitCost) : null;
+    if (!id) continue;
+    if (hasBaseQty && !Number.isFinite(baseQty)) continue;
+    if (hasUnitCost && !Number.isFinite(unitCost)) continue;
+    if (!hasBaseQty && !hasUnitCost) continue;
     out.push({
       id,
-      unitCost,
+      baseQty: hasBaseQty ? baseQty : null,
+      unitCost: hasUnitCost ? unitCost : null,
       sourceSheet: String(row.sourceSheet || "").trim(),
-      name: String(row.name || "").trim()
+      name: String(row.name || "").trim(),
+      branchName: String(row.branchName || "").trim()
     });
   }
   return out;
@@ -154,6 +162,8 @@ function buildPriceImportSummary(data, rows, branchId) {
   const updated = [];
   const alreadySame = [];
   const missing = [];
+  let qtyUpdatedCount = 0;
+  let priceUpdatedCount = 0;
 
   for (const [id, row] of byId.entries()) {
     const item = (data.items || []).find((it) => it.id === id && it.branchId === normalizedBranchId && isActiveItem(it));
@@ -161,23 +171,38 @@ function buildPriceImportSummary(data, rows, branchId) {
       missing.push({
         id,
         name: row.name || "",
+        baseQty: row.baseQty,
         unitCost: row.unitCost,
         sourceSheet: row.sourceSheet || ""
       });
       continue;
     }
+    const oldBaseQty = Number(item.baseQty || 0);
     const oldUnitCost = Number(item.unitCost || 0);
+    const newBaseQty = row.baseQty === null ? oldBaseQty : Number(row.baseQty);
+    const newUnitCost = row.unitCost === null ? oldUnitCost : Number(row.unitCost);
+    const qtyChanged = Number(newBaseQty.toFixed(6)) !== Number(oldBaseQty.toFixed(6));
+    const priceChanged = Number(newUnitCost.toFixed(6)) !== Number(oldUnitCost.toFixed(6));
     const entry = {
       id,
       name: item.name || row.name || "",
       branchId: normalizedBranchId,
+      oldBaseQty,
+      newBaseQty,
       oldUnitCost,
-      newUnitCost: Number(row.unitCost),
+      newUnitCost,
+      qtyChanged,
+      priceChanged,
       sourceSheet: row.sourceSheet || ""
     };
     matched.push(entry);
-    if (Number(entry.newUnitCost.toFixed(6)) === Number(oldUnitCost.toFixed(6))) alreadySame.push(entry);
-    else updated.push(entry);
+    if (!qtyChanged && !priceChanged) {
+      alreadySame.push(entry);
+    } else {
+      updated.push(entry);
+      if (qtyChanged) qtyUpdatedCount += 1;
+      if (priceChanged) priceUpdatedCount += 1;
+    }
   }
 
   return {
@@ -186,6 +211,8 @@ function buildPriceImportSummary(data, rows, branchId) {
     uniqueRows: byId.size,
     matchedCount: matched.length,
     updatedCount: updated.length,
+    qtyUpdatedCount,
+    priceUpdatedCount,
     alreadySameCount: alreadySame.length,
     missingCount: missing.length,
     updated,
@@ -757,12 +784,17 @@ app.post("/api/items/import-prices", async (req, res) => {
 
     summary.updated.forEach((entry) => {
       const item = (data.items || []).find((it) => it.id === entry.id && it.branchId === summary.branchId && isActiveItem(it));
-      if (item) item.unitCost = Number(entry.newUnitCost);
+      if (item) {
+        if (entry.qtyChanged) item.baseQty = Number(entry.newBaseQty);
+        if (entry.priceChanged) item.unitCost = Number(entry.newUnitCost);
+      }
     });
     data.itemImportRuns.push({
       id: `IMPORT-${Date.now()}`,
       branchId: summary.branchId,
       updatedCount: summary.updatedCount,
+      qtyUpdatedCount: summary.qtyUpdatedCount,
+      priceUpdatedCount: summary.priceUpdatedCount,
       sourceRows: summary.sourceRows,
       createdAt: new Date().toISOString(),
       createdByUserId: user.id

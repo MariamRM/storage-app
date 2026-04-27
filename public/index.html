@@ -5239,6 +5239,8 @@
     const workbook = XLSX.read(buffer, { type: "array" });
     const safeSheets = new Set(["inventory-main-storage", "Threads"]);
     const rows = [];
+    const seen = new Map();
+    const targetBranchName = getBranchName(document.getElementById("priceImportBranchSelect")?.value || getMainStorageId());
 
     workbook.SheetNames.forEach((sheetName) => {
       if (!safeSheets.has(sheetName)) return;
@@ -5252,16 +5254,48 @@
       }, {});
       const idIdx = headerMap.id;
       const nameIdx = headerMap.name;
+      const branchIdx = headerMap.branch;
+      const qtyIdx = headerMap.qty;
       const costIdx = typeof headerMap["unit cost"] === "number" ? headerMap["unit cost"] : headerMap.price;
-      if (typeof idIdx !== "number" || typeof costIdx !== "number") return;
+      if (typeof idIdx !== "number" || (typeof qtyIdx !== "number" && typeof costIdx !== "number")) return;
       const startIndex = matrix.indexOf(headerRow) + 1;
       matrix.slice(startIndex).forEach((row) => {
         if (!Array.isArray(row)) return;
         const id = String(row[idIdx] || "").trim();
         const name = String(row[nameIdx] || "").trim();
-        const unitCost = Number(row[costIdx]);
-        if (!id || !Number.isFinite(unitCost)) return;
-        rows.push({ id, name, unitCost, sourceSheet: sheetName });
+        const branchName = typeof branchIdx === "number" ? String(row[branchIdx] || "").trim() : "";
+        const baseQtyRaw = typeof qtyIdx === "number" ? row[qtyIdx] : "";
+        const unitCostRaw = typeof costIdx === "number" ? row[costIdx] : "";
+        const hasBaseQty = String(baseQtyRaw).trim() !== "";
+        const hasUnitCost = String(unitCostRaw).trim() !== "";
+        const baseQty = hasBaseQty ? Number(baseQtyRaw) : null;
+        const unitCost = hasUnitCost ? Number(unitCostRaw) : null;
+        if (!id) return;
+        if (branchName && branchName.toLowerCase() !== String(targetBranchName || "").trim().toLowerCase()) return;
+        if (hasBaseQty && !Number.isFinite(baseQty)) return;
+        if (hasUnitCost && !Number.isFinite(unitCost)) return;
+        if (!hasBaseQty && !hasUnitCost) return;
+        const existing = seen.get(id);
+        const candidate = {
+          id,
+          name,
+          branchName: branchName || targetBranchName,
+          baseQty,
+          unitCost,
+          sourceSheet: sheetName
+        };
+        if (existing) {
+          const qtyConflict = existing.baseQty !== null && candidate.baseQty !== null && Number(existing.baseQty) !== Number(candidate.baseQty);
+          const costConflict = existing.unitCost !== null && candidate.unitCost !== null && Number(existing.unitCost) !== Number(candidate.unitCost);
+          if (qtyConflict || costConflict) {
+            throw new Error(`Conflicting duplicate row for ${id} in Excel file`);
+          }
+          if (existing.baseQty === null && candidate.baseQty !== null) existing.baseQty = candidate.baseQty;
+          if (existing.unitCost === null && candidate.unitCost !== null) existing.unitCost = candidate.unitCost;
+          return;
+        }
+        seen.set(id, candidate);
+        rows.push(candidate);
       });
     });
 
@@ -5283,12 +5317,17 @@
       `${t("price_import_summary_unique")}: ${summary.uniqueRows}`,
       `${t("price_import_summary_matched")}: ${summary.matchedCount}`,
       `${t("price_import_summary_updated")}: ${summary.updatedCount}`,
+      `Qty changes: ${summary.qtyUpdatedCount || 0}`,
+      `Price changes: ${summary.priceUpdatedCount || 0}`,
       `${t("price_import_summary_same")}: ${summary.alreadySameCount}`,
       `${t("price_import_summary_missing")}: ${summary.missingCount}`,
       ""
     ];
     (summary.updated || []).slice(0, 12).forEach((row) => {
-      lines.push(`${row.id} | ${row.name} | ${row.oldUnitCost} -> ${row.newUnitCost}`);
+      const parts = [];
+      if (row.qtyChanged) parts.push(`qty ${row.oldBaseQty} -> ${row.newBaseQty}`);
+      if (row.priceChanged) parts.push(`price ${row.oldUnitCost} -> ${row.newUnitCost}`);
+      lines.push(`${row.id} | ${row.name} | ${parts.join(" | ")}`);
     });
     if ((summary.updated || []).length > 12) {
       lines.push(`... +${summary.updated.length - 12} more`);
