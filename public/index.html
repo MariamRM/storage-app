@@ -633,6 +633,7 @@
           <th data-i18n="th_created_at">Created</th>
           <th data-i18n="th_item">Item</th>
           <th data-i18n="th_qty">Qty</th>
+          <th data-i18n="th_qty_main">Qty in main</th>
           <th data-i18n="th_from">From</th>
           <th data-i18n="th_to">To</th>
           <th data-i18n="th_priority">Priority</th>
@@ -648,6 +649,7 @@
           <th></th>
           <th></th>
           <th><input id="requestItemFilterInput" data-i18n-placeholder="filter_item_placeholder" placeholder="Filter item" /></th>
+          <th></th>
           <th></th>
           <th></th>
           <th><select id="requestBranchFilterSelect"></select></th>
@@ -1717,6 +1719,7 @@
       th_name: "Name",
       th_branch: "Branch",
       th_qty: "Qty",
+      th_qty_main: "Qty in main",
       th_min: "Min",
       th_unit_cost: "Unit cost",
       th_value: "Value",
@@ -2129,6 +2132,7 @@
       th_name: "الاسم",
       th_branch: "الفرع",
       th_qty: "الكمية",
+      th_qty_main: "كمية المخزن الرئيسي",
       th_min: "الحد الأدنى",
       th_unit_cost: "سعر الوحدة",
       th_value: "القيمة",
@@ -4771,6 +4775,7 @@
     tbody.innerHTML = "";
     if (!state.user) return;
     setupRequestBranchFilters();
+    const storageId = getMainStorageId();
     const orderMap = buildRequestOrderMap(state.requests || []);
     const all = [...state.requests].sort(
       (a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0)
@@ -4817,7 +4822,7 @@
 
     if (!visible.length) {
       const tr = document.createElement("tr");
-      tr.innerHTML = `<td colspan="14" class="text-muted">${
+      tr.innerHTML = `<td colspan="15" class="text-muted">${
         ["admin", "manager"].includes(state.user.role) ? t("no_pending_requests") : t("no_requests_yet")
       }</td>`;
       tbody.appendChild(tr);
@@ -4826,6 +4831,10 @@
 
     visible.forEach((r) => {
       const item = getItemById(r.itemId);
+      const storageItem = state.items.find((it) => it.id === r.itemId && it.branchId === storageId) || item;
+      const mainQty = storageItem && Number.isFinite(Number(storageItem.baseQty))
+        ? String(storageItem.baseQty)
+        : "-";
       const driverName = r.driverUserId ? getUserName(r.driverUserId) : "";
       const etaText = r.status === "pending" ? "" : formatEta(r);
       const orderLabel = getRequestOrderLabel(r, orderMap);
@@ -4860,6 +4869,7 @@
         <td>${escapeHtml(formatDateTime(r.createdAt))}</td>
         <td>${escapeHtml(item ? item.name : r.itemId)}</td>
         <td>${escapeHtml(r.qty)}</td>
+        <td>${escapeHtml(mainQty)}</td>
         <td>${escapeHtml(getBranchName(r.fromBranchId))}</td>
         <td>${escapeHtml(getBranchName(r.toBranchId))}</td>
         <td>${priorityPill}</td>
