@@ -627,6 +627,10 @@
         <label data-i18n="filter_by_branch">Filter by branch</label>
         <select id="requestBranchFilterSelect"></select>
       </div>
+      <div>
+        <label data-i18n="filter_by_status">Filter by status</label>
+        <select id="requestStatusFilterSelect"></select>
+      </div>
     </div>
     <div class="table-wrapper">
       <table class="driver-transfers-table">
@@ -725,6 +729,16 @@
     </div>
 
     <div class="panel-section-title mt-md" data-i18n="active_transfers">Active transfers</div>
+    <div id="transferFilterBar" class="toolbar mt-xs" style="display:none;">
+      <div>
+        <label data-i18n="filter_by_branch">Filter by branch</label>
+        <select id="transferBranchFilterSelect"></select>
+      </div>
+      <div>
+        <label data-i18n="filter_by_status">Filter by status</label>
+        <select id="transferStatusFilterSelect"></select>
+      </div>
+    </div>
     <div class="table-wrapper">
       <table>
         <thead>
@@ -811,6 +825,7 @@
     <div class="grid mt-xs">
       <div>
         <label data-i18n="delivery_area">Area</label>
+        <input id="deliveryAreaSearchInput" data-i18n-placeholder="area_search_placeholder" placeholder="Search area" style="margin-bottom:0.25rem;" />
         <select id="deliveryAreaSelect"></select>
       </div>
       <div>
@@ -866,6 +881,16 @@
     </div>
 
     <div class="panel-section-title mt-md" data-i18n="deliveries_list">Deliveries list</div>
+    <div id="deliveriesFilterBar" class="toolbar mt-xs" style="display:none;">
+      <div>
+        <label data-i18n="filter_by_branch">Filter by branch</label>
+        <select id="deliveriesBranchFilterSelect"></select>
+      </div>
+      <div>
+        <label data-i18n="filter_by_status">Filter by status</label>
+        <select id="deliveriesStatusFilterSelect"></select>
+      </div>
+    </div>
     <div class="table-wrapper">
       <table>
         <thead>
@@ -942,6 +967,53 @@
           </tr>
           </thead>
           <tbody id="deliveryDriverScopeTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div id="deliveryAreasAdminBlock" class="mt-md" style="display:none;">
+      <div class="panel-section-title" data-i18n="delivery_area_admin_title">Delivery areas and prices</div>
+      <div class="panel-subtitle" data-i18n="delivery_area_admin_subtitle">Admin can add or edit area name, zone, price, and active status.</div>
+      <div class="grid mt-xs">
+        <div>
+          <label data-i18n="delivery_area">Area</label>
+          <input id="deliveryAreaAdminNameInput" />
+        </div>
+        <div>
+          <label data-i18n="delivery_area_ar">Area (Arabic)</label>
+          <input id="deliveryAreaAdminNameArInput" />
+        </div>
+        <div>
+          <label data-i18n="delivery_zone">Zone</label>
+          <input id="deliveryAreaAdminZoneInput" type="number" min="1" max="9" />
+        </div>
+        <div>
+          <label data-i18n="delivery_charge">Charge</label>
+          <input id="deliveryAreaAdminChargeInput" />
+        </div>
+        <div>
+          <label data-i18n="delivery_active">Active</label>
+          <select id="deliveryAreaAdminActiveSelect">
+            <option value="true" data-i18n="yes_word">Yes</option>
+            <option value="false" data-i18n="no_word">No</option>
+          </select>
+        </div>
+        <div style="display:flex;align-items:flex-end;">
+          <button id="saveDeliveryAreaBtn" class="btn btn-primary" style="width:100%;" data-i18n="save_changes">Save changes</button>
+        </div>
+      </div>
+      <div class="table-wrapper mt-sm">
+        <table>
+          <thead>
+          <tr>
+            <th data-i18n="delivery_area">Area</th>
+            <th data-i18n="delivery_area_ar">Area (Arabic)</th>
+            <th data-i18n="delivery_zone">Zone</th>
+            <th data-i18n="delivery_charge">Charge</th>
+            <th data-i18n="delivery_active">Active</th>
+            <th data-i18n="th_action">Action</th>
+          </tr>
+          </thead>
+          <tbody id="deliveryAreasAdminTableBody"></tbody>
         </table>
       </div>
     </div>
@@ -1600,9 +1672,9 @@
       refresh: "Refresh",
       export_inventory_excel: "Export Excel",
       menu_inventory: "Inventory",
-      menu_requests: "Requests",
-      menu_transfers: "Transfers",
-      menu_deliveries: "Deliveries",
+      menu_requests: "📦 Requests",
+      menu_transfers: "⇄ Transfers",
+      menu_deliveries: "🏠 Deliveries",
       menu_driver: "Driver",
       menu_movements: "Movements",
       menu_analytics: "Analytics",
@@ -1702,7 +1774,7 @@
       scope_multiple: "Multiple branches",
       scope_all: "All branches",
 
-      branch_requests: "Branch requests",
+      branch_requests: "📦 Branch requests",
       requests_subtitle: "Staff / Supervisor / Manager / Admin request items from Main Storage to their own branch.",
       new_request: "New request",
       from_storage: "From storage",
@@ -1755,7 +1827,7 @@
       create_transfer: "Create transfer",
       active_transfers: "Active transfers",
       transfer_history: "Transfer history",
-      driver_transfers: "Driver transfers",
+      driver_transfers: "⇄ Driver transfers",
       deliveries_title: "Deliveries",
       deliveries_subtitle: "Create delivery requests from branches to customer addresses. Drivers deliver.",
       new_delivery: "New delivery",
@@ -1765,8 +1837,12 @@
       delivery_status: "Status",
       delivery_due_date: "Due date",
       delivery_area: "Area",
+      delivery_area_ar: "Area (Arabic)",
       delivery_zone: "Zone",
       delivery_charge: "Charge",
+      delivery_active: "Active",
+      delivery_area_admin_title: "Delivery areas and prices",
+      delivery_area_admin_subtitle: "Admin can add or edit area name, zone, price, and active status.",
       delivery_address: "Address",
       delivery_invoice: "Invoice #",
       delivery_ready_time: "Ready time",
@@ -1788,7 +1864,9 @@
       delivery_visibility: "Deliveries view",
       driver_delivery_visibility_title: "Driver delivery visibility",
       driver_delivery_visibility_subtitle: "Choose if each driver sees all deliveries or only the ones assigned to them.",
-      driver_deliveries_title: "Customer deliveries",
+      yes_word: "Yes",
+      no_word: "No",
+      driver_deliveries_title: "🏠 Customer deliveries",
       mark_in_transit: "In transit",
       mark_delivered: "Delivered",
       new: "new",
@@ -1796,6 +1874,8 @@
       show_history: "Show history",
       requests_history: "Requests history",
       filter_by_branch: "Filter by branch",
+      filter_by_status: "Filter by status",
+      area_search_placeholder: "Search area",
       assign: "Assign",
       assigned_to_you: "Assigned to you",
       requests_visible: "Visible to you",
@@ -2002,8 +2082,8 @@
       refresh: "تحديث",
       export_inventory_excel: "تصدير إكسل",
       menu_inventory: "المخزون",
-      menu_requests: "الطلبات",
-      menu_transfers: "النقل",
+      menu_requests: "📦 الطلبات",
+      menu_transfers: "⇄ النقل",
       menu_driver: "السائق",
       menu_movements: "الحركات",
       menu_analytics: "التقارير",
@@ -2087,7 +2167,7 @@
       scope_multiple: "عدة فروع",
       scope_all: "كل الفروع",
 
-      branch_requests: "طلبات الفروع",
+      branch_requests: "📦 طلبات الفروع",
       requests_subtitle: "الموظف/المدير/المشرف/المراقب يطلبون أصناف من المخزن الرئيسي إلى فرعهم.",
       new_request: "طلب جديد",
       from_storage: "من المخزن",
@@ -2119,9 +2199,11 @@
       create_transfer: "إنشاء نقل",
       active_transfers: "عمليات النقل الحالية",
       transfer_history: "سجل نقل الأكياس",
-      driver_transfers: "نقل الأكياس للسائق",
+      driver_transfers: "⇄ نقل الأكياس للسائق",
       requests_history: "سجل الطلبات",
       filter_by_branch: "تصفية حسب الفرع",
+      filter_by_status: "تصفية حسب الحالة",
+      area_search_placeholder: "ابحث عن المنطقة",
       assign: "تعيين",
       assigned_to_you: "مُعيّن لك",
       requests_visible: "مرئية لك",
@@ -2297,7 +2379,7 @@
       delete_reminder: "حذف",
       delete_reminder_confirm: "حذف هذا التذكير؟",
 
-      menu_deliveries: "Deliveries",
+      menu_deliveries: "🏠 Deliveries",
       toast_new_deliveries: "New deliveries: {count}",
       th_address: "Address",
       th_invoice: "Invoice",
@@ -2313,8 +2395,12 @@
       delivery_status: "Status",
       delivery_due_date: "Due date",
       delivery_area: "Area",
+      delivery_area_ar: "Area (Arabic)",
       delivery_zone: "Zone",
       delivery_charge: "Charge",
+      delivery_active: "Active",
+      delivery_area_admin_title: "Delivery areas and prices",
+      delivery_area_admin_subtitle: "Admin can add or edit area name, zone, price, and active status.",
       delivery_address: "Address",
       delivery_invoice: "Invoice #",
       delivery_ready_time: "Ready time",
@@ -2336,7 +2422,9 @@
       delivery_visibility: "Deliveries view",
       driver_delivery_visibility_title: "Driver delivery visibility",
       driver_delivery_visibility_subtitle: "Choose if each driver sees all deliveries or only the ones assigned to them.",
-      driver_deliveries_title: "Customer deliveries",
+      yes_word: "Yes",
+      no_word: "No",
+      driver_deliveries_title: "🏠 Customer deliveries",
       mark_in_transit: "In transit",
       mark_delivered: "Delivered",
       no_deliveries_yet: "No deliveries yet.",
@@ -2359,6 +2447,10 @@
     document.querySelectorAll("[data-i18n]").forEach(el => {
       const key = el.getAttribute("data-i18n");
       el.textContent = t(key);
+    });
+    document.querySelectorAll("[data-i18n-placeholder]").forEach(el => {
+      const key = el.getAttribute("data-i18n-placeholder");
+      el.setAttribute("placeholder", t(key));
     });
 
     const roleOptions = [
@@ -2434,6 +2526,7 @@
     requests: [],
     transfers: [],
     deliveries: [],
+    deliveryAreas: [],
     vehicles: [],
     vehicleReminders: [],
     carAssignments: [],
@@ -2743,9 +2836,35 @@
       .replace(/[\u2018\u2019']/g, "'")
       .replace(/\s+/g, " ");
   }
+  function getDefaultDeliveryAreaId(entry) {
+    return `area_${normalizeAreaKey(entry?.nameEn || entry?.nameAr || "").replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "")}`;
+  }
+  function getCurrentDeliveryAreas() {
+    const source = (state.deliveryAreas && state.deliveryAreas.length ? state.deliveryAreas : DELIVERY_AREA_OPTIONS)
+      .map((entry) => ({
+        id: entry.id || getDefaultDeliveryAreaId(entry),
+        nameEn: String(entry.nameEn || "").trim(),
+        nameAr: String(entry.nameAr || "").trim(),
+        zone: String(entry.zone || "").trim(),
+        charge: String(entry.charge || "").trim(),
+        active: entry.active !== false && String(entry.active || "").toLowerCase() !== "false"
+      }));
+    const unique = new Map();
+    source.forEach((entry) => {
+      const key = normalizeAreaKey(entry.nameEn || entry.nameAr);
+      if (!key) return;
+      if (key === "al-masayel") return;
+      if (!unique.has(key)) unique.set(key, entry);
+    });
+    return Array.from(unique.values()).sort((a, b) => {
+      const zoneDiff = Number(a.zone || 0) - Number(b.zone || 0);
+      if (zoneDiff) return zoneDiff;
+      return (a.nameEn || "").localeCompare(b.nameEn || "");
+    });
+  }
   function getDeliveryAreaMeta(areaName) {
     const key = normalizeAreaKey(areaName);
-    return DELIVERY_AREA_OPTIONS.find((entry) => normalizeAreaKey(entry.nameEn) === key || normalizeAreaKey(entry.nameAr) === key) || null;
+    return getCurrentDeliveryAreas().find((entry) => normalizeAreaKey(entry.nameEn) === key || normalizeAreaKey(entry.nameAr) === key) || null;
   }
   function getDeliveryZoneClass(zone) {
     return DELIVERY_ZONE_CLASSES[String(zone || "").trim()] || "";
@@ -3632,6 +3751,16 @@
     if (!res.ok) throw new Error(body.error || "Update driver visibility failed");
     return body;
   }
+  async function apiSaveDeliveryArea(area) {
+    const res = await fetch(`${API_BASE}/delivery-areas`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId: state.user.id, ...area })
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(body.error || "Save delivery area failed");
+    return body;
+  }
 
   async function apiDeleteDelivery(id) {
     const res = await fetch(`${API_BASE}/deliveries/${id}`, {
@@ -4306,25 +4435,78 @@
 
   function renderDeliveryAreaOptions() {
     const select = document.getElementById("deliveryAreaSelect");
+    const searchInput = document.getElementById("deliveryAreaSearchInput");
     if (!select) return;
     const prev = select.value;
+    const term = normalizeAreaKey(searchInput?.value || "");
+    const areas = getCurrentDeliveryAreas();
     select.innerHTML = "";
     const placeholder = document.createElement("option");
     placeholder.value = "";
     placeholder.textContent = currentLang === "ar" ? "اختر المنطقة" : "Select area";
     select.appendChild(placeholder);
-    DELIVERY_AREA_OPTIONS.forEach((entry) => {
+    areas
+      .filter((entry) => entry.active)
+      .filter((entry) => {
+        if (!term) return true;
+        return normalizeAreaKey(entry.nameEn).includes(term) || normalizeAreaKey(entry.nameAr).includes(term);
+      })
+      .forEach((entry) => {
       const opt = document.createElement("option");
       opt.value = entry.nameEn;
       const label = currentLang === "ar" && entry.nameAr ? entry.nameAr : entry.nameEn;
       opt.textContent = `Z${entry.zone} - ${label}`;
       opt.setAttribute("data-zone", entry.zone);
       select.appendChild(opt);
-    });
+      });
     if (prev && select.querySelector(`option[value="${CSS.escape(prev)}"]`)) {
       select.value = prev;
     }
     updateDeliveryAreaMeta();
+  }
+
+  function fillDeliveryAreaAdminForm(area) {
+    document.getElementById("saveDeliveryAreaBtn").dataset.areaId = area?.id || "";
+    document.getElementById("deliveryAreaAdminNameInput").value = area?.nameEn || "";
+    document.getElementById("deliveryAreaAdminNameArInput").value = area?.nameAr || "";
+    document.getElementById("deliveryAreaAdminZoneInput").value = area?.zone || "";
+    document.getElementById("deliveryAreaAdminChargeInput").value = area?.charge || "";
+    document.getElementById("deliveryAreaAdminActiveSelect").value = area?.active === false ? "false" : "true";
+  }
+
+  function renderDeliveryAreasAdminTable() {
+    const block = document.getElementById("deliveryAreasAdminBlock");
+    const tbody = document.getElementById("deliveryAreasAdminTableBody");
+    if (!block || !tbody) return;
+    if (!state.user || state.user.role !== "admin") {
+      block.style.display = "none";
+      return;
+    }
+    block.style.display = "block";
+    tbody.innerHTML = "";
+    const areas = getCurrentDeliveryAreas();
+    if (!areas.length) {
+      fillDeliveryAreaAdminForm(null);
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td colspan="6" class="text-muted">${t("no_items")}</td>`;
+      tbody.appendChild(tr);
+      return;
+    }
+    if (!document.getElementById("saveDeliveryAreaBtn")?.dataset.areaId) {
+      fillDeliveryAreaAdminForm(null);
+    }
+    areas.forEach((area) => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${escapeHtml(area.nameEn)}</td>
+        <td>${escapeHtml(area.nameAr || "")}</td>
+        <td>${escapeHtml(area.zone || "")}</td>
+        <td>${escapeHtml(area.charge || "")}</td>
+        <td>${escapeHtml(area.active ? t("yes_word") : t("no_word"))}</td>
+        <td><button class="btn btn-secondary btn-sm" data-edit-delivery-area="${escapeHtml(area.id)}">${t("save_changes")}</button></td>
+      `;
+      tbody.appendChild(tr);
+    });
   }
 
   function updateDeliveryAreaMeta() {
@@ -4372,8 +4554,9 @@
 
     const filterBar = document.getElementById("requestsFilterBar");
     const filterSelect = document.getElementById("requestBranchFilterSelect");
+    const statusSelect = document.getElementById("requestStatusFilterSelect");
     if (filterBar && filterSelect) {
-      const canFilter = ["admin", "manager", "supervisor", "driver_supervisor"].includes(state.user.role);
+      const canFilter = state.user.role !== "driver";
       filterBar.style.display = canFilter ? "flex" : "none";
 
       if (canFilter) {
@@ -4422,6 +4605,18 @@
           }
         }
       }
+    }
+    if (statusSelect) {
+      const prev = statusSelect.value;
+      const statuses = ["ALL", "pending", "assigned", "delivered"];
+      statusSelect.innerHTML = "";
+      statuses.forEach((status) => {
+        const opt = document.createElement("option");
+        opt.value = status;
+        opt.textContent = status === "ALL" ? (currentLang === "ar" ? "كل الحالات" : "All statuses") : t(status);
+        statusSelect.appendChild(opt);
+      });
+      statusSelect.value = statuses.includes(prev) ? prev : "ALL";
     }
 
     const historySelect = document.getElementById("requestHistoryBranchSelect");
@@ -4479,6 +4674,76 @@
     }
   }
 
+  function fillBranchFilterOptions(selectId, branchIds, includeAll = true) {
+    const select = document.getElementById(selectId);
+    if (!select) return;
+    const prev = select.value;
+    select.innerHTML = "";
+    if (includeAll) {
+      const allOpt = document.createElement("option");
+      allOpt.value = "ALL";
+      allOpt.textContent = currentLang === "ar" ? "كل الفروع" : "All branches";
+      select.appendChild(allOpt);
+    }
+    branchIds.forEach((id) => {
+      const opt = document.createElement("option");
+      opt.value = id;
+      opt.textContent = getBranchName(id);
+      select.appendChild(opt);
+    });
+    select.value = Array.from(select.options).some((opt) => opt.value === prev) ? prev : (includeAll ? "ALL" : (branchIds[0] || ""));
+  }
+
+  function fillStatusFilterOptions(selectId, statuses) {
+    const select = document.getElementById(selectId);
+    if (!select) return;
+    const prev = select.value;
+    select.innerHTML = "";
+    const allOpt = document.createElement("option");
+    allOpt.value = "ALL";
+    allOpt.textContent = currentLang === "ar" ? "كل الحالات" : "All statuses";
+    select.appendChild(allOpt);
+    statuses.forEach((status) => {
+      const opt = document.createElement("option");
+      opt.value = status;
+      opt.textContent = t(status);
+      select.appendChild(opt);
+    });
+    select.value = Array.from(select.options).some((opt) => opt.value === prev) ? prev : "ALL";
+  }
+
+  function setupTransferFilters() {
+    const filterBar = document.getElementById("transferFilterBar");
+    if (!filterBar || !state.user) return;
+    filterBar.style.display = state.user.role === "driver" ? "none" : "flex";
+    let branchIds = [];
+    if (state.user.role === "supervisor") {
+      branchIds = getSupervisorAllowedBranches(state.user);
+    } else if (state.user.role === "staff" && state.user.branchId) {
+      branchIds = [state.user.branchId];
+    } else {
+      branchIds = (state.branches || []).map((b) => b.id);
+    }
+    fillBranchFilterOptions("transferBranchFilterSelect", branchIds, true);
+    fillStatusFilterOptions("transferStatusFilterSelect", ["pending", "assigned", "in_transit", "delivered_to_destination", "ready", "in_transit_back"]);
+  }
+
+  function setupDeliveryFilters() {
+    const filterBar = document.getElementById("deliveriesFilterBar");
+    if (!filterBar || !state.user) return;
+    filterBar.style.display = state.user.role === "driver" ? "none" : "flex";
+    let branchIds = [];
+    if (state.user.role === "supervisor") {
+      branchIds = getSupervisorAllowedBranches(state.user);
+    } else if (state.user.role === "staff" && state.user.branchId) {
+      branchIds = [state.user.branchId];
+    } else {
+      branchIds = (state.branches || []).map((b) => b.id);
+    }
+    fillBranchFilterOptions("deliveriesBranchFilterSelect", branchIds, true);
+    fillStatusFilterOptions("deliveriesStatusFilterSelect", ["new", "ready", "in_transit", "delivered"]);
+  }
+
   function renderRequestsTable() {
     const tbody = document.getElementById("requestsTableBody");
     tbody.innerHTML = "";
@@ -4507,11 +4772,16 @@
     const canDelete = state.user.role === "admin" || state.user.role === "manager";
     const canAssign = ["admin", "manager", "driver_supervisor"].includes(state.user.role);
     const canReceive = ["staff", "supervisor"].includes(state.user.role);
-    const canFilter = ["admin", "manager", "supervisor", "driver_supervisor"].includes(state.user.role);
+    const canFilter = state.user.role !== "driver";
     const filterSelect = document.getElementById("requestBranchFilterSelect");
+    const statusSelect = document.getElementById("requestStatusFilterSelect");
     const filterValue = canFilter && filterSelect ? filterSelect.value : "ALL";
+    const statusValue = canFilter && statusSelect ? statusSelect.value : "ALL";
     if (canFilter && filterValue && filterValue !== "ALL") {
       visible = visible.filter((r) => r.toBranchId === filterValue);
+    }
+    if (canFilter && statusValue && statusValue !== "ALL") {
+      visible = visible.filter((r) => r.status === statusValue);
     }
 
     if (!visible.length) {
@@ -4687,13 +4957,23 @@
     if (!tbody) return;
     tbody.innerHTML = "";
     if (!state.user) return;
+    setupDeliveryFilters();
 
     const all = [...(state.deliveries || [])];
     const orderMap = buildDeliveryOrderMap(all);
     renderDeliveriesHistoryTable(orderMap);
     renderDeliveryDriverScopeTable();
+    renderDeliveryAreasAdminTable();
     const active = all.filter((d) => d.status !== "delivered");
-    const visible = getVisibleDeliveriesForUser(active);
+    let visible = getVisibleDeliveriesForUser(active);
+    const branchValue = document.getElementById("deliveriesBranchFilterSelect")?.value || "ALL";
+    const statusValue = document.getElementById("deliveriesStatusFilterSelect")?.value || "ALL";
+    if (branchValue !== "ALL") {
+      visible = visible.filter((d) => d.fromBranchId === branchValue);
+    }
+    if (statusValue !== "ALL") {
+      visible = visible.filter((d) => d.status === statusValue);
+    }
 
     if (!visible.length) {
       const tr = document.createElement("tr");
@@ -4888,10 +5168,19 @@
     if (!tbody) return;
     tbody.innerHTML = "";
     if (!state.user) return;
+    setupTransferFilters();
 
     const all = [...(state.transfers || [])];
     const active = all.filter((trf) => trf.status !== "delivered_back");
-    const visible = getVisibleTransfersForUser(active);
+    let visible = getVisibleTransfersForUser(active);
+    const branchValue = document.getElementById("transferBranchFilterSelect")?.value || "ALL";
+    const statusValue = document.getElementById("transferStatusFilterSelect")?.value || "ALL";
+    if (branchValue !== "ALL") {
+      visible = visible.filter((trf) => trf.fromBranchId === branchValue || trf.toBranchId === branchValue);
+    }
+    if (statusValue !== "ALL") {
+      visible = visible.filter((trf) => trf.status === statusValue);
+    }
 
     if (!visible.length) {
       const tr = document.createElement("tr");
@@ -6519,6 +6808,7 @@
     state.requests = all.requests || [];
     state.transfers = all.transfers || [];
     state.deliveries = all.deliveries || [];
+    state.deliveryAreas = all.deliveryAreas || [];
     state.vehicles = all.vehicles || [];
     state.vehicleReminders = all.vehicleReminders || [];
     state.carAssignments = all.carAssignments || [];
@@ -6754,6 +7044,9 @@
   });
   document.getElementById("deliveryAreaSelect")?.addEventListener("change", () => {
     updateDeliveryAreaMeta();
+  });
+  document.getElementById("deliveryAreaSearchInput")?.addEventListener("input", () => {
+    renderDeliveryAreaOptions();
   });
   document.getElementById("deliveryReadyTimeTypeSelect")?.addEventListener("change", (e) => {
     const input = document.getElementById("deliveryReadyTimeCustomInput");
@@ -7576,6 +7869,40 @@
       }
     });
   }
+  const saveDeliveryAreaBtn = document.getElementById("saveDeliveryAreaBtn");
+  if (saveDeliveryAreaBtn) {
+    saveDeliveryAreaBtn.addEventListener("click", async () => {
+      const nameEn = document.getElementById("deliveryAreaAdminNameInput")?.value.trim() || "";
+      const nameAr = document.getElementById("deliveryAreaAdminNameArInput")?.value.trim() || "";
+      const zone = document.getElementById("deliveryAreaAdminZoneInput")?.value.trim() || "";
+      const charge = document.getElementById("deliveryAreaAdminChargeInput")?.value.trim() || "";
+      const active = (document.getElementById("deliveryAreaAdminActiveSelect")?.value || "true") === "true";
+      const id = saveDeliveryAreaBtn.dataset.areaId || getDefaultDeliveryAreaId({ nameEn, nameAr });
+      if (!nameEn || !zone || !charge) {
+        alert("Area, zone, and charge are required.");
+        return;
+      }
+      try {
+        await apiSaveDeliveryArea({ id, nameEn, nameAr, zone, charge, active });
+        await refreshAllState();
+        renderBranchSelects();
+        renderDeliveriesTable();
+        fillDeliveryAreaAdminForm(null);
+      } catch (err) {
+        alert(err.message);
+      }
+    });
+  }
+  const deliveryAreasAdminTableBody = document.getElementById("deliveryAreasAdminTableBody");
+  if (deliveryAreasAdminTableBody) {
+    deliveryAreasAdminTableBody.addEventListener("click", (e) => {
+      const btn = e.target.closest("button[data-edit-delivery-area]");
+      if (!btn) return;
+      const id = btn.getAttribute("data-edit-delivery-area");
+      const area = getCurrentDeliveryAreas().find((entry) => entry.id === id);
+      fillDeliveryAreaAdminForm(area || null);
+    });
+  }
 
   const transferTableBody = document.getElementById("transferTableBody");
   if (transferTableBody) {
@@ -7669,6 +7996,26 @@
   const requestBranchFilterSelect = document.getElementById("requestBranchFilterSelect");
   if (requestBranchFilterSelect) {
     requestBranchFilterSelect.addEventListener("change", renderRequestsTable);
+  }
+  const requestStatusFilterSelect = document.getElementById("requestStatusFilterSelect");
+  if (requestStatusFilterSelect) {
+    requestStatusFilterSelect.addEventListener("change", renderRequestsTable);
+  }
+  const transferBranchFilterSelect = document.getElementById("transferBranchFilterSelect");
+  if (transferBranchFilterSelect) {
+    transferBranchFilterSelect.addEventListener("change", renderTransferTables);
+  }
+  const transferStatusFilterSelect = document.getElementById("transferStatusFilterSelect");
+  if (transferStatusFilterSelect) {
+    transferStatusFilterSelect.addEventListener("change", renderTransferTables);
+  }
+  const deliveriesBranchFilterSelect = document.getElementById("deliveriesBranchFilterSelect");
+  if (deliveriesBranchFilterSelect) {
+    deliveriesBranchFilterSelect.addEventListener("change", renderDeliveriesTable);
+  }
+  const deliveriesStatusFilterSelect = document.getElementById("deliveriesStatusFilterSelect");
+  if (deliveriesStatusFilterSelect) {
+    deliveriesStatusFilterSelect.addEventListener("change", renderDeliveriesTable);
   }
   const requestHistoryBranchSelect = document.getElementById("requestHistoryBranchSelect");
   if (requestHistoryBranchSelect) {

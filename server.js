@@ -32,6 +32,7 @@ async function loadData() {
       requests: [],
       transfers: [],
       deliveries: [],
+      deliveryAreas: [],
       trips: [],
       vehicles: [],
       vehicleReminders: [],
@@ -83,6 +84,7 @@ function ensureDataShape(parsed) {
   parsed.requests ||= [];
   parsed.transfers ||= [];
   parsed.deliveries ||= [];
+  parsed.deliveryAreas ||= [];
   parsed.trips ||= [];
   parsed.vehicles ||= [];
   parsed.vehicleReminders ||= [];
@@ -373,6 +375,7 @@ app.get("/api/state", async (req, res) => {
       requests: data.requests || [],
       transfers: data.transfers || [],
       deliveries: data.deliveries || [],
+      deliveryAreas: data.deliveryAreas || [],
       trips: data.trips || [],
       vehicles: data.vehicles || [],
       vehicleReminders: data.vehicleReminders || [],
@@ -621,6 +624,43 @@ app.post("/api/users/:id/deliveries-scope", async (req, res) => {
   } catch (err) {
     console.error("Update driver deliveries scope error", err);
     res.status(500).json({ error: "Failed to update driver visibility" });
+  }
+});
+
+app.post("/api/delivery-areas", async (req, res) => {
+  try {
+    const { userId, id, nameEn, nameAr, zone, charge, active } = req.body || {};
+    const data = await loadData();
+    const actor = findUserById(data, userId);
+    if (!requireRole(actor, ["admin"])) {
+      return res.status(403).json({ error: "Only admin can manage delivery areas" });
+    }
+
+    const normalizedName = String(nameEn || "").trim();
+    const normalizedZone = String(zone || "").trim();
+    const normalizedCharge = String(charge || "").trim();
+    if (!normalizedName || !normalizedZone || !normalizedCharge) {
+      return res.status(400).json({ error: "nameEn, zone, and charge are required" });
+    }
+
+    const areaId = String(id || "").trim() || `area_${Date.now()}`;
+    let area = (data.deliveryAreas || []).find((entry) => entry.id === areaId);
+    if (!area) {
+      area = { id: areaId };
+      data.deliveryAreas.push(area);
+    }
+    area.nameEn = normalizedName;
+    area.nameAr = String(nameAr || "").trim();
+    area.zone = normalizedZone;
+    area.charge = normalizedCharge;
+    area.active = active !== false && String(active || "").toLowerCase() !== "false";
+    area.updatedAt = new Date().toISOString();
+
+    await saveData(data);
+    res.json(area);
+  } catch (err) {
+    console.error("Save delivery area error", err);
+    res.status(500).json({ error: "Failed to save delivery area" });
   }
 });
 
