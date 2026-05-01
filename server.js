@@ -340,7 +340,9 @@ app.post("/api/login", async (req, res) => {
       role: user.role,
       branchId: user.branchId || null,
       allowedBranchScope: user.allowedBranchScope || "",
-      allowedBranchIds: user.allowedBranchIds || []
+      allowedBranchIds: user.allowedBranchIds || [],
+      requestsScope: user.requestsScope || "",
+      deliveriesScope: user.deliveriesScope || ""
     });
   } catch (err) {
     console.error("Login error", err);
@@ -477,6 +479,7 @@ app.post("/api/users", async (req, res) => {
       adminUserId,
       branchId,
       requestsScope,
+      deliveriesScope,
       analyticsAllowedBranchIds,
       analyticsAllowedBranchScope
     } = req.body;
@@ -503,6 +506,7 @@ app.post("/api/users", async (req, res) => {
     };
     if (role === "driver") {
       newUser.requestsScope = requestsScope === "all" ? "all" : "assigned";
+      newUser.deliveriesScope = deliveriesScope === "assigned" ? "assigned" : "all";
     }
     if (role === "supervisor") {
       newUser.analyticsAllowedBranchScope = analyticsAllowedBranchScope || "own";
@@ -532,6 +536,7 @@ app.patch("/api/users/:id", async (req, res) => {
       allowedBranchIds,
       allowedBranchScope,
       requestsScope,
+      deliveriesScope,
       analyticsAllowedBranchIds,
       analyticsAllowedBranchScope
     } = req.body;
@@ -563,6 +568,14 @@ app.patch("/api/users/:id", async (req, res) => {
         delete user.requestsScope;
       }
     }
+    if (typeof deliveriesScope !== "undefined") {
+      const nextRole = role || user.role;
+      if (nextRole === "driver") {
+        user.deliveriesScope = deliveriesScope === "assigned" ? "assigned" : "all";
+      } else if (user.deliveriesScope) {
+        delete user.deliveriesScope;
+      }
+    }
     if (typeof analyticsAllowedBranchScope !== "undefined" || typeof analyticsAllowedBranchIds !== "undefined") {
       const nextRole = role || user.role;
       if (nextRole === "supervisor") {
@@ -584,6 +597,30 @@ app.patch("/api/users/:id", async (req, res) => {
   } catch (err) {
     console.error("Update user error", err);
     res.status(500).json({ error: "Failed to update user" });
+  }
+});
+
+app.post("/api/users/:id/deliveries-scope", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { userId, deliveriesScope } = req.body || {};
+    const data = await loadData();
+    const actor = findUserById(data, userId);
+    if (!requireRole(actor, ["admin", "manager", "driver_supervisor"])) {
+      return res.status(403).json({ error: "Only admin, manager, or driver supervisor can update driver visibility" });
+    }
+
+    const user = data.users.find((u) => u.id === id);
+    if (!user) return res.status(404).json({ error: "User not found" });
+    if (user.role !== "driver") return res.status(400).json({ error: "Only driver users support this setting" });
+
+    user.deliveriesScope = deliveriesScope === "assigned" ? "assigned" : "all";
+    await saveData(data);
+    const { password: pw, ...safeUser } = user;
+    res.json(safeUser);
+  } catch (err) {
+    console.error("Update driver deliveries scope error", err);
+    res.status(500).json({ error: "Failed to update driver visibility" });
   }
 });
 
@@ -1484,6 +1521,10 @@ app.post("/api/deliveries", async (req, res) => {
   try {
     const {
       userId,
+      areaName,
+      areaNameAr,
+      areaZone,
+      deliveryCharge,
       address,
       invoiceNo,
       dueDate,
@@ -1491,7 +1532,9 @@ app.post("/api/deliveries", async (req, res) => {
       customerPhone,
       note,
       status,
-      fromBranchId
+      fromBranchId,
+      readyTimeLabel,
+      readyTimeAt
     } = req.body || {};
 
     const data = await loadData();
@@ -1499,11 +1542,12 @@ app.post("/api/deliveries", async (req, res) => {
     if (!user) return res.status(400).json({ error: "User not found" });
     if (user.role === "driver") return res.status(403).json({ error: "Drivers cannot create deliveries" });
 
+    const area = String(areaName || "").trim();
     const addr = String(address || "").trim();
     const custName = String(customerName || "").trim();
     const custPhone = String(customerPhone || "").trim();
-    if (!addr || !custName || !custPhone) {
-      return res.status(400).json({ error: "address, customerName, customerPhone are required" });
+    if (!area || !custName || !custPhone) {
+      return res.status(400).json({ error: "areaName, customerName, customerPhone are required" });
     }
 
     let branchId = user.branchId || "";
@@ -1518,12 +1562,20 @@ app.post("/api/deliveries", async (req, res) => {
     const delivery = {
       id: "DEL-" + Date.now(),
       fromBranchId: branchId,
+      areaName: area,
+      areaNameAr: String(areaNameAr || "").trim(),
+      areaZone: String(areaZone || "").trim(),
+      deliveryCharge: String(deliveryCharge || "").trim(),
       address: addr,
       invoiceNo: String(invoiceNo || "").trim(),
       dueDate: dueDate || "",
       customerName: custName,
       customerPhone: custPhone,
       note: String(note || "").trim(),
+      readyTimeLabel: String(readyTimeLabel || "").trim(),
+      readyTimeAt: readyTimeAt || "",
+      driverEtaLabel: "",
+      driverEtaAt: "",
       status: initStatus,
       driverUserId: null,
       createdByUserId: userId,
@@ -1615,6 +1667,35 @@ app.post("/api/deliveries/:id/assign-driver", async (req, res) => {
   } catch (err) {
     console.error("Assign delivery driver error", err);
     res.status(500).json({ error: "Failed to assign delivery driver" });
+  }
+});
+
+app.post("/api/deliveries/:id/eta", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { userId, etaLabel, etaAt } = req.body || {};
+    const data = await loadData();
+    const actor = findUserById(data, userId);
+    if (!actor) return res.status(400).json({ error: "User not found" });
+
+    const delivery = (data.deliveries || []).find((d) => d.id === id);
+    if (!delivery) return res.status(404).json({ error: "Delivery not found" });
+
+    const allowedRoles = ["admin", "manager", "driver_supervisor"];
+    const isAssignedDriver = actor.role === "driver" && delivery.driverUserId === actor.id;
+    if (!isAssignedDriver && !requireRole(actor, allowedRoles)) {
+      return res.status(403).json({ error: "Not allowed to update delivery ETA" });
+    }
+
+    delivery.driverEtaLabel = String(etaLabel || "").trim();
+    delivery.driverEtaAt = etaAt || "";
+    delivery.updatedAt = new Date().toISOString();
+
+    await saveData(data);
+    res.json(delivery);
+  } catch (err) {
+    console.error("Update delivery ETA error", err);
+    res.status(500).json({ error: "Failed to update delivery ETA" });
   }
 });
 

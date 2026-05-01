@@ -43,6 +43,14 @@
     .driver-requests-table tr.urgent-row td:first-child { border-left: 4px solid #ef4444; }
     .driver-deliveries-table tr.assigned-row td { background: #ecfeff; }
     .driver-deliveries-table tr.assigned-row td:first-child { border-left: 4px solid #06b6d4; }
+    .zone-cell { font-weight: 700; }
+    .zone-1 { background: #dbeafe !important; }
+    .zone-2 { background: #e9d5ff !important; }
+    .zone-3 { background: #dcfce7 !important; }
+    .zone-4 { background: #fed7aa !important; }
+    .zone-5 { background: #fef3c7 !important; }
+    .zone-6 { background: #fbcfe8 !important; }
+    .zone-pill { display: inline-flex; align-items: center; justify-content: center; min-width: 2.1rem; padding: 0.12rem 0.45rem; border-radius: 999px; color: #111827; }
     .driver-requests-table .col-created,
     .driver-requests-table .col-from,
     .driver-requests-table .col-to,
@@ -424,6 +432,13 @@
           <option value="all" data-i18n="requests_scope_all">All requests</option>
         </select>
       </div>
+      <div id="newUserDeliveriesScopeWrap" style="display:none;">
+        <label data-i18n="driver_deliveries_scope">Driver deliveries visibility</label>
+        <select id="newUserDeliveriesScope">
+          <option value="all" data-i18n="deliveries_scope_all">All deliveries</option>
+          <option value="assigned" data-i18n="deliveries_scope_assigned">Assigned only</option>
+        </select>
+      </div>
       <div style="display:flex;align-items:flex-end;">
         <button id="addUserBtn" class="btn btn-primary" style="width:100%;" data-i18n="create_user_btn">Create user</button>
       </div>
@@ -520,7 +535,13 @@
           <option value="all" data-i18n="requests_scope_all">All requests</option>
         </select>
       </div>
-      <div></div>
+      <div id="editUserDeliveriesScopeWrap">
+        <label data-i18n="driver_deliveries_scope">Driver deliveries visibility</label>
+        <select id="editUserDeliveriesScope">
+          <option value="all" data-i18n="deliveries_scope_all">All deliveries</option>
+          <option value="assigned" data-i18n="deliveries_scope_assigned">Assigned only</option>
+        </select>
+      </div>
       <div></div>
     </div>
     <div class="grid mt-xs">
@@ -564,6 +585,7 @@
         <label data-i18n="item_from_storage">Item (from storage)</label>
         <input id="requestItemSearchInput" placeholder="Type to filter items" style="margin-top:0.25rem;" />
         <select id="requestItemSelect"></select>
+        <div id="requestItemBranchQtyHint" class="text-muted" style="font-size:0.8rem;margin-top:0.3rem;"></div>
       </div>
     </div>
 
@@ -788,6 +810,20 @@
     </div>
     <div class="grid mt-xs">
       <div>
+        <label data-i18n="delivery_area">Area</label>
+        <select id="deliveryAreaSelect"></select>
+      </div>
+      <div>
+        <label data-i18n="delivery_zone">Zone</label>
+        <input id="deliveryZoneInput" readonly />
+      </div>
+      <div>
+        <label data-i18n="delivery_charge">Charge</label>
+        <input id="deliveryChargeInput" readonly />
+      </div>
+    </div>
+    <div class="grid mt-xs">
+      <div>
         <label data-i18n="delivery_address">Address</label>
         <input id="deliveryAddressInput" />
       </div>
@@ -801,6 +837,21 @@
       </div>
     </div>
     <div class="grid mt-xs">
+      <div>
+        <label data-i18n="delivery_ready_time">Ready time</label>
+        <select id="deliveryReadyTimeTypeSelect">
+          <option value="" data-i18n="delivery_time_select">Select time</option>
+          <option value="morning" data-i18n="delivery_time_morning">Morning</option>
+          <option value="noon" data-i18n="delivery_time_noon">Noon</option>
+          <option value="night" data-i18n="delivery_time_night">Night</option>
+          <option value="custom" data-i18n="delivery_time_custom">Custom time</option>
+        </select>
+      </div>
+      <div>
+        <label data-i18n="delivery_custom_time">Custom time</label>
+        <input id="deliveryReadyTimeCustomInput" type="datetime-local" style="display:none;" />
+        <div id="deliveryReadyTimeHint" class="text-muted" style="font-size:0.8rem;margin-top:0.45rem;"></div>
+      </div>
       <div>
         <label data-i18n="delivery_customer_name">Customer name</label>
         <input id="deliveryCustomerNameInput" />
@@ -822,12 +873,16 @@
           <th data-i18n="th_order">Order #</th>
           <th data-i18n="th_created_at">Created</th>
           <th data-i18n="th_from">From</th>
+          <th data-i18n="delivery_zone">Zone</th>
+          <th data-i18n="delivery_area">Area</th>
           <th data-i18n="th_address">Address</th>
           <th data-i18n="th_invoice">Invoice</th>
           <th data-i18n="th_due">Due</th>
           <th data-i18n="th_customer">Customer</th>
           <th data-i18n="th_phone">Phone</th>
           <th data-i18n="th_status">Status</th>
+          <th data-i18n="delivery_ready_time">Ready time</th>
+          <th data-i18n="delivery_eta">Driver ETA</th>
           <th data-i18n="th_driver">Driver</th>
           <th data-i18n="th_note">Note</th>
           <th data-i18n="th_action">Action</th>
@@ -849,12 +904,16 @@
             <th data-i18n="th_created_at">Created</th>
             <th data-i18n="th_delivered_at">Delivered</th>
             <th data-i18n="th_from">From</th>
+            <th data-i18n="delivery_zone">Zone</th>
+            <th data-i18n="delivery_area">Area</th>
             <th data-i18n="th_address">Address</th>
             <th data-i18n="th_invoice">Invoice</th>
             <th data-i18n="th_due">Due</th>
             <th data-i18n="th_customer">Customer</th>
             <th data-i18n="th_phone">Phone</th>
             <th data-i18n="th_status">Status</th>
+            <th data-i18n="delivery_ready_time">Ready time</th>
+            <th data-i18n="delivery_eta">Driver ETA</th>
             <th data-i18n="th_driver">Driver</th>
             <th data-i18n="th_note">Note</th>
           </tr>
@@ -868,6 +927,22 @@
             <button id="deliveriesHistoryNextBtn" class="btn btn-secondary btn-sm">&gt;</button>
           </div>
         </div>
+      </div>
+    </div>
+    <div id="deliveryDriverScopeBlock" class="mt-md" style="display:none;">
+      <div class="panel-section-title" data-i18n="driver_delivery_visibility_title">Driver delivery visibility</div>
+      <div class="panel-subtitle" data-i18n="driver_delivery_visibility_subtitle">Choose if each driver sees all deliveries or only the ones assigned to them.</div>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+          <tr>
+            <th data-i18n="th_driver">Driver</th>
+            <th data-i18n="delivery_visibility">Deliveries view</th>
+            <th data-i18n="th_action">Action</th>
+          </tr>
+          </thead>
+          <tbody id="deliveryDriverScopeTableBody"></tbody>
+        </table>
       </div>
     </div>
   </section>
@@ -927,12 +1002,16 @@
           <th class="col-id" data-i18n="th_order">Order #</th>
           <th class="col-created" data-i18n="th_created_at">Created</th>
           <th class="col-from" data-i18n="th_from">From</th>
+          <th class="col-zone" data-i18n="delivery_zone">Zone</th>
+          <th class="col-area" data-i18n="delivery_area">Area</th>
           <th class="col-address" data-i18n="th_address">Address</th>
           <th class="col-customer" data-i18n="th_customer">Customer</th>
           <th class="col-phone" data-i18n="th_phone">Phone</th>
           <th class="col-due" data-i18n="th_due">Due</th>
           <th class="col-invoice" data-i18n="th_invoice">Invoice</th>
           <th class="col-status" data-i18n="th_status">Status</th>
+          <th class="col-ready" data-i18n="delivery_ready_time">Ready time</th>
+          <th class="col-eta" data-i18n="delivery_eta">Driver ETA</th>
           <th class="col-driver" data-i18n="th_driver">Driver</th>
           <th class="col-note" data-i18n="th_note">Note</th>
           <th class="col-action" data-i18n="th_action">Action</th>
@@ -1597,6 +1676,7 @@
       of_word: "of",
       showing: "Showing",
       no_items: "No items",
+      no_users: "No users",
 
       users_branches: "Users & branches",
       users_subtitle: "Admin can create, edit and delete users and assign them to branches.",
@@ -1684,14 +1764,30 @@
       delivery_from_branch: "From branch",
       delivery_status: "Status",
       delivery_due_date: "Due date",
+      delivery_area: "Area",
+      delivery_zone: "Zone",
+      delivery_charge: "Charge",
       delivery_address: "Address",
       delivery_invoice: "Invoice #",
+      delivery_ready_time: "Ready time",
+      delivery_eta: "Driver ETA",
+      delivery_time_select: "Select time",
+      delivery_time_morning: "Morning",
+      delivery_time_noon: "Noon",
+      delivery_time_night: "Night",
+      delivery_time_custom: "Custom time",
+      delivery_custom_time: "Custom time",
       delivery_customer_name: "Customer name",
       delivery_customer_phone: "Customer phone",
       create_delivery_btn: "Create delivery",
       delete_delivery: "Delete delivery",
       delete_delivery_confirm: "Delete this delivery?",
-      delivery_required_fields: "Address, customer name, and phone are required.",
+      delivery_required_fields: "Area, customer name, and phone are required.",
+      delivery_time_required: "Select a ready time option.",
+      delivery_time_invalid: "Invalid delivery time.",
+      delivery_visibility: "Deliveries view",
+      driver_delivery_visibility_title: "Driver delivery visibility",
+      driver_delivery_visibility_subtitle: "Choose if each driver sees all deliveries or only the ones assigned to them.",
       driver_deliveries_title: "Customer deliveries",
       mark_in_transit: "In transit",
       mark_delivered: "Delivered",
@@ -1704,8 +1800,11 @@
       assigned_to_you: "Assigned to you",
       requests_visible: "Visible to you",
       driver_requests_scope: "Driver requests visibility",
+      driver_deliveries_scope: "Driver deliveries visibility",
       requests_scope_assigned: "Assigned only",
       requests_scope_all: "All requests",
+      deliveries_scope_assigned: "Assigned only",
+      deliveries_scope_all: "All deliveries",
       unassigned_requests: "Unassigned requests",
       take_request: "Take request",
       set_eta: "Set ETA",
@@ -2213,14 +2312,30 @@
       delivery_from_branch: "From branch",
       delivery_status: "Status",
       delivery_due_date: "Due date",
+      delivery_area: "Area",
+      delivery_zone: "Zone",
+      delivery_charge: "Charge",
       delivery_address: "Address",
       delivery_invoice: "Invoice #",
+      delivery_ready_time: "Ready time",
+      delivery_eta: "Driver ETA",
+      delivery_time_select: "Select time",
+      delivery_time_morning: "Morning",
+      delivery_time_noon: "Noon",
+      delivery_time_night: "Night",
+      delivery_time_custom: "Custom time",
+      delivery_custom_time: "Custom time",
       delivery_customer_name: "Customer name",
       delivery_customer_phone: "Customer phone",
       create_delivery_btn: "Create delivery",
       delete_delivery: "Delete delivery",
       delete_delivery_confirm: "Delete this delivery?",
-      delivery_required_fields: "Address, customer name, and phone are required.",
+      delivery_required_fields: "Area, customer name, and phone are required.",
+      delivery_time_required: "Select a ready time option.",
+      delivery_time_invalid: "Invalid delivery time.",
+      delivery_visibility: "Deliveries view",
+      driver_delivery_visibility_title: "Driver delivery visibility",
+      driver_delivery_visibility_subtitle: "Choose if each driver sees all deliveries or only the ones assigned to them.",
       driver_deliveries_title: "Customer deliveries",
       mark_in_transit: "In transit",
       mark_delivered: "Delivered",
@@ -2352,6 +2467,8 @@
   let audioCtx = null;
   const POLL_INTERVAL_MS = 10000;
   let pollTimer = null;
+  const DELIVERY_AREA_OPTIONS = ﻿[{"nameEn":"Abdullah al-Salem","nameAr":"عبدالله السالم","zone":"1","charge":"2.000 KWD"},{"nameEn":"Adailiya","nameAr":"العديلية","zone":"1","charge":"2.000 KWD"},{"nameEn":"Al-Masayel","nameAr":"المنصورية","zone":"1","charge":"2.000 KWD"},{"nameEn":"Bnied Al-Gar","nameAr":"بنيد القار","zone":"1","charge":"2.000 KWD"},{"nameEn":"Daiya","nameAr":"الدعية","zone":"1","charge":"2.000 KWD"},{"nameEn":"Dasma","nameAr":"الدسمة","zone":"1","charge":"2.000 KWD"},{"nameEn":"Dasman","nameAr":"دسمان","zone":"1","charge":"2.000 KWD"},{"nameEn":"Faiha","nameAr":"الفيحاء","zone":"1","charge":"2.000 KWD"},{"nameEn":"Jibla","nameAr":"جبلة","zone":"1","charge":"2.000 KWD"},{"nameEn":"Kaifan","nameAr":"كيفان","zone":"1","charge":"2.000 KWD"},{"nameEn":"Khaldiya","nameAr":"الخالدية","zone":"1","charge":"2.000 KWD"},{"nameEn":"Kuwait City","nameAr":"مدينة الكويت","zone":"1","charge":"2.000 KWD"},{"nameEn":"Mansouriya","nameAr":"المنصورية","zone":"1","charge":"2.000 KWD"},{"nameEn":"Mirqab","nameAr":"المرقاب","zone":"1","charge":"2.000 KWD"},{"nameEn":"Mubarekiya Camps and Collages","nameAr":"المباركية","zone":"1","charge":"2.000 KWD"},{"nameEn":"Nuzha","nameAr":"النزهة","zone":"1","charge":"2.000 KWD"},{"nameEn":"Qadsiya","nameAr":"القادسية","zone":"1","charge":"2.000 KWD"},{"nameEn":"Qortuba","nameAr":"قرطبة","zone":"1","charge":"2.000 KWD"},{"nameEn":"Rawda","nameAr":"الروضة","zone":"1","charge":"2.000 KWD"},{"nameEn":"Shamiya","nameAr":"الشامية","zone":"1","charge":"2.000 KWD"},{"nameEn":"Sharq","nameAr":"شرق","zone":"1","charge":"2.000 KWD"},{"nameEn":"Surra","nameAr":"السرة","zone":"1","charge":"2.000 KWD"},{"nameEn":"Yarmouk","nameAr":"اليرموك","zone":"1","charge":"2.000 KWD"},{"nameEn":"Al-Bidea","nameAr":"البدع","zone":"2","charge":"2.000 KWD"},{"nameEn":"Al-Siddeeq","nameAr":"الصديق","zone":"2","charge":"2.000 KWD"},{"nameEn":"Bayan","nameAr":"بيان","zone":"2","charge":"2.000 KWD"},{"nameEn":"Hateen","nameAr":"حطين","zone":"2","charge":"2.000 KWD"},{"nameEn":"Hawally","nameAr":"حولي","zone":"2","charge":"2.000 KWD"},{"nameEn":"Jabriya","nameAr":"الجابرية","zone":"2","charge":"2.000 KWD"},{"nameEn":"Maidan Hawally","nameAr":"ميدان حولي","zone":"2","charge":"2.000 KWD"},{"nameEn":"Mishref","nameAr":"مشرف","zone":"2","charge":"2.000 KWD"},{"nameEn":"Mubarak Al-Abdullah","nameAr":"مبارك العبدالله","zone":"2","charge":"2.000 KWD"},{"nameEn":"Rumaithiya","nameAr":"الرميثية","zone":"2","charge":"2.000 KWD"},{"nameEn":"Salam","nameAr":"السلام","zone":"2","charge":"2.000 KWD"},{"nameEn":"Salmiya","nameAr":"السالمية","zone":"2","charge":"2.000 KWD"},{"nameEn":"Salwa","nameAr":"سلوى","zone":"2","charge":"2.000 KWD"},{"nameEn":"Shaab","nameAr":"الشعب","zone":"2","charge":"2.000 KWD"},{"nameEn":"Shuhada","nameAr":"الشهداء","zone":"2","charge":"2.000 KWD"},{"nameEn":"Zahra","nameAr":"الزهراء","zone":"2","charge":"2.000 KWD"},{"nameEn":"Abu Al Hasaniya","nameAr":"أبو الحصانية","zone":"3","charge":"3.000 KWD"},{"nameEn":"Abu \u0027Fteira","nameAr":"أبو فطيرة","zone":"3","charge":"3.000 KWD"},{"nameEn":"Abu Halifa","nameAr":"أبو حليفة","zone":"3","charge":"3.000 KWD"},{"nameEn":"Ahmadi","nameAr":"الأحمدي","zone":"3","charge":"4.000 KWD"},{"nameEn":"Al-Adan District","nameAr":"العدان","zone":"3","charge":"3.000 KWD"},{"nameEn":"Ali Sabah Al Salem","nameAr":"علي صباح السالم","zone":"3","charge":"4.000 KWD"},{"nameEn":"Al-Qurain District","nameAr":"القرين","zone":"3","charge":"3.000 KWD"},{"nameEn":"Al-Qusour District","nameAr":"القصور","zone":"3","charge":"3.000 KWD"},{"nameEn":"Daher","nameAr":"الظهر","zone":"3","charge":"3.000 KWD"},{"nameEn":"Eqaila","nameAr":"العقيلة","zone":"3","charge":"3.000 KWD"},{"nameEn":"Fahad Al Ahmad","nameAr":"فهد الأحمد","zone":"3","charge":"3.000 KWD"},{"nameEn":"Fahaheel","nameAr":"الفحيحيل","zone":"3","charge":"4.000 KWD"},{"nameEn":"Fintas","nameAr":"الفنطاس","zone":"3","charge":"3.000 KWD"},{"nameEn":"Fnaitees","nameAr":"فنيطيس","zone":"3","charge":"3.000 KWD"},{"nameEn":"Hadiya","nameAr":"هدية","zone":"3","charge":"3.000 KWD"},{"nameEn":"Jaber Al Ali","nameAr":"جابر العلي","zone":"3","charge":"4.000 KWD"},{"nameEn":"Mahboula","nameAr":"المهبولة","zone":"3","charge":"3.000 KWD"},{"nameEn":"Mangaf","nameAr":"المنقف","zone":"3","charge":"3.000 KWD"},{"nameEn":"Masayel","nameAr":"المسايل","zone":"3","charge":"3.000 KWD"},{"nameEn":"Messila","nameAr":"المسيلة","zone":"3","charge":"3.000 KWD"},{"nameEn":"Mubarak Al-Kabeer","nameAr":"مبارك الكبير","zone":"3","charge":"3.000 KWD"},{"nameEn":"Riqqah District","nameAr":"الرقة","zone":"3","charge":"4.000 KWD"},{"nameEn":"Sabah Al Nasser","nameAr":"صباح الناصر","zone":"3","charge":"3.000 KWD"},{"nameEn":"Sabah Al Salem","nameAr":"صباح السالم","zone":"3","charge":"3.000 KWD"},{"nameEn":"Subahiya","nameAr":"الصباحية","zone":"3","charge":"3.000 KWD"},{"nameEn":"Abdullah Al Mubarak Al Sabah","nameAr":"عبدالله المبارك الصباح","zone":"4","charge":"4.000 KWD"},{"nameEn":"Abraq Khaitan","nameAr":"أبرق خيطان","zone":"4","charge":"3.000 KWD"},{"nameEn":"Al Farwaniyah","nameAr":"الفروانية","zone":"4","charge":"3.000 KWD"},{"nameEn":"Al-Dajeej","nameAr":"الضجيج","zone":"4","charge":"3.000 KWD"},{"nameEn":"Andalous","nameAr":"الأندلس","zone":"4","charge":"3.000 KWD"},{"nameEn":"Ardiya","nameAr":"العارضيه","zone":"4","charge":"3.000 KWD"},{"nameEn":"Firdous","nameAr":"الفردوس","zone":"4","charge":"3.000 KWD"},{"nameEn":"Granada","nameAr":"غرناطة","zone":"4","charge":"2.000 KWD"},{"nameEn":"Herafi Ardiya","nameAr":"العارضية الحرفية","zone":"4","charge":"4.000 KWD"},{"nameEn":"Ishbiliya","nameAr":"أشبيلية","zone":"4","charge":"3.000 KWD"},{"nameEn":"Khaitan","nameAr":"خيطان","zone":"4","charge":"3.000 KWD"},{"nameEn":"Omariya","nameAr":"العمرية","zone":"4","charge":"2.000 KWD"},{"nameEn":"Sulaibikhat","nameAr":"الصليبخات","zone":"4","charge":"3.000 KWD"},{"nameEn":"Al Jahra","nameAr":"الجهراء","zone":"5","charge":"3.000 KWD"},{"nameEn":"Doha","nameAr":"الدوحة","zone":"5","charge":"3.000 KWD"},{"nameEn":"Jaber Al Ahmad","nameAr":"جابر الأحمد","zone":"5","charge":"3.000 KWD"},{"nameEn":"Naeem","nameAr":"النعيم","zone":"5","charge":"3.000 KWD"},{"nameEn":"Nahdha","nameAr":"النهضة","zone":"5","charge":"3.000 KWD"},{"nameEn":"Naseem","nameAr":"النسيم","zone":"5","charge":"3.000 KWD"},{"nameEn":"Oyoun","nameAr":"العيون","zone":"5","charge":"3.000 KWD"},{"nameEn":"Qairawan","nameAr":"القيروان","zone":"5","charge":"3.000 KWD"},{"nameEn":"Qasr","nameAr":"القصر","zone":"5","charge":"3.000 KWD"},{"nameEn":"Rabia","nameAr":"الرابية","zone":"5","charge":"2.000 KWD"},{"nameEn":"Rai","nameAr":"الري","zone":"5","charge":"2.000 KWD"},{"nameEn":"Rehab","nameAr":"الرحاب","zone":"5","charge":"2.000 KWD"},{"nameEn":"Rigai","nameAr":"الرقعي","zone":"5","charge":"3.000 KWD"},{"nameEn":"Saad Al Abdullah","nameAr":"سعد العبدالله","zone":"5","charge":"3.000 KWD"},{"nameEn":"Taima\u0027","nameAr":"تيماء","zone":"5","charge":"3.000 KWD"},{"nameEn":"Waha","nameAr":"الواحة","zone":"5","charge":"3.000 KWD"},{"nameEn":"Abbasiya","nameAr":"العباسية","zone":"6","charge":"3.000 KWD"},{"nameEn":"Al-Julaia\u0027a","nameAr":"الجليعة","zone":"6","charge":"5.000 KWD"},{"nameEn":"Amgarah Industrial Area","nameAr":"منطقة أمغرة الصناعية","zone":"6","charge":"9.000 KWD"},{"nameEn":"Jeleeb Al-Shuyoukh","nameAr":"جليب الشيوخ","zone":"6","charge":"3.000 KWD"},{"nameEn":"Kuwait International Airport","nameAr":"مطار الكويت الدولي","zone":"6","charge":"3.000 KWD"},{"nameEn":"Sabah Al Ahmad","nameAr":"صباح الأحمد","zone":"6","charge":"8.000 KWD"},{"nameEn":"Shuwaikh Administrative","nameAr":"شويخ الإدارية","zone":"6","charge":"3.000 KWD"},{"nameEn":"Sulaibiya","nameAr":"الصليبية","zone":"6","charge":"5.000 KWD"}];
+  const DELIVERY_ZONE_CLASSES = { "1": "zone-1", "2": "zone-2", "3": "zone-3", "4": "zone-4", "5": "zone-5", "6": "zone-6" };
 
   state.muteNotifications = localStorage.getItem(NOTIFY_MUTE_KEY) === "1";
 
@@ -2477,7 +2594,9 @@
   function getSupervisorAccessLabel(user) {
     if (!user) return "-";
     if (user.role === "driver") {
-      return user.requestsScope === "all" ? t("requests_scope_all") : t("requests_scope_assigned");
+      const requestLabel = user.requestsScope === "all" ? t("requests_scope_all") : t("requests_scope_assigned");
+      const deliveryLabel = user.deliveriesScope === "assigned" ? t("deliveries_scope_assigned") : t("deliveries_scope_all");
+      return `${t("branch_requests")}: ${requestLabel} | ${t("menu_deliveries")}: ${deliveryLabel}`;
     }
     if (user.role !== "supervisor") return "-";
     const scope = getSupervisorAllowedScope(user);
@@ -2537,11 +2656,15 @@
   function applyDriverRequestsScopeUI(prefix, role, scope) {
     const wrap = document.getElementById(`${prefix}UserRequestsScopeWrap`);
     const select = document.getElementById(`${prefix}UserRequestsScope`);
-    if (!wrap || !select) return;
+    const deliveriesWrap = document.getElementById(`${prefix}UserDeliveriesScopeWrap`);
+    const deliveriesSelect = document.getElementById(`${prefix}UserDeliveriesScope`);
+    if (!wrap || !select || !deliveriesWrap || !deliveriesSelect) return;
     const isDriver = role === "driver";
     wrap.style.display = isDriver ? "block" : "none";
+    deliveriesWrap.style.display = isDriver ? "block" : "none";
     if (!isDriver) {
       select.value = "assigned";
+      deliveriesSelect.value = "all";
       return;
     }
     if (scope) {
@@ -2549,6 +2672,7 @@
     } else if (!select.value) {
       select.value = "assigned";
     }
+    if (!deliveriesSelect.value) deliveriesSelect.value = "all";
   }
   function applySupervisorAnalyticsUI(role, scope, branchId, allowedIds) {
     const scopeSel = document.getElementById("editUserAnalyticsScope");
@@ -2611,6 +2735,37 @@
   }
   function getItemById(id) {
     return state.items.find((x) => x.id === id);
+  }
+  function normalizeAreaKey(value) {
+    return String(value || "")
+      .trim()
+      .toLowerCase()
+      .replace(/[\u2018\u2019']/g, "'")
+      .replace(/\s+/g, " ");
+  }
+  function getDeliveryAreaMeta(areaName) {
+    const key = normalizeAreaKey(areaName);
+    return DELIVERY_AREA_OPTIONS.find((entry) => normalizeAreaKey(entry.nameEn) === key || normalizeAreaKey(entry.nameAr) === key) || null;
+  }
+  function getDeliveryZoneClass(zone) {
+    return DELIVERY_ZONE_CLASSES[String(zone || "").trim()] || "";
+  }
+  function formatDeliveryArea(delivery) {
+    if (!delivery) return "";
+    if (currentLang === "ar" && delivery.areaNameAr) return delivery.areaNameAr;
+    return delivery.areaName || delivery.areaNameAr || "";
+  }
+  function computeDeliveryTimeSelection(type, customValue) {
+    if (type === "morning") return { label: t("delivery_time_morning"), iso: "" };
+    if (type === "noon") return { label: t("delivery_time_noon"), iso: "" };
+    if (type === "night") return { label: t("delivery_time_night"), iso: "" };
+    if (type === "custom") {
+      if (!customValue) return null;
+      const custom = new Date(customValue);
+      if (Number.isNaN(custom.getTime())) return null;
+      return { label: formatDateTime(custom.toISOString()), iso: custom.toISOString() };
+    }
+    return null;
   }
   function isActiveItem(item) {
     return !!(item && !item.deletedAt);
@@ -3284,11 +3439,11 @@
     return body.nextId;
   }
 
-  async function apiCreateUser(name, role, password, branchId, requestsScope) {
+  async function apiCreateUser(name, role, password, branchId, requestsScope, deliveriesScope) {
     const res = await fetch(`${API_BASE}/users`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, role, password, branchId, requestsScope, adminUserId: state.user.id })
+      body: JSON.stringify({ name, role, password, branchId, requestsScope, deliveriesScope, adminUserId: state.user.id })
     });
     const body = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(body.error || "Create user failed");
@@ -3455,6 +3610,26 @@
     });
     const body = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(body.error || "Assign delivery driver failed");
+    return body;
+  }
+  async function apiUpdateDeliveryEta(id, etaLabel, etaAt) {
+    const res = await fetch(`${API_BASE}/deliveries/${id}/eta`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId: state.user.id, etaLabel, etaAt })
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(body.error || "Update delivery ETA failed");
+    return body;
+  }
+  async function apiUpdateDriverDeliveriesScope(userId, deliveriesScope) {
+    const res = await fetch(`${API_BASE}/users/${userId}/deliveries-scope`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId: state.user.id, deliveriesScope })
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(body.error || "Update driver visibility failed");
     return body;
   }
 
@@ -3799,6 +3974,7 @@
     const toLabel = document.getElementById("requestToBranchLabel");
     if (fromLabel) fromLabel.textContent = getBranchName(getMainStorageId());
     if (toLabel && state.user && state.user.branchId) toLabel.textContent = getBranchName(state.user.branchId);
+    renderRequestItemBranchQtyHint();
 
     const analyticsBranchSelect = document.getElementById("analyticsBranchSelect");
     if (analyticsBranchSelect) {
@@ -3849,6 +4025,7 @@
         deliveryFromSelect.value = state.user.branchId;
       }
     }
+    renderDeliveryAreaOptions();
 
     const driverBranchSel = document.getElementById("driverBranchFilterSelect");
     if (driverBranchSel) {
@@ -4083,6 +4260,8 @@
     itemSel.innerHTML = "";
 
     if (!filtered.length) {
+      const hint = document.getElementById("requestItemBranchQtyHint");
+      if (hint) hint.textContent = "";
       const opt = document.createElement("option");
       opt.value = "";
       opt.textContent = items.length ? t("no_items_match_search") : `${t("no_items_in")} ${getBranchName(storageId)}`;
@@ -4106,6 +4285,58 @@
     } else {
       itemSel.value = filtered[0].id;
     }
+    renderRequestItemBranchQtyHint();
+  }
+
+  function renderRequestItemBranchQtyHint() {
+    const hint = document.getElementById("requestItemBranchQtyHint");
+    const itemId = document.getElementById("requestItemSelect")?.value || "";
+    if (!hint) return;
+    if (!itemId || !state.user?.branchId) {
+      hint.textContent = "";
+      return;
+    }
+    const mainId = getMainStorageId();
+    const mainItem = getActiveItems().find((it) => it.id === itemId && it.branchId === mainId);
+    const branchItem = getActiveItems().find((it) => it.id === itemId && it.branchId === state.user.branchId);
+    const mainQty = Number(mainItem?.baseQty || 0);
+    const branchQty = Number(branchItem?.baseQty || 0);
+    hint.textContent = `${t("main_storage")}: ${mainQty} | ${getBranchName(state.user.branchId)}: ${branchQty}`;
+  }
+
+  function renderDeliveryAreaOptions() {
+    const select = document.getElementById("deliveryAreaSelect");
+    if (!select) return;
+    const prev = select.value;
+    select.innerHTML = "";
+    const placeholder = document.createElement("option");
+    placeholder.value = "";
+    placeholder.textContent = currentLang === "ar" ? "اختر المنطقة" : "Select area";
+    select.appendChild(placeholder);
+    DELIVERY_AREA_OPTIONS.forEach((entry) => {
+      const opt = document.createElement("option");
+      opt.value = entry.nameEn;
+      const label = currentLang === "ar" && entry.nameAr ? entry.nameAr : entry.nameEn;
+      opt.textContent = `Z${entry.zone} - ${label}`;
+      opt.setAttribute("data-zone", entry.zone);
+      select.appendChild(opt);
+    });
+    if (prev && select.querySelector(`option[value="${CSS.escape(prev)}"]`)) {
+      select.value = prev;
+    }
+    updateDeliveryAreaMeta();
+  }
+
+  function updateDeliveryAreaMeta() {
+    const select = document.getElementById("deliveryAreaSelect");
+    const zoneInput = document.getElementById("deliveryZoneInput");
+    const chargeInput = document.getElementById("deliveryChargeInput");
+    if (!select || !zoneInput || !chargeInput) return;
+    const meta = getDeliveryAreaMeta(select.value);
+    zoneInput.value = meta?.zone || "";
+    chargeInput.value = meta?.charge || "";
+    zoneInput.className = meta?.zone ? getDeliveryZoneClass(meta.zone) : "";
+    chargeInput.className = meta?.zone ? getDeliveryZoneClass(meta.zone) : "";
   }
 
   function renderUsersTable() {
@@ -4435,6 +4666,12 @@
     if (!state.user) return [];
     const role = state.user.role;
     if (role === "admin" || role === "manager" || role === "driver_supervisor") return list;
+    if (role === "driver") {
+      if (state.user.deliveriesScope === "assigned") {
+        return list.filter((d) => d.driverUserId === state.user.id);
+      }
+      return list;
+    }
     if (role === "supervisor") {
       const allowed = getSupervisorAllowedBranches(state.user);
       return list.filter((d) => allowed.includes(d.fromBranchId));
@@ -4454,12 +4691,13 @@
     const all = [...(state.deliveries || [])];
     const orderMap = buildDeliveryOrderMap(all);
     renderDeliveriesHistoryTable(orderMap);
+    renderDeliveryDriverScopeTable();
     const active = all.filter((d) => d.status !== "delivered");
     const visible = getVisibleDeliveriesForUser(active);
 
     if (!visible.length) {
       const tr = document.createElement("tr");
-      tr.innerHTML = `<td colspan="12" class="text-muted">${t("no_deliveries_yet")}</td>`;
+      tr.innerHTML = `<td colspan="16" class="text-muted">${t("no_deliveries_yet")}</td>`;
       tbody.appendChild(tr);
       return;
     }
@@ -4476,6 +4714,7 @@
       const canSet = ["admin", "manager", "supervisor", "driver_supervisor", "staff"].includes(state.user.role);
       const canAssignDriver = ["admin", "manager", "driver_supervisor"].includes(state.user.role);
       const canAdjust = canSet && (d.status === "new" || d.status === "ready");
+      const zoneClass = getDeliveryZoneClass(d.areaZone);
       const statusSelect = canAdjust
         ? `<select data-delivery-status="${escapeHtml(d.id)}">
             <option value="new"${d.status === "new" ? " selected" : ""}>${t("new")}</option>
@@ -4502,12 +4741,16 @@
         <td>${idHtml}</td>
         <td>${escapeHtml(formatDateTime(d.createdAt))}</td>
         <td>${escapeHtml(getBranchName(d.fromBranchId))}</td>
+        <td class="zone-cell ${escapeHtml(zoneClass)}"><span class="zone-pill ${escapeHtml(zoneClass)}">${escapeHtml(d.areaZone || "")}</span></td>
+        <td class="${escapeHtml(zoneClass)}">${escapeHtml(formatDeliveryArea(d))}</td>
         <td>${escapeHtml(d.address || "")}</td>
         <td>${escapeHtml(d.invoiceNo || "")}</td>
         <td>${escapeHtml(d.dueDate || "")}</td>
         <td>${escapeHtml(d.customerName || "")}</td>
         <td>${escapeHtml(d.customerPhone || "")}</td>
         <td><span class="pill pill-status ${escapeHtml(d.status)}">${escapeHtml(formatDeliveryStatus(d.status))}</span></td>
+        <td>${escapeHtml(d.readyTimeLabel || "")}</td>
+        <td>${escapeHtml(d.driverEtaLabel || "")}</td>
         <td>${escapeHtml(driverName)}</td>
         <td>${escapeHtml(d.note || "")}</td>
         <td>${actionParts.join(" ") || "-"}</td>
@@ -4557,7 +4800,7 @@
 
     if (!visible.length) {
       const tr = document.createElement("tr");
-      tr.innerHTML = `<td colspan="12" class="text-muted">${t("no_deliveries_yet")}</td>`;
+      tr.innerHTML = `<td colspan="16" class="text-muted">${t("no_deliveries_yet")}</td>`;
       tbody.appendChild(tr);
       return;
     }
@@ -4569,20 +4812,58 @@
         ? `<span title="${escapeHtml(d.id)}">${escapeHtml(orderLabel)}</span>`
         : escapeHtml(orderLabel);
       const driverName = d.driverUserId ? getUserName(d.driverUserId) : "";
+      const zoneClass = getDeliveryZoneClass(d.areaZone);
       const tr = document.createElement("tr");
       tr.innerHTML = `
         <td>${idHtml}</td>
         <td>${escapeHtml(formatDateTime(d.createdAt))}</td>
         <td>${escapeHtml(formatDateTime(deliveredAt))}</td>
         <td>${escapeHtml(getBranchName(d.fromBranchId))}</td>
+        <td class="zone-cell ${escapeHtml(zoneClass)}"><span class="zone-pill ${escapeHtml(zoneClass)}">${escapeHtml(d.areaZone || "")}</span></td>
+        <td class="${escapeHtml(zoneClass)}">${escapeHtml(formatDeliveryArea(d))}</td>
         <td>${escapeHtml(d.address || "")}</td>
         <td>${escapeHtml(d.invoiceNo || "")}</td>
         <td>${escapeHtml(d.dueDate || "")}</td>
         <td>${escapeHtml(d.customerName || "")}</td>
         <td>${escapeHtml(d.customerPhone || "")}</td>
         <td><span class="pill pill-status ${escapeHtml(d.status)}">${escapeHtml(formatDeliveryStatus(d.status))}</span></td>
+        <td>${escapeHtml(d.readyTimeLabel || "")}</td>
+        <td>${escapeHtml(d.driverEtaLabel || "")}</td>
         <td>${escapeHtml(driverName)}</td>
         <td>${escapeHtml(d.note || "")}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function renderDeliveryDriverScopeTable() {
+    const block = document.getElementById("deliveryDriverScopeBlock");
+    const tbody = document.getElementById("deliveryDriverScopeTableBody");
+    if (!block || !tbody) return;
+    if (!state.user || !["admin", "manager", "driver_supervisor"].includes(state.user.role)) {
+      block.style.display = "none";
+      return;
+    }
+    block.style.display = "block";
+    tbody.innerHTML = "";
+    const drivers = (state.users || []).filter((u) => u.role === "driver").sort((a, b) => a.name.localeCompare(b.name));
+    if (!drivers.length) {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td colspan="3" class="text-muted">${t("no_users")}</td>`;
+      tbody.appendChild(tr);
+      return;
+    }
+    drivers.forEach((driver) => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${escapeHtml(driver.name)}</td>
+        <td>
+          <select data-driver-deliveries-scope="${escapeHtml(driver.id)}">
+            <option value="all"${driver.deliveriesScope === "assigned" ? "" : " selected"}>${escapeHtml(t("deliveries_scope_all"))}</option>
+            <option value="assigned"${driver.deliveriesScope === "assigned" ? " selected" : ""}>${escapeHtml(t("deliveries_scope_assigned"))}</option>
+          </select>
+        </td>
+        <td><button class="btn btn-secondary btn-sm" data-driver-deliveries-scope-save="${escapeHtml(driver.id)}">${t("save_changes")}</button></td>
       `;
       tbody.appendChild(tr);
     });
@@ -4837,11 +5118,12 @@
     const orderMap = buildDeliveryOrderMap(state.deliveries || []);
     const list = (state.deliveries || [])
       .filter((d) => d.status !== "delivered")
+      .filter((d) => state.user.role !== "driver" || state.user.deliveriesScope !== "assigned" || d.driverUserId === state.user.id)
       .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
 
     if (!list.length) {
       const tr = document.createElement("tr");
-      tr.innerHTML = `<td colspan="12" class="text-muted">${t("no_deliveries_yet")}</td>`;
+      tr.innerHTML = `<td colspan="16" class="text-muted">${t("no_deliveries_yet")}</td>`;
       tbody.appendChild(tr);
       return;
     }
@@ -4853,16 +5135,28 @@
         : escapeHtml(orderLabel);
       const useIcons = state.phoneMode && state.user && state.user.role === "driver";
       const isMine = d.driverUserId && state.user && d.driverUserId === state.user.id;
+      const zoneClass = getDeliveryZoneClass(d.areaZone);
       const actionParts = [];
       if (isMine) {
         if (d.status === "new" || d.status === "ready") {
-        const label = useIcons ? "ðŸšš" : t("mark_in_transit");
-        actionParts.push(`<button class="btn btn-primary btn-sm" data-driver-delivery-action="${escapeHtml(d.id)}" data-delivery-next="in_transit">${label}</button>`);
-      } else if (d.status === "in_transit") {
-        const label = useIcons ? "âœ…" : t("mark_delivered");
-        actionParts.push(`<button class="btn btn-primary btn-sm" data-driver-delivery-action="${escapeHtml(d.id)}" data-delivery-next="delivered">${label}</button>`);
-      }
-
+          const label = useIcons ? "Go" : t("mark_in_transit");
+          actionParts.push(`<button class="btn btn-primary btn-sm" data-driver-delivery-action="${escapeHtml(d.id)}" data-delivery-next="in_transit">${label}</button>`);
+        } else if (d.status === "in_transit") {
+          const label = useIcons ? "Done" : t("mark_delivered");
+          actionParts.push(`<button class="btn btn-primary btn-sm" data-driver-delivery-action="${escapeHtml(d.id)}" data-delivery-next="delivered">${label}</button>`);
+        }
+        const etaLabel = useIcons ? "ETA" : t("set_eta");
+        actionParts.push(`
+          <select data-delivery-eta-type="${escapeHtml(d.id)}">
+            <option value="">${t("delivery_time_select")}</option>
+            <option value="morning">${t("delivery_time_morning")}</option>
+            <option value="noon">${t("delivery_time_noon")}</option>
+            <option value="night">${t("delivery_time_night")}</option>
+            <option value="custom">${t("delivery_time_custom")}</option>
+          </select>
+        `);
+        actionParts.push(`<input type="datetime-local" data-delivery-eta-custom="${escapeHtml(d.id)}" style="display:none;" />`);
+        actionParts.push(`<button class="btn btn-secondary btn-sm" data-delivery-set-eta="${escapeHtml(d.id)}">${etaLabel}</button>`);
       }
       const tr = document.createElement("tr");
       if (isMine) tr.className = "assigned-row";
@@ -4870,12 +5164,16 @@
         <td class="col-id">${idHtml}</td>
         <td class="col-created">${escapeHtml(formatDateTime(d.createdAt))}</td>
         <td class="col-from">${escapeHtml(getBranchName(d.fromBranchId))}</td>
+        <td class="col-zone zone-cell ${escapeHtml(zoneClass)}"><span class="zone-pill ${escapeHtml(zoneClass)}">${escapeHtml(d.areaZone || "")}</span></td>
+        <td class="col-area ${escapeHtml(zoneClass)}">${escapeHtml(formatDeliveryArea(d))}</td>
         <td class="col-address">${escapeHtml(d.address || "")}</td>
         <td class="col-customer">${escapeHtml(d.customerName || "")}</td>
         <td class="col-phone">${escapeHtml(d.customerPhone || "")}</td>
         <td class="col-due">${escapeHtml(d.dueDate || "")}</td>
         <td class="col-invoice">${escapeHtml(d.invoiceNo || "")}</td>
         <td class="col-status"><span class="pill pill-status ${escapeHtml(d.status)}">${escapeHtml(formatDeliveryStatus(d.status))}</span></td>
+        <td class="col-ready">${escapeHtml(d.readyTimeLabel || "")}</td>
+        <td class="col-eta">${escapeHtml(d.driverEtaLabel || "")}</td>
         <td class="col-driver">${escapeHtml(d.driverUserId ? getUserName(d.driverUserId) : "")}</td>
         <td class="col-note">${escapeHtml(d.note || "")}</td>
         <td class="col-action"><div class="driver-actions">${actionParts.join(" ") || "-"}</div></td>
@@ -6451,6 +6749,19 @@
   document.getElementById("requestItemSearchInput").addEventListener("input", () => {
     fillRequestItemsFromStorage();
   });
+  document.getElementById("requestItemSelect").addEventListener("change", () => {
+    renderRequestItemBranchQtyHint();
+  });
+  document.getElementById("deliveryAreaSelect")?.addEventListener("change", () => {
+    updateDeliveryAreaMeta();
+  });
+  document.getElementById("deliveryReadyTimeTypeSelect")?.addEventListener("change", (e) => {
+    const input = document.getElementById("deliveryReadyTimeCustomInput");
+    const hint = document.getElementById("deliveryReadyTimeHint");
+    const type = e.target.value;
+    if (input) input.style.display = type === "custom" ? "block" : "none";
+    if (hint) hint.textContent = type && type !== "custom" ? t(`delivery_time_${type}`) : "";
+  });
 
   document.getElementById("requestImageInput").addEventListener("change", async (e) => {
     const file = e.target.files && e.target.files[0];
@@ -6548,19 +6859,24 @@
     const requestsScope = role === "driver"
       ? document.getElementById("newUserRequestsScope")?.value || "assigned"
       : undefined;
+    const deliveriesScope = role === "driver"
+      ? document.getElementById("newUserDeliveriesScope")?.value || "all"
+      : undefined;
 
     if (!name || !password) {
       alert(t("name_password_required"));
       return;
     }
     try {
-      const newUser = await apiCreateUser(name, role, password, branchId, requestsScope);
+      const newUser = await apiCreateUser(name, role, password, branchId, requestsScope, deliveriesScope);
       state.users.push(newUser);
       renderUsersTable();
       document.getElementById("newUserName").value = "";
       document.getElementById("newUserPassword").value = "";
       const scopeSelect = document.getElementById("newUserRequestsScope");
       if (scopeSelect) scopeSelect.value = "assigned";
+      const deliveryScopeSelect = document.getElementById("newUserDeliveriesScope");
+      if (deliveryScopeSelect) deliveryScopeSelect.value = "all";
     } catch (e) {
       alert(e.message);
     }
@@ -6582,6 +6898,8 @@
       applySupervisorAccessUI("", "own", "", []);
       applySupervisorAnalyticsUI("", "own", "", []);
       applyDriverRequestsScopeUI("edit", "", "assigned");
+      const deliveryScopeSelect = document.getElementById("editUserDeliveriesScope");
+      if (deliveryScopeSelect) deliveryScopeSelect.value = "all";
       return;
     }
     document.getElementById("editUserName").value = user.name;
@@ -6601,6 +6919,8 @@
       getSupervisorAnalyticsBranches(user)
     );
     applyDriverRequestsScopeUI("edit", user.role, user.requestsScope || "assigned");
+    const deliveryScopeSelect = document.getElementById("editUserDeliveriesScope");
+    if (deliveryScopeSelect) deliveryScopeSelect.value = user.deliveriesScope || "all";
   });
 
   const editUserRoleSelect = document.getElementById("editUserRole");
@@ -6647,8 +6967,10 @@
     };
     if (role === "driver") {
       updates.requestsScope = document.getElementById("editUserRequestsScope")?.value || "assigned";
+      updates.deliveriesScope = document.getElementById("editUserDeliveriesScope")?.value || "all";
     } else {
       updates.requestsScope = "";
+      updates.deliveriesScope = "";
     }
     if (password) updates.password = password;
 
@@ -6911,35 +7233,56 @@
       const fromBranchId = document.getElementById("deliveryFromBranchSelect")?.value || "";
       const status = document.getElementById("deliveryStatusSelect")?.value || "new";
       const dueDate = document.getElementById("deliveryDueDateInput")?.value || "";
+      const areaName = document.getElementById("deliveryAreaSelect")?.value || "";
+      const areaMeta = getDeliveryAreaMeta(areaName);
       const address = document.getElementById("deliveryAddressInput")?.value.trim() || "";
       const invoiceNo = document.getElementById("deliveryInvoiceInput")?.value.trim() || "";
       const note = document.getElementById("deliveryNoteInput")?.value.trim() || "";
+      const readyTimeType = document.getElementById("deliveryReadyTimeTypeSelect")?.value || "";
+      const readyTimeCustom = document.getElementById("deliveryReadyTimeCustomInput")?.value || "";
       const customerName = document.getElementById("deliveryCustomerNameInput")?.value.trim() || "";
       const customerPhone = document.getElementById("deliveryCustomerPhoneInput")?.value.trim() || "";
 
-      if (!address || !customerName || !customerPhone) {
+      if (!areaName || !customerName || !customerPhone) {
         alert(t("delivery_required_fields"));
+        return;
+      }
+      const readyTime = readyTimeType ? computeDeliveryTimeSelection(readyTimeType, readyTimeCustom) : null;
+      if (readyTimeType && !readyTime) {
+        alert(readyTimeCustom ? t("delivery_time_invalid") : t("delivery_time_required"));
         return;
       }
 
       try {
         const delivery = await apiCreateDelivery({
           fromBranchId,
+          areaName,
+          areaNameAr: areaMeta?.nameAr || "",
+          areaZone: areaMeta?.zone || "",
+          deliveryCharge: areaMeta?.charge || "",
           address,
           invoiceNo,
           dueDate,
           customerName,
           customerPhone,
           note,
-          status
+          status,
+          readyTimeLabel: readyTime?.label || "",
+          readyTimeAt: readyTime?.iso || ""
         });
         state.deliveries.push(delivery);
         renderDeliveriesTable();
         renderDriverDeliveriesTable();
+        document.getElementById("deliveryAreaSelect").value = "";
+        updateDeliveryAreaMeta();
         document.getElementById("deliveryAddressInput").value = "";
         document.getElementById("deliveryInvoiceInput").value = "";
         document.getElementById("deliveryDueDateInput").value = "";
         document.getElementById("deliveryNoteInput").value = "";
+        document.getElementById("deliveryReadyTimeTypeSelect").value = "";
+        document.getElementById("deliveryReadyTimeCustomInput").value = "";
+        document.getElementById("deliveryReadyTimeCustomInput").style.display = "none";
+        document.getElementById("deliveryReadyTimeHint").textContent = "";
         document.getElementById("deliveryCustomerNameInput").value = "";
         document.getElementById("deliveryCustomerPhoneInput").value = "";
         if (document.getElementById("deliveryStatusSelect")) document.getElementById("deliveryStatusSelect").value = "new";
@@ -7212,6 +7555,28 @@
     });
   }
 
+  const deliveryDriverScopeTableBody = document.getElementById("deliveryDriverScopeTableBody");
+  if (deliveryDriverScopeTableBody) {
+    deliveryDriverScopeTableBody.addEventListener("click", async (e) => {
+      const btn = e.target.closest("button[data-driver-deliveries-scope-save]");
+      if (!btn) return;
+      const id = btn.getAttribute("data-driver-deliveries-scope-save");
+      const select = document.querySelector(`select[data-driver-deliveries-scope="${CSS.escape(id)}"]`);
+      const deliveriesScope = select ? select.value : "all";
+      try {
+        const updated = await apiUpdateDriverDeliveriesScope(id, deliveriesScope);
+        const idx = state.users.findIndex((u) => u.id === id);
+        if (idx >= 0) state.users[idx] = updated;
+        if (state.user && state.user.id === id) state.user = { ...state.user, ...updated };
+        renderDeliveryDriverScopeTable();
+        renderUsersTable();
+        renderDriverDeliveriesTable();
+      } catch (err) {
+        alert(err.message);
+      }
+    });
+  }
+
   const transferTableBody = document.getElementById("transferTableBody");
   if (transferTableBody) {
     transferTableBody.addEventListener("click", async (e) => {
@@ -7415,20 +7780,50 @@
 
   const driverDeliveriesTableBody = document.getElementById("driverDeliveriesTableBody");
   if (driverDeliveriesTableBody) {
+    driverDeliveriesTableBody.addEventListener("change", (e) => {
+      const sel = e.target.closest("select[data-delivery-eta-type]");
+      if (!sel) return;
+      const id = sel.getAttribute("data-delivery-eta-type");
+      const input = document.querySelector(`input[data-delivery-eta-custom="${CSS.escape(id)}"]`);
+      if (input) input.style.display = sel.value === "custom" ? "block" : "none";
+    });
     driverDeliveriesTableBody.addEventListener("click", async (e) => {
       const actionBtn = e.target.closest("button[data-driver-delivery-action]");
-      if (!actionBtn) return;
-      const id = actionBtn.getAttribute("data-driver-delivery-action");
-      const next = actionBtn.getAttribute("data-delivery-next");
-      if (!id || !next) return;
-      try {
-        const updated = await apiUpdateDeliveryStatus(id, next);
-        const idx = state.deliveries.findIndex((d) => d.id === id);
-        if (idx >= 0) state.deliveries[idx] = updated;
-        renderDriverDeliveriesTable();
-        renderDeliveriesTable();
-      } catch (err) {
-        alert(err.message);
+      if (actionBtn) {
+        const id = actionBtn.getAttribute("data-driver-delivery-action");
+        const next = actionBtn.getAttribute("data-delivery-next");
+        if (!id || !next) return;
+        try {
+          const updated = await apiUpdateDeliveryStatus(id, next);
+          const idx = state.deliveries.findIndex((d) => d.id === id);
+          if (idx >= 0) state.deliveries[idx] = updated;
+          renderDriverDeliveriesTable();
+          renderDeliveriesTable();
+        } catch (err) {
+          alert(err.message);
+        }
+        return;
+      }
+
+      const etaBtn = e.target.closest("button[data-delivery-set-eta]");
+      if (etaBtn) {
+        const id = etaBtn.getAttribute("data-delivery-set-eta");
+        const typeSel = document.querySelector(`select[data-delivery-eta-type="${CSS.escape(id)}"]`);
+        const customInput = document.querySelector(`input[data-delivery-eta-custom="${CSS.escape(id)}"]`);
+        const type = typeSel ? typeSel.value : "";
+        const customValue = customInput ? customInput.value : "";
+        if (!type) { alert(t("delivery_time_required")); return; }
+        const eta = computeDeliveryTimeSelection(type, customValue);
+        if (!eta) { alert(t("delivery_time_invalid")); return; }
+        try {
+          const updated = await apiUpdateDeliveryEta(id, eta.label, eta.iso);
+          const idx = state.deliveries.findIndex((d) => d.id === id);
+          if (idx >= 0) state.deliveries[idx] = updated;
+          renderDriverDeliveriesTable();
+          renderDeliveriesTable();
+        } catch (err) {
+          alert(err.message);
+        }
       }
     });
   }
