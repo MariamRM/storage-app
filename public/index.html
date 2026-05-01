@@ -51,6 +51,9 @@
     .zone-5 { background: #fef3c7 !important; }
     .zone-6 { background: #fbcfe8 !important; }
     .zone-pill { display: inline-flex; align-items: center; justify-content: center; min-width: 2.1rem; padding: 0.12rem 0.45rem; border-radius: 999px; color: #111827; }
+    .filter-row th { background: #ffffff; padding-top: 0.25rem; padding-bottom: 0.25rem; }
+    .filter-row input,
+    .filter-row select { min-width: 90px; font-size: 0.76rem; padding: 0.3rem 0.45rem; border-radius: 0.45rem; }
     .driver-requests-table .col-created,
     .driver-requests-table .col-from,
     .driver-requests-table .col-to,
@@ -622,16 +625,6 @@
     </div>
 
     <div class="panel-section-title mt-md" data-i18n="requests_for_my_branch">Requests for my branch</div>
-    <div id="requestsFilterBar" class="toolbar mt-xs" style="display:none;">
-      <div>
-        <label data-i18n="filter_by_branch">Filter by branch</label>
-        <select id="requestBranchFilterSelect"></select>
-      </div>
-      <div>
-        <label data-i18n="filter_by_status">Filter by status</label>
-        <select id="requestStatusFilterSelect"></select>
-      </div>
-    </div>
     <div class="table-wrapper">
       <table class="driver-transfers-table">
         <thead>
@@ -650,6 +643,22 @@
           <th data-i18n="th_note">Note</th>
           <th data-i18n="th_image">Image</th>
           <th data-i18n="th_action">Action</th>
+        </tr>
+        <tr class="filter-row">
+          <th></th>
+          <th></th>
+          <th><input id="requestItemFilterInput" data-i18n-placeholder="filter_item_placeholder" placeholder="Filter item" /></th>
+          <th></th>
+          <th></th>
+          <th><select id="requestBranchFilterSelect"></select></th>
+          <th></th>
+          <th></th>
+          <th><select id="requestStatusFilterSelect"></select></th>
+          <th></th>
+          <th></th>
+          <th></th>
+          <th></th>
+          <th></th>
         </tr>
         </thead>
         <tbody id="requestsTableBody"></tbody>
@@ -729,16 +738,6 @@
     </div>
 
     <div class="panel-section-title mt-md" data-i18n="active_transfers">Active transfers</div>
-    <div id="transferFilterBar" class="toolbar mt-xs" style="display:none;">
-      <div>
-        <label data-i18n="filter_by_branch">Filter by branch</label>
-        <select id="transferBranchFilterSelect"></select>
-      </div>
-      <div>
-        <label data-i18n="filter_by_status">Filter by status</label>
-        <select id="transferStatusFilterSelect"></select>
-      </div>
-    </div>
     <div class="table-wrapper">
       <table>
         <thead>
@@ -755,6 +754,20 @@
           <th data-i18n="th_note">Note</th>
           <th data-i18n="th_image">Image</th>
           <th data-i18n="th_action">Action</th>
+        </tr>
+        <tr class="filter-row">
+          <th></th>
+          <th></th>
+          <th></th>
+          <th><select id="transferBranchFilterSelect"></select></th>
+          <th></th>
+          <th><select id="transferStatusFilterSelect"></select></th>
+          <th></th>
+          <th></th>
+          <th></th>
+          <th><input id="transferNoteFilterInput" data-i18n-placeholder="filter_note_placeholder" placeholder="Filter note" /></th>
+          <th></th>
+          <th></th>
         </tr>
         </thead>
         <tbody id="transferTableBody"></tbody>
@@ -881,16 +894,6 @@
     </div>
 
     <div class="panel-section-title mt-md" data-i18n="deliveries_list">Deliveries list</div>
-    <div id="deliveriesFilterBar" class="toolbar mt-xs" style="display:none;">
-      <div>
-        <label data-i18n="filter_by_branch">Filter by branch</label>
-        <select id="deliveriesBranchFilterSelect"></select>
-      </div>
-      <div>
-        <label data-i18n="filter_by_status">Filter by status</label>
-        <select id="deliveriesStatusFilterSelect"></select>
-      </div>
-    </div>
     <div class="table-wrapper">
       <table>
         <thead>
@@ -911,6 +914,24 @@
           <th data-i18n="th_driver">Driver</th>
           <th data-i18n="th_note">Note</th>
           <th data-i18n="th_action">Action</th>
+        </tr>
+        <tr class="filter-row">
+          <th></th>
+          <th></th>
+          <th><select id="deliveriesBranchFilterSelect"></select></th>
+          <th></th>
+          <th></th>
+          <th><input id="deliveriesAddressFilterInput" data-i18n-placeholder="filter_address_placeholder" placeholder="Filter address" /></th>
+          <th></th>
+          <th></th>
+          <th></th>
+          <th><input id="deliveriesPhoneFilterInput" data-i18n-placeholder="filter_phone_placeholder" placeholder="Filter phone" /></th>
+          <th><select id="deliveriesStatusFilterSelect"></select></th>
+          <th></th>
+          <th></th>
+          <th></th>
+          <th></th>
+          <th></th>
         </tr>
         </thead>
         <tbody id="deliveriesTableBody"></tbody>
@@ -1875,6 +1896,10 @@
       requests_history: "Requests history",
       filter_by_branch: "Filter by branch",
       filter_by_status: "Filter by status",
+      filter_item_placeholder: "Filter item",
+      filter_note_placeholder: "Filter note",
+      filter_address_placeholder: "Filter address",
+      filter_phone_placeholder: "Filter phone",
       area_search_placeholder: "Search area",
       assign: "Assign",
       assigned_to_you: "Assigned to you",
@@ -2203,6 +2228,10 @@
       requests_history: "سجل الطلبات",
       filter_by_branch: "تصفية حسب الفرع",
       filter_by_status: "تصفية حسب الحالة",
+      filter_item_placeholder: "تصفية الصنف",
+      filter_note_placeholder: "تصفية الملاحظة",
+      filter_address_placeholder: "تصفية العنوان",
+      filter_phone_placeholder: "تصفية الهاتف",
       area_search_placeholder: "ابحث عن المنطقة",
       assign: "تعيين",
       assigned_to_you: "مُعيّن لك",
@@ -4552,13 +4581,10 @@
   function setupRequestBranchFilters() {
     if (!state.user) return;
 
-    const filterBar = document.getElementById("requestsFilterBar");
     const filterSelect = document.getElementById("requestBranchFilterSelect");
     const statusSelect = document.getElementById("requestStatusFilterSelect");
-    if (filterBar && filterSelect) {
+    if (filterSelect) {
       const canFilter = state.user.role !== "driver";
-      filterBar.style.display = canFilter ? "flex" : "none";
-
       if (canFilter) {
         const prev = filterSelect.value;
         filterSelect.innerHTML = "";
@@ -4713,9 +4739,7 @@
   }
 
   function setupTransferFilters() {
-    const filterBar = document.getElementById("transferFilterBar");
-    if (!filterBar || !state.user) return;
-    filterBar.style.display = state.user.role === "driver" ? "none" : "flex";
+    if (!state.user) return;
     let branchIds = [];
     if (state.user.role === "supervisor") {
       branchIds = getSupervisorAllowedBranches(state.user);
@@ -4729,9 +4753,7 @@
   }
 
   function setupDeliveryFilters() {
-    const filterBar = document.getElementById("deliveriesFilterBar");
-    if (!filterBar || !state.user) return;
-    filterBar.style.display = state.user.role === "driver" ? "none" : "flex";
+    if (!state.user) return;
     let branchIds = [];
     if (state.user.role === "supervisor") {
       branchIds = getSupervisorAllowedBranches(state.user);
@@ -4775,13 +4797,22 @@
     const canFilter = state.user.role !== "driver";
     const filterSelect = document.getElementById("requestBranchFilterSelect");
     const statusSelect = document.getElementById("requestStatusFilterSelect");
+    const itemFilterInput = document.getElementById("requestItemFilterInput");
     const filterValue = canFilter && filterSelect ? filterSelect.value : "ALL";
     const statusValue = canFilter && statusSelect ? statusSelect.value : "ALL";
+    const itemValue = String(canFilter && itemFilterInput ? itemFilterInput.value : "").trim().toLowerCase();
     if (canFilter && filterValue && filterValue !== "ALL") {
       visible = visible.filter((r) => r.toBranchId === filterValue);
     }
     if (canFilter && statusValue && statusValue !== "ALL") {
       visible = visible.filter((r) => r.status === statusValue);
+    }
+    if (canFilter && itemValue) {
+      visible = visible.filter((r) => {
+        const item = getItemById(r.itemId);
+        const text = `${r.itemId || ""} ${item?.name || ""} ${item?.nameEn || ""} ${item?.nameAr || ""}`.toLowerCase();
+        return text.includes(itemValue);
+      });
     }
 
     if (!visible.length) {
@@ -4968,11 +4999,19 @@
     let visible = getVisibleDeliveriesForUser(active);
     const branchValue = document.getElementById("deliveriesBranchFilterSelect")?.value || "ALL";
     const statusValue = document.getElementById("deliveriesStatusFilterSelect")?.value || "ALL";
+    const addressValue = String(document.getElementById("deliveriesAddressFilterInput")?.value || "").trim().toLowerCase();
+    const phoneValue = String(document.getElementById("deliveriesPhoneFilterInput")?.value || "").trim().toLowerCase();
     if (branchValue !== "ALL") {
       visible = visible.filter((d) => d.fromBranchId === branchValue);
     }
     if (statusValue !== "ALL") {
       visible = visible.filter((d) => d.status === statusValue);
+    }
+    if (addressValue) {
+      visible = visible.filter((d) => String(d.address || "").toLowerCase().includes(addressValue));
+    }
+    if (phoneValue) {
+      visible = visible.filter((d) => String(d.customerPhone || "").toLowerCase().includes(phoneValue));
     }
 
     if (!visible.length) {
@@ -5175,11 +5214,15 @@
     let visible = getVisibleTransfersForUser(active);
     const branchValue = document.getElementById("transferBranchFilterSelect")?.value || "ALL";
     const statusValue = document.getElementById("transferStatusFilterSelect")?.value || "ALL";
+    const noteValue = String(document.getElementById("transferNoteFilterInput")?.value || "").trim().toLowerCase();
     if (branchValue !== "ALL") {
       visible = visible.filter((trf) => trf.fromBranchId === branchValue || trf.toBranchId === branchValue);
     }
     if (statusValue !== "ALL") {
       visible = visible.filter((trf) => trf.status === statusValue);
+    }
+    if (noteValue) {
+      visible = visible.filter((trf) => String(trf.note || "").toLowerCase().includes(noteValue));
     }
 
     if (!visible.length) {
@@ -7997,6 +8040,10 @@
   if (requestBranchFilterSelect) {
     requestBranchFilterSelect.addEventListener("change", renderRequestsTable);
   }
+  const requestItemFilterInput = document.getElementById("requestItemFilterInput");
+  if (requestItemFilterInput) {
+    requestItemFilterInput.addEventListener("input", renderRequestsTable);
+  }
   const requestStatusFilterSelect = document.getElementById("requestStatusFilterSelect");
   if (requestStatusFilterSelect) {
     requestStatusFilterSelect.addEventListener("change", renderRequestsTable);
@@ -8009,9 +8056,21 @@
   if (transferStatusFilterSelect) {
     transferStatusFilterSelect.addEventListener("change", renderTransferTables);
   }
+  const transferNoteFilterInput = document.getElementById("transferNoteFilterInput");
+  if (transferNoteFilterInput) {
+    transferNoteFilterInput.addEventListener("input", renderTransferTables);
+  }
   const deliveriesBranchFilterSelect = document.getElementById("deliveriesBranchFilterSelect");
   if (deliveriesBranchFilterSelect) {
     deliveriesBranchFilterSelect.addEventListener("change", renderDeliveriesTable);
+  }
+  const deliveriesAddressFilterInput = document.getElementById("deliveriesAddressFilterInput");
+  if (deliveriesAddressFilterInput) {
+    deliveriesAddressFilterInput.addEventListener("input", renderDeliveriesTable);
+  }
+  const deliveriesPhoneFilterInput = document.getElementById("deliveriesPhoneFilterInput");
+  if (deliveriesPhoneFilterInput) {
+    deliveriesPhoneFilterInput.addEventListener("input", renderDeliveriesTable);
   }
   const deliveriesStatusFilterSelect = document.getElementById("deliveriesStatusFilterSelect");
   if (deliveriesStatusFilterSelect) {
