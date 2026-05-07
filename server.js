@@ -1180,6 +1180,96 @@ app.post("/api/requests/:id/deliver", async (req, res) => {
   }
 });
 
+app.post("/api/requests/:id/return", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { userId } = req.body || {};
+    if (!userId) return res.status(400).json({ error: "userId required" });
+
+    const data = await loadData();
+    const user = findUserById(data, userId);
+    if (!requireRole(user, ["admin"])) {
+      return res.status(403).json({ error: "Only admin can return delivered requests" });
+    }
+
+    const request = (data.requests || []).find((r) => r.id === id);
+    if (!request) return res.status(404).json({ error: "Request not found" });
+    if (request.status !== "delivered") {
+      return res.status(400).json({ error: "Only delivered requests can be returned" });
+    }
+    if (request.returnedAt) {
+      return res.status(400).json({ error: "Request already returned" });
+    }
+
+    const qty = Number(request.qty);
+    if (!Number.isFinite(qty) || qty <= 0) {
+      return res.status(400).json({ error: "Invalid request qty" });
+    }
+
+    let mainItem = data.items.find(
+      (it) => it.id === request.itemId && it.branchId === request.fromBranchId
+    );
+    const branchItem = data.items.find(
+      (it) => it.id === request.itemId && it.branchId === request.toBranchId
+    );
+
+    if (!branchItem) {
+      return res.status(400).json({ error: "Destination branch item not found" });
+    }
+    if (Number(branchItem.baseQty || 0) < qty) {
+      return res.status(400).json({ error: "Not enough stock in destination branch to return" });
+    }
+
+    if (!mainItem) {
+      mainItem = {
+        id: branchItem.id,
+        name: branchItem.name,
+        nameEn: branchItem.nameEn || branchItem.name,
+        nameAr: branchItem.nameAr || "",
+        branchId: request.fromBranchId,
+        minQty: 0,
+        baseQty: 0,
+        unitCost: branchItem.unitCost || 0
+      };
+      data.items.push(mainItem);
+    }
+
+    branchItem.baseQty -= qty;
+    mainItem.baseQty = Number(mainItem.baseQty || 0) + qty;
+
+    const outMovement = {
+      id: "MOV-" + Date.now(),
+      itemId: request.itemId,
+      type: "OUT",
+      qty,
+      userId,
+      branchId: request.toBranchId,
+      note: `Return OUT for request ${request.id}`,
+      createdAt: new Date().toISOString()
+    };
+    const inMovement = {
+      id: "MOV-" + (Date.now() + 1),
+      itemId: request.itemId,
+      type: "IN",
+      qty,
+      userId,
+      branchId: request.fromBranchId,
+      note: `Return IN for request ${request.id}`,
+      createdAt: new Date().toISOString()
+    };
+
+    data.movements.push(outMovement, inMovement);
+    request.returnedAt = new Date().toISOString();
+    request.returnedByUserId = userId;
+
+    await saveData(data);
+    res.status(201).json({ request, movements: [outMovement, inMovement] });
+  } catch (err) {
+    console.error("Return request error", err);
+    res.status(500).json({ error: "Failed to return request" });
+  }
+});
+
 // Delete pending request (admin/manager)
 app.delete("/api/requests/:id", async (req, res) => {
   try {

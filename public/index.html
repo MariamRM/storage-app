@@ -695,6 +695,7 @@
               <th data-i18n="th_driver">Driver</th>
               <th data-i18n="th_note">Note</th>
               <th data-i18n="th_image">Image</th>
+              <th data-i18n="th_action">Action</th>
             </tr>
             </thead>
             <tbody id="requestsHistoryTableBody"></tbody>
@@ -2058,6 +2059,9 @@
       no_history_requests: "No delivered requests yet.",
       delete_request: "Delete request",
       delete_request_confirm: "Delete this pending request?",
+      return_request_items: "Return items",
+      return_request_confirm: "Return this delivered request back to Main Storage?",
+      returned_to_main: "Returned to main",
       save_qty: "Save qty",
       no_transfers_yet: "No transfers yet.",
       delete_transfer: "Delete transfer",
@@ -2377,6 +2381,9 @@
       no_history_requests: "لا توجد طلبات مسلّمة بعد.",
       delete_request: "حذف الطلب",
       delete_request_confirm: "هل تريد حذف هذا الطلب المعلّق؟",
+      return_request_items: "إرجاع الأصناف",
+      return_request_confirm: "هل تريد إرجاع هذا الطلب المُسلَّم إلى المخزن الرئيسي؟",
+      returned_to_main: "تم الإرجاع للمخزن الرئيسي",
       save_qty: "حفظ الكمية",
       no_transfers_yet: "لا توجد عمليات نقل بعد.",
       delete_transfer: "حذف النقل",
@@ -3938,6 +3945,17 @@
     return body;
   }
 
+  async function apiReturnDeliveredRequest(id) {
+    const res = await fetch(`${API_BASE}/requests/${id}/return`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId: state.user.id })
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(body.error || "Return request failed");
+    return body;
+  }
+
   async function apiCreateVehicle(name, plate, lastOilChangeDate, nextOilChangeDate) {
     const res = await fetch(`${API_BASE}/vehicles`, {
       method: "POST",
@@ -4935,7 +4953,7 @@
 
     if (!list.length) {
       const tr = document.createElement("tr");
-      tr.innerHTML = `<td colspan="12" class="text-muted">${t("no_history_requests")}</td>`;
+      tr.innerHTML = `<td colspan="13" class="text-muted">${t("no_history_requests")}</td>`;
       tbody.appendChild(tr);
       return;
     }
@@ -4945,10 +4963,13 @@
       const orderLabel = getRequestOrderLabel(r, orderMap);
       const priority = r.priority === "urgent" ? "urgent" : "normal";
       const priorityPill = `<span class="pill pill-priority ${priority === "urgent" ? "urgent" : ""}">${escapeHtml(priorityText(priority))}</span>`;
-      const noteText = [r.urgentNote ? `${t("urgent_note_label")}: ${r.urgentNote}` : "", r.note || ""]
+      const noteText = [r.urgentNote ? `${t("urgent_note_label")}: ${r.urgentNote}` : "", r.note || "", r.returnedAt ? `${t("returned_to_main")} (${formatDateTime(r.returnedAt)})` : ""]
         .filter(Boolean)
         .join(" | ");
       const imageBtn = getRequestImageButton(r);
+      const actionBtn = state.user.role === "admin" && !r.returnedAt
+        ? `<button class="btn btn-secondary btn-sm" data-return-request="${escapeHtml(r.id)}">${t("return_request_items")}</button>`
+        : (r.returnedAt ? `<span class="text-muted">${t("returned_to_main")}</span>` : "-");
       const tr = document.createElement("tr");
       tr.innerHTML = `
         <td title="${escapeHtml(r.id)}">${escapeHtml(orderLabel)}</td>
@@ -4963,6 +4984,7 @@
         <td>${escapeHtml(r.driverUserId ? getUserName(r.driverUserId) : "")}</td>
         <td>${escapeHtml(noteText)}</td>
         <td>${imageBtn || "-"}</td>
+        <td>${actionBtn}</td>
       `;
       tbody.appendChild(tr);
     });
@@ -7837,6 +7859,25 @@
 
       renderBranchSelects();
       fillRequestItemsFromStorage();
+      renderInventoryViewer();
+      renderRequestsTable();
+      renderDriverRequestsTable();
+      renderMovementsTable();
+      renderAnalytics();
+    } catch (err) {
+      alert(err.message);
+    }
+  });
+
+  const requestsHistoryTableBody = document.getElementById("requestsHistoryTableBody");
+  if (requestsHistoryTableBody) requestsHistoryTableBody.addEventListener("click", async (e) => {
+    const btn = e.target.closest("button[data-return-request]");
+    if (!btn) return;
+    const id = btn.getAttribute("data-return-request");
+    if (!confirm(t("return_request_confirm"))) return;
+    try {
+      await apiReturnDeliveredRequest(id);
+      await refreshAllState();
       renderInventoryViewer();
       renderRequestsTable();
       renderDriverRequestsTable();
