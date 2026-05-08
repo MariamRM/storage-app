@@ -666,6 +666,13 @@
         <tbody id="requestsTableBody"></tbody>
       </table>
     </div>
+    <div class="pagination-controls">
+      <div class="page-buttons">
+        <button id="requestsPrevBtn" class="btn btn-secondary btn-sm">&lt;</button>
+        <span id="requestsPageInfo" class="text-muted"></span>
+        <button id="requestsNextBtn" class="btn btn-secondary btn-sm">&gt;</button>
+      </div>
+    </div>
 
     <div id="requestsHistoryBlock" class="mt-md" style="display:none;">
       <div class="section-header">
@@ -775,6 +782,13 @@
         </thead>
         <tbody id="transferTableBody"></tbody>
       </table>
+    </div>
+    <div class="pagination-controls">
+      <div class="page-buttons">
+        <button id="transferPrevBtn" class="btn btn-secondary btn-sm">&lt;</button>
+        <span id="transferPageInfo" class="text-muted"></span>
+        <button id="transferNextBtn" class="btn btn-secondary btn-sm">&gt;</button>
+      </div>
     </div>
 
     <div id="transferHistoryBlock" class="mt-md" style="display:none;">
@@ -939,6 +953,13 @@
         </thead>
         <tbody id="deliveriesTableBody"></tbody>
       </table>
+    </div>
+    <div class="pagination-controls">
+      <div class="page-buttons">
+        <button id="deliveriesPrevBtn" class="btn btn-secondary btn-sm">&lt;</button>
+        <span id="deliveriesPageInfo" class="text-muted"></span>
+        <button id="deliveriesNextBtn" class="btn btn-secondary btn-sm">&gt;</button>
+      </div>
     </div>
     <div id="deliveriesHistoryBlock" class="mt-md" style="display:none;">
       <div class="section-header">
@@ -1244,6 +1265,14 @@
         <div class="summary-label" data-i18n="total_quantity">Total quantity</div>
         <div id="analyticsTotalQty" class="summary-value">0</div>
       </div>
+      <div class="summary-card">
+        <div class="summary-label" data-i18n="returned_requests">Returned requests</div>
+        <div id="analyticsReturnedRequests" class="summary-value">0</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label" data-i18n="returned_quantity">Returned quantity</div>
+        <div id="analyticsReturnedQty" class="summary-value">0</div>
+      </div>
     </div>
 
     <div class="panel-section-title mt-md" data-i18n="most_ordered">Most ordered items (by cost)</div>
@@ -1264,6 +1293,13 @@
         <tbody id="analyticsItemsTableBody"></tbody>
       </table>
     </div>
+    <div class="pagination-controls">
+      <div class="page-buttons">
+        <button id="analyticsItemsPrevBtn" class="btn btn-secondary btn-sm">&lt;</button>
+        <span id="analyticsItemsPageInfo" class="text-muted"></span>
+        <button id="analyticsItemsNextBtn" class="btn btn-secondary btn-sm">&gt;</button>
+      </div>
+    </div>
 
     <div class="panel-section-title mt-md" data-i18n="top_item_by_branch">Top item by branch</div>
     <div class="table-wrapper">
@@ -1278,6 +1314,13 @@
         </thead>
         <tbody id="analyticsTopBranchItemsBody"></tbody>
       </table>
+    </div>
+    <div class="pagination-controls">
+      <div class="page-buttons">
+        <button id="analyticsTopBranchPrevBtn" class="btn btn-secondary btn-sm">&lt;</button>
+        <span id="analyticsTopBranchPageInfo" class="text-muted"></span>
+        <button id="analyticsTopBranchNextBtn" class="btn btn-secondary btn-sm">&gt;</button>
+      </div>
     </div>
 
     <div class="panel-section-title mt-md" data-i18n="repeated_items_by_branch">Repeated items by branch</div>
@@ -1294,6 +1337,13 @@
         </thead>
         <tbody id="analyticsRepeatedItemsBody"></tbody>
       </table>
+    </div>
+    <div class="pagination-controls">
+      <div class="page-buttons">
+        <button id="analyticsRepeatedPrevBtn" class="btn btn-secondary btn-sm">&lt;</button>
+        <span id="analyticsRepeatedPageInfo" class="text-muted"></span>
+        <button id="analyticsRepeatedNextBtn" class="btn btn-secondary btn-sm">&gt;</button>
+      </div>
     </div>
 
     <div class="panel-section-title mt-md" data-i18n="monthly_forecast">Monthly forecast</div>
@@ -1312,6 +1362,36 @@
         </thead>
         <tbody id="analyticsForecastBody"></tbody>
       </table>
+    </div>
+    <div class="pagination-controls">
+      <div class="page-buttons">
+        <button id="analyticsForecastPrevBtn" class="btn btn-secondary btn-sm">&lt;</button>
+        <span id="analyticsForecastPageInfo" class="text-muted"></span>
+        <button id="analyticsForecastNextBtn" class="btn btn-secondary btn-sm">&gt;</button>
+      </div>
+    </div>
+
+    <div class="panel-section-title mt-md" data-i18n="returned_items_analysis">Returned items analysis</div>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th data-i18n="th_branch">Branch</th>
+            <th data-i18n="th_item">Item</th>
+            <th data-i18n="returned_requests">Returned requests</th>
+            <th data-i18n="returned_quantity">Returned quantity</th>
+            <th data-i18n="th_total_cost">Total cost</th>
+          </tr>
+        </thead>
+        <tbody id="analyticsReturnedItemsBody"></tbody>
+      </table>
+    </div>
+    <div class="pagination-controls">
+      <div class="page-buttons">
+        <button id="analyticsReturnedPrevBtn" class="btn btn-secondary btn-sm">&lt;</button>
+        <span id="analyticsReturnedPageInfo" class="text-muted"></span>
+        <button id="analyticsReturnedNextBtn" class="btn btn-secondary btn-sm">&gt;</button>
+      </div>
     </div>
   </section>
 
@@ -2062,6 +2142,13 @@
       return_request_items: "Return items",
       return_request_confirm: "Return this delivered request back to Main Storage?",
       returned_to_main: "Returned to main",
+      request_preview_confirm: "Review request before send",
+      request_preview_message: "Send this request?",
+      request_preview_cancelled: "Request cancelled.",
+      select_item_first: "Select item first.",
+      returned_items_analysis: "Returned items analysis",
+      returned_requests: "Returned requests",
+      returned_quantity: "Returned quantity",
       save_qty: "Save qty",
       no_transfers_yet: "No transfers yet.",
       delete_transfer: "Delete transfer",
@@ -2384,6 +2471,13 @@
       return_request_items: "إرجاع الأصناف",
       return_request_confirm: "هل تريد إرجاع هذا الطلب المُسلَّم إلى المخزن الرئيسي؟",
       returned_to_main: "تم الإرجاع للمخزن الرئيسي",
+      request_preview_confirm: "راجع الطلب قبل الإرسال",
+      request_preview_message: "هل تريد إرسال هذا الطلب؟",
+      request_preview_cancelled: "تم إلغاء الطلب.",
+      select_item_first: "اختر الصنف أولاً.",
+      returned_items_analysis: "تحليل الأصناف المرتجعة",
+      returned_requests: "الطلبات المرتجعة",
+      returned_quantity: "الكمية المرتجعة",
       save_qty: "حفظ الكمية",
       no_transfers_yet: "لا توجد عمليات نقل بعد.",
       delete_transfer: "حذف النقل",
@@ -2579,8 +2673,16 @@
     phoneMode: false,
     historyPageSize: 20,
     requestsHistoryPage: 1,
+    requestsPage: 1,
+    transfersPage: 1,
     transfersHistoryPage: 1,
+    deliveriesPage: 1,
     deliveriesHistoryPage: 1,
+    analyticsItemsPage: 1,
+    analyticsTopBranchPage: 1,
+    analyticsRepeatedPage: 1,
+    analyticsForecastPage: 1,
+    analyticsReturnedPage: 1,
     priceImportRows: [],
     priceImportSummary: null,
     lastNotifiedCount: 0,
@@ -4452,6 +4554,11 @@
     }
 
     let selectedValue = "";
+    const placeholder = document.createElement("option");
+    placeholder.value = "";
+    placeholder.textContent = t("select_item_first");
+    placeholder.selected = !prev;
+    itemSel.appendChild(placeholder);
     filtered.forEach((it) => {
       const opt = document.createElement("option");
       opt.value = it.id;
@@ -4463,7 +4570,7 @@
     if (selectedValue) {
       itemSel.value = selectedValue;
     } else {
-      itemSel.value = filtered[0].id;
+      itemSel.value = "";
     }
     renderRequestItemBranchQtyHint();
   }
@@ -4844,10 +4951,15 @@
         ["admin", "manager"].includes(state.user.role) ? t("no_pending_requests") : t("no_requests_yet")
       }</td>`;
       tbody.appendChild(tr);
+      updatePageControls("requestsPageInfo", "requestsPrevBtn", "requestsNextBtn", 0, 0, 0);
       return;
     }
 
-    visible.forEach((r) => {
+    visible = visible.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+    const paged = paginateRows(visible, "requestsPage", state.historyPageSize || 20);
+    updatePageControls("requestsPageInfo", "requestsPrevBtn", "requestsNextBtn", paged.page, paged.totalPages, paged.totalCount);
+
+    paged.pageRows.forEach((r) => {
       const item = getItemById(r.itemId);
       const storageItem = state.items.find((it) => it.id === r.itemId && it.branchId === storageId) || item;
       const mainQty = storageItem && Number.isFinite(Number(storageItem.baseQty))
@@ -5050,12 +5162,15 @@
       const tr = document.createElement("tr");
       tr.innerHTML = `<td colspan="16" class="text-muted">${t("no_deliveries_yet")}</td>`;
       tbody.appendChild(tr);
+      updatePageControls("deliveriesPageInfo", "deliveriesPrevBtn", "deliveriesNextBtn", 0, 0, 0);
       return;
     }
 
     visible.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+    const paged = paginateRows(visible, "deliveriesPage", state.historyPageSize || 20);
+    updatePageControls("deliveriesPageInfo", "deliveriesPrevBtn", "deliveriesNextBtn", paged.page, paged.totalPages, paged.totalCount);
 
-    visible.forEach((d) => {
+    paged.pageRows.forEach((d) => {
       const orderLabel = getDeliveryOrderLabel(d, orderMap);
       const idHtml = d.id
         ? `<span title="${escapeHtml(d.id)}">${escapeHtml(orderLabel)}</span>`
@@ -5261,12 +5376,15 @@
       const tr = document.createElement("tr");
       tr.innerHTML = `<td colspan="12" class="text-muted">${t("no_transfers_yet")}</td>`;
       tbody.appendChild(tr);
+      updatePageControls("transferPageInfo", "transferPrevBtn", "transferNextBtn", 0, 0, 0);
       return;
     }
 
     visible.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+    const paged = paginateRows(visible, "transfersPage", state.historyPageSize || 20);
+    updatePageControls("transferPageInfo", "transferPrevBtn", "transferNextBtn", paged.page, paged.totalPages, paged.totalCount);
 
-    visible.forEach((trf) => {
+    paged.pageRows.forEach((trf) => {
       const canAssign = ["admin", "manager", "supervisor", "driver_supervisor"].includes(state.user.role);
       const canAssignDriver = ["admin", "manager", "driver_supervisor"].includes(state.user.role);
       const canReady = ["admin", "manager", "supervisor", "staff"].includes(state.user.role)
@@ -5667,7 +5785,7 @@
       : null;
 
     const delivered = state.requests.filter((r) => {
-      if (r.status !== "delivered") return false;
+      if (r.status !== "delivered" || r.returnedAt) return false;
       if (allowedAnalyticsBranches && !allowedAnalyticsBranches.has(r.toBranchId)) return false;
       if (branchId !== "ALL" && r.toBranchId !== branchId) return false;
       const d = getRequestAnalyticsDate(r);
@@ -5679,10 +5797,13 @@
 
     let totalCost = 0;
     let totalQty = 0;
+    let returnedQty = 0;
+    let returnedCost = 0;
     const itemStats = new Map();
     const branchStats = new Map();
     const topItemByBranch = new Map();
     const repeatedItemsByBranch = new Map();
+    const returnedItemsMap = new Map();
 
     delivered.forEach((r) => {
       const storageItem = state.items.find((it) => it.id === r.itemId && it.branchId === storageId);
@@ -5743,6 +5864,41 @@
       repeatedStat.requests += 1;
     });
 
+    const returned = state.requests.filter((r) => {
+      if (!r.returnedAt) return false;
+      if (allowedAnalyticsBranches && !allowedAnalyticsBranches.has(r.toBranchId)) return false;
+      if (branchId !== "ALL" && r.toBranchId !== branchId) return false;
+      const d = new Date(r.returnedAt);
+      if (Number.isNaN(d.getTime())) return false;
+      if (fromDate && d < fromDate) return false;
+      if (toDate && d > toDate) return false;
+      return true;
+    });
+
+    returned.forEach((r) => {
+      const storageItem = state.items.find((it) => it.id === r.itemId && it.branchId === storageId) || getItemById(r.itemId);
+      const unitCost = storageItem ? Number(storageItem.unitCost || 0) : 0;
+      const qty = Number(r.qty || 0);
+      const cost = unitCost * qty;
+      returnedQty += qty;
+      returnedCost += cost;
+      const key = `${r.toBranchId || "UNKNOWN"}::${r.itemId}`;
+      let row = returnedItemsMap.get(key);
+      if (!row) {
+        row = {
+          branchName: getBranchName(r.toBranchId || "UNKNOWN"),
+          itemName: storageItem ? storageItem.name : r.itemId,
+          qty: 0,
+          cost: 0,
+          requests: 0
+        };
+        returnedItemsMap.set(key, row);
+      }
+      row.qty += qty;
+      row.cost += cost;
+      row.requests += 1;
+    });
+
     const itemsArray = Array.from(itemStats.values()).sort((a,b)=> b.cost - a.cost);
     const branchArray = Array.from(branchStats.values()).sort((a, b) => b.requests - a.requests || b.qty - a.qty);
     const topBranchItems = Array.from(topItemByBranch.values())
@@ -5773,7 +5929,7 @@
     const forecastWeights = [0.2, 0.3, 0.5];
     const forecastMap = new Map();
     (state.requests || []).forEach((r) => {
-      if (r.status !== "delivered") return;
+      if (r.status !== "delivered" || r.returnedAt) return;
       if (allowedAnalyticsBranches && !allowedAnalyticsBranches.has(r.toBranchId)) return;
       if (branchId !== "ALL" && r.toBranchId !== branchId) return;
       const requestDate = getRequestAnalyticsDate(r);
@@ -5815,11 +5971,15 @@
       totalCost,
       totalQty,
       totalRequests: delivered.length,
+      returnedRequests: returned.length,
+      returnedQty,
+      returnedCost,
       items: itemsArray,
       branches: branchArray,
       topBranchItems: Array.from(topBranchItems.values()).sort((a, b) => a.branchName.localeCompare(b.branchName)),
       repeatedBranchItems,
-      forecastRows
+      forecastRows,
+      returnedItems: Array.from(returnedItemsMap.values()).sort((a, b) => b.requests - a.requests || b.qty - a.qty || b.cost - a.cost || a.branchName.localeCompare(b.branchName) || a.itemName.localeCompare(b.itemName))
     };
   }
 
@@ -5838,6 +5998,30 @@
     const query = (searchInput && searchInput.value ? searchInput.value : "").trim().toLowerCase();
     const itemsSelected = getActiveItems().filter((it) => it.branchId === selectedBranchId);
     return filterItemsByQuery(itemsSelected, query);
+  }
+
+  function paginateRows(rows, pageKey, pageSize = 20) {
+    const list = Array.isArray(rows) ? rows : [];
+    const totalPages = Math.max(1, Math.ceil(list.length / pageSize || 1));
+    if (!state[pageKey] || state[pageKey] > totalPages) state[pageKey] = totalPages;
+    if (state[pageKey] < 1) state[pageKey] = 1;
+    const page = state[pageKey];
+    const start = (page - 1) * pageSize;
+    return {
+      page,
+      totalPages,
+      pageRows: list.slice(start, start + pageSize),
+      totalCount: list.length
+    };
+  }
+
+  function updatePageControls(pageInfoId, prevBtnId, nextBtnId, page, totalPages, totalCount) {
+    const pageInfo = document.getElementById(pageInfoId);
+    const prevBtn = document.getElementById(prevBtnId);
+    const nextBtn = document.getElementById(nextBtnId);
+    if (pageInfo) pageInfo.textContent = totalCount ? `${page} / ${totalPages}` : "0 / 0";
+    if (prevBtn) prevBtn.disabled = !totalCount || page <= 1;
+    if (nextBtn) nextBtn.disabled = !totalCount || page >= totalPages;
   }
 
   function exportInventoryExcel() {
@@ -6066,12 +6250,12 @@
       ? new Set(getSupervisorAnalyticsBranches(state.user))
       : null;
     const filtered = (state.requests || []).filter((r) => {
-      if (r.status !== "delivered" || !r.createdAt) return false;
+      if (r.status !== "delivered" || r.returnedAt) return false;
       if (allowedAnalyticsBranches && !allowedAnalyticsBranches.has(r.toBranchId)) return false;
       if (branchId !== "ALL" && r.toBranchId !== branchId) return false;
-      const created = new Date(r.createdAt);
-      if (Number.isNaN(created.getTime())) return false;
-      return created >= fromDate && created <= toDate;
+      const deliveredAt = getRequestAnalyticsDate(r);
+      if (!deliveredAt) return false;
+      return deliveredAt >= fromDate && deliveredAt <= toDate;
     });
 
     if (!filtered.length) {
@@ -6135,19 +6319,36 @@
   }
 
   function renderAnalytics() {
-    const { totalCost, totalQty, totalRequests, items, branches, topBranchItems, repeatedBranchItems, forecastRows } = computeAnalytics();
+    const {
+      totalCost,
+      totalQty,
+      totalRequests,
+      returnedRequests,
+      returnedQty,
+      items,
+      branches,
+      topBranchItems,
+      repeatedBranchItems,
+      forecastRows,
+      returnedItems
+    } = computeAnalytics();
 
     const totalCostEl = document.getElementById("analyticsTotalCost");
     const totalQtyEl = document.getElementById("analyticsTotalQty");
     const totalReqEl = document.getElementById("analyticsTotalRequests");
+    const returnedReqEl = document.getElementById("analyticsReturnedRequests");
+    const returnedQtyEl = document.getElementById("analyticsReturnedQty");
     const tbody = document.getElementById("analyticsItemsTableBody");
     const topBranchBody = document.getElementById("analyticsTopBranchItemsBody");
     const repeatedBody = document.getElementById("analyticsRepeatedItemsBody");
     const forecastBody = document.getElementById("analyticsForecastBody");
+    const returnedBody = document.getElementById("analyticsReturnedItemsBody");
 
     if (totalCostEl) totalCostEl.textContent = totalCost.toFixed(3);
     if (totalQtyEl) totalQtyEl.textContent = totalQty;
     if (totalReqEl) totalReqEl.textContent = totalRequests;
+    if (returnedReqEl) returnedReqEl.textContent = returnedRequests;
+    if (returnedQtyEl) returnedQtyEl.textContent = returnedQty;
 
     if (!tbody) return;
     tbody.innerHTML = "";
@@ -6159,6 +6360,12 @@
       : branches.map((it) => ({ name: it.name, value: measure === "qty" ? it.qty : it.requests }));
     renderAnalyticsChart(chartEntries);
 
+    const itemsPaged = paginateRows(items, "analyticsItemsPage", state.historyPageSize || 20);
+    const topBranchPaged = paginateRows(topBranchItems, "analyticsTopBranchPage", state.historyPageSize || 20);
+    const repeatedPaged = paginateRows(repeatedBranchItems, "analyticsRepeatedPage", state.historyPageSize || 20);
+    const forecastPaged = paginateRows(forecastRows, "analyticsForecastPage", state.historyPageSize || 20);
+    const returnedPaged = paginateRows(returnedItems, "analyticsReturnedPage", state.historyPageSize || 20);
+
     if (topBranchBody) {
       topBranchBody.innerHTML = "";
       if (!topBranchItems.length) {
@@ -6166,7 +6373,7 @@
         tr.innerHTML = `<td colspan="4" class="text-muted">${t("no_delivered_period")}</td>`;
         topBranchBody.appendChild(tr);
       } else {
-        topBranchItems.forEach((entry) => {
+        topBranchPaged.pageRows.forEach((entry) => {
           const tr = document.createElement("tr");
           tr.innerHTML = `
             <td>${escapeHtml(entry.branchName)}</td>
@@ -6186,7 +6393,7 @@
         tr.innerHTML = `<td colspan="5" class="text-muted">${t("no_delivered_period")}</td>`;
         repeatedBody.appendChild(tr);
       } else {
-        repeatedBranchItems.forEach((entry) => {
+        repeatedPaged.pageRows.forEach((entry) => {
           const tr = document.createElement("tr");
           tr.innerHTML = `
             <td>${escapeHtml(entry.rank)}</td>
@@ -6207,7 +6414,7 @@
         tr.innerHTML = `<td colspan="6" class="text-muted">${t("no_delivered_period")}</td>`;
         forecastBody.appendChild(tr);
       } else {
-        forecastRows.slice(0, 30).forEach((entry) => {
+        forecastPaged.pageRows.forEach((entry) => {
           const tr = document.createElement("tr");
           tr.innerHTML = `
             <td>${escapeHtml(entry.branchName)}</td>
@@ -6222,18 +6429,44 @@
       }
     }
 
+    if (returnedBody) {
+      returnedBody.innerHTML = "";
+      if (!returnedItems.length) {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td colspan="5" class="text-muted">${t("no_delivered_period")}</td>`;
+        returnedBody.appendChild(tr);
+      } else {
+        returnedPaged.pageRows.forEach((entry) => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${escapeHtml(entry.branchName)}</td>
+            <td>${escapeHtml(entry.itemName)}</td>
+            <td>${escapeHtml(entry.requests)}</td>
+            <td>${escapeHtml(entry.qty)}</td>
+            <td>${entry.cost.toFixed(3)}</td>
+          `;
+          returnedBody.appendChild(tr);
+        });
+      }
+    }
+
     if (!items.length) {
       const tr = document.createElement("tr");
       tr.innerHTML = `<td colspan="3" class="text-muted">${t("no_delivered_period")}</td>`;
       tbody.appendChild(tr);
-      return;
+    } else {
+      itemsPaged.pageRows.forEach((it) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td>${escapeHtml(it.name)}</td><td>${escapeHtml(it.qty)}</td><td>${it.cost.toFixed(3)}</td>`;
+        tbody.appendChild(tr);
+      });
     }
 
-    items.forEach((it) => {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `<td>${escapeHtml(it.name)}</td><td>${escapeHtml(it.qty)}</td><td>${it.cost.toFixed(3)}</td>`;
-      tbody.appendChild(tr);
-    });
+    updatePageControls("analyticsItemsPageInfo", "analyticsItemsPrevBtn", "analyticsItemsNextBtn", itemsPaged.page, itemsPaged.totalPages, itemsPaged.totalCount);
+    updatePageControls("analyticsTopBranchPageInfo", "analyticsTopBranchPrevBtn", "analyticsTopBranchNextBtn", topBranchPaged.page, topBranchPaged.totalPages, topBranchPaged.totalCount);
+    updatePageControls("analyticsRepeatedPageInfo", "analyticsRepeatedPrevBtn", "analyticsRepeatedNextBtn", repeatedPaged.page, repeatedPaged.totalPages, repeatedPaged.totalCount);
+    updatePageControls("analyticsForecastPageInfo", "analyticsForecastPrevBtn", "analyticsForecastNextBtn", forecastPaged.page, forecastPaged.totalPages, forecastPaged.totalCount);
+    updatePageControls("analyticsReturnedPageInfo", "analyticsReturnedPrevBtn", "analyticsReturnedNextBtn", returnedPaged.page, returnedPaged.totalPages, returnedPaged.totalCount);
   }
 
   function renderVehiclesUI() {
@@ -7550,6 +7783,25 @@
 
     if (!itemId || !qty || qty <= 0) { alert(t("item_qty_required")); return; }
 
+    const item = getItemById(itemId);
+    const mainId = getMainStorageId();
+    const mainItem = state.items.find((it) => it.id === itemId && it.branchId === mainId) || item;
+    const previewLines = [
+      t("request_preview_message"),
+      "",
+      `${t("th_item")}: ${item ? item.name : itemId}`,
+      `${t("th_qty")}: ${qty}`,
+      `${t("th_qty_main")}: ${mainItem ? Number(mainItem.baseQty || 0) : 0}`,
+      `${t("th_to")}: ${getBranchName(state.user.branchId)}`,
+      `${t("th_priority")}: ${priorityText(priority)}`,
+      `${t("th_note")}: ${note || "-"}`,
+      urgentNote ? `${t("urgent_note_label")}: ${urgentNote}` : ""
+    ].filter(Boolean);
+    if (!confirm(`${t("request_preview_confirm")}\n\n${previewLines.join("\n")}`)) {
+      alert(t("request_preview_cancelled"));
+      return;
+    }
+
     try {
       const req = await apiCreateRequest(itemId, qty, note, priority, urgentNote, state.requestImageData);
       state.requests.push(req);
@@ -8089,43 +8341,115 @@
 
   const requestBranchFilterSelect = document.getElementById("requestBranchFilterSelect");
   if (requestBranchFilterSelect) {
-    requestBranchFilterSelect.addEventListener("change", renderRequestsTable);
+    requestBranchFilterSelect.addEventListener("change", () => {
+      state.requestsPage = 1;
+      renderRequestsTable();
+    });
   }
   const requestItemFilterInput = document.getElementById("requestItemFilterInput");
   if (requestItemFilterInput) {
-    requestItemFilterInput.addEventListener("input", renderRequestsTable);
+    requestItemFilterInput.addEventListener("input", () => {
+      state.requestsPage = 1;
+      renderRequestsTable();
+    });
   }
   const requestStatusFilterSelect = document.getElementById("requestStatusFilterSelect");
   if (requestStatusFilterSelect) {
-    requestStatusFilterSelect.addEventListener("change", renderRequestsTable);
+    requestStatusFilterSelect.addEventListener("change", () => {
+      state.requestsPage = 1;
+      renderRequestsTable();
+    });
+  }
+  const requestsPrevBtn = document.getElementById("requestsPrevBtn");
+  if (requestsPrevBtn) {
+    requestsPrevBtn.addEventListener("click", () => {
+      state.requestsPage = Math.max(1, (state.requestsPage || 1) - 1);
+      renderRequestsTable();
+    });
+  }
+  const requestsNextBtn = document.getElementById("requestsNextBtn");
+  if (requestsNextBtn) {
+    requestsNextBtn.addEventListener("click", () => {
+      state.requestsPage = (state.requestsPage || 1) + 1;
+      renderRequestsTable();
+    });
   }
   const transferBranchFilterSelect = document.getElementById("transferBranchFilterSelect");
   if (transferBranchFilterSelect) {
-    transferBranchFilterSelect.addEventListener("change", renderTransferTables);
+    transferBranchFilterSelect.addEventListener("change", () => {
+      state.transfersPage = 1;
+      renderTransferTables();
+    });
   }
   const transferStatusFilterSelect = document.getElementById("transferStatusFilterSelect");
   if (transferStatusFilterSelect) {
-    transferStatusFilterSelect.addEventListener("change", renderTransferTables);
+    transferStatusFilterSelect.addEventListener("change", () => {
+      state.transfersPage = 1;
+      renderTransferTables();
+    });
   }
   const transferNoteFilterInput = document.getElementById("transferNoteFilterInput");
   if (transferNoteFilterInput) {
-    transferNoteFilterInput.addEventListener("input", renderTransferTables);
+    transferNoteFilterInput.addEventListener("input", () => {
+      state.transfersPage = 1;
+      renderTransferTables();
+    });
+  }
+  const transferPrevBtn = document.getElementById("transferPrevBtn");
+  if (transferPrevBtn) {
+    transferPrevBtn.addEventListener("click", () => {
+      state.transfersPage = Math.max(1, (state.transfersPage || 1) - 1);
+      renderTransferTables();
+    });
+  }
+  const transferNextBtn = document.getElementById("transferNextBtn");
+  if (transferNextBtn) {
+    transferNextBtn.addEventListener("click", () => {
+      state.transfersPage = (state.transfersPage || 1) + 1;
+      renderTransferTables();
+    });
   }
   const deliveriesBranchFilterSelect = document.getElementById("deliveriesBranchFilterSelect");
   if (deliveriesBranchFilterSelect) {
-    deliveriesBranchFilterSelect.addEventListener("change", renderDeliveriesTable);
+    deliveriesBranchFilterSelect.addEventListener("change", () => {
+      state.deliveriesPage = 1;
+      renderDeliveriesTable();
+    });
   }
   const deliveriesAddressFilterInput = document.getElementById("deliveriesAddressFilterInput");
   if (deliveriesAddressFilterInput) {
-    deliveriesAddressFilterInput.addEventListener("input", renderDeliveriesTable);
+    deliveriesAddressFilterInput.addEventListener("input", () => {
+      state.deliveriesPage = 1;
+      renderDeliveriesTable();
+    });
   }
   const deliveriesPhoneFilterInput = document.getElementById("deliveriesPhoneFilterInput");
   if (deliveriesPhoneFilterInput) {
-    deliveriesPhoneFilterInput.addEventListener("input", renderDeliveriesTable);
+    deliveriesPhoneFilterInput.addEventListener("input", () => {
+      state.deliveriesPage = 1;
+      renderDeliveriesTable();
+    });
   }
   const deliveriesStatusFilterSelect = document.getElementById("deliveriesStatusFilterSelect");
   if (deliveriesStatusFilterSelect) {
-    deliveriesStatusFilterSelect.addEventListener("change", renderDeliveriesTable);
+    deliveriesStatusFilterSelect.addEventListener("change", () => {
+      state.deliveriesPage = 1;
+      renderDeliveriesTable();
+    });
+  }
+  const deliveriesPrevBtn = document.getElementById("deliveriesPrevBtn");
+  if (deliveriesPrevBtn) {
+    deliveriesPrevBtn.addEventListener("click", () => {
+      state.deliveriesPage = Math.max(1, (state.deliveriesPage || 1) - 1);
+      renderDeliveriesTable();
+    });
+  }
+  const deliveriesNextBtn = document.getElementById("deliveriesNextBtn");
+  if (deliveriesNextBtn) {
+    deliveriesNextBtn.addEventListener("click", () => {
+      state.deliveriesPage = (state.deliveriesPage || 1) + 1;
+      renderDeliveriesTable();
+    });
   }
   const requestHistoryBranchSelect = document.getElementById("requestHistoryBranchSelect");
   if (requestHistoryBranchSelect) {
@@ -8350,12 +8674,36 @@
   }
 
   document.getElementById("analyticsApplyBtn").addEventListener("click", () => {
+    state.analyticsItemsPage = 1;
+    state.analyticsTopBranchPage = 1;
+    state.analyticsRepeatedPage = 1;
+    state.analyticsForecastPage = 1;
+    state.analyticsReturnedPage = 1;
     renderAnalytics();
   });
   const analyticsChartMeasureSelect = document.getElementById("analyticsChartMeasureSelect");
   if (analyticsChartMeasureSelect) {
     analyticsChartMeasureSelect.addEventListener("change", renderAnalytics);
   }
+  [
+    ["analyticsItemsPrevBtn", "analyticsItemsPage", -1],
+    ["analyticsItemsNextBtn", "analyticsItemsPage", 1],
+    ["analyticsTopBranchPrevBtn", "analyticsTopBranchPage", -1],
+    ["analyticsTopBranchNextBtn", "analyticsTopBranchPage", 1],
+    ["analyticsRepeatedPrevBtn", "analyticsRepeatedPage", -1],
+    ["analyticsRepeatedNextBtn", "analyticsRepeatedPage", 1],
+    ["analyticsForecastPrevBtn", "analyticsForecastPage", -1],
+    ["analyticsForecastNextBtn", "analyticsForecastPage", 1],
+    ["analyticsReturnedPrevBtn", "analyticsReturnedPage", -1],
+    ["analyticsReturnedNextBtn", "analyticsReturnedPage", 1]
+  ].forEach(([id, pageKey, delta]) => {
+    const btn = document.getElementById(id);
+    if (!btn) return;
+    btn.addEventListener("click", () => {
+      state[pageKey] = Math.max(1, (state[pageKey] || 1) + delta);
+      renderAnalytics();
+    });
+  });
   document.getElementById("exportMonthlyReportBtn").addEventListener("click", exportMonthlyReport);
 
   document.getElementById("addVehicleBtn").addEventListener("click", async () => {
