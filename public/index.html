@@ -934,7 +934,7 @@
         </tr>
         <tr class="filter-row">
           <th></th>
-          <th></th>
+          <th><input id="deliveriesDateFilterInput" type="date" /></th>
           <th><select id="deliveriesBranchFilterSelect"></select></th>
           <th></th>
           <th></th>
@@ -3069,6 +3069,14 @@
     return out;
   }
 
+  function formatDateInputValue(date) {
+    if (!(date instanceof Date) || Number.isNaN(date.getTime())) return "";
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  }
+
   function getDeliveryAppointmentTime(delivery) {
     if (!delivery) return Number.POSITIVE_INFINITY;
     if (delivery.readyTimeAt) {
@@ -3085,7 +3093,17 @@
         return base.getTime();
       }
     }
+    if (delivery.createdAt) {
+      const ts = new Date(delivery.createdAt).getTime();
+      if (!Number.isNaN(ts)) return ts;
+    }
     return Number.POSITIVE_INFINITY;
+  }
+
+  function getDeliverySortDateValue(delivery) {
+    const ts = getDeliveryAppointmentTime(delivery);
+    if (!Number.isFinite(ts)) return "";
+    return formatDateInputValue(new Date(ts));
   }
 
   function sortDeliveriesByNearestAppointment(list) {
@@ -5229,10 +5247,14 @@
     renderDeliveryAreasAdminTable();
     const active = all.filter((d) => d.status !== "delivered");
     let visible = getVisibleDeliveriesForUser(active);
+    const dateValue = document.getElementById("deliveriesDateFilterInput")?.value || "";
     const branchValue = document.getElementById("deliveriesBranchFilterSelect")?.value || "ALL";
     const statusValue = document.getElementById("deliveriesStatusFilterSelect")?.value || "ALL";
     const addressValue = String(document.getElementById("deliveriesAddressFilterInput")?.value || "").trim().toLowerCase();
     const phoneValue = String(document.getElementById("deliveriesPhoneFilterInput")?.value || "").trim().toLowerCase();
+    if (dateValue) {
+      visible = visible.filter((d) => getDeliverySortDateValue(d) === dateValue);
+    }
     if (branchValue !== "ALL") {
       visible = visible.filter((d) => d.fromBranchId === branchValue);
     }
@@ -8502,6 +8524,13 @@
   const deliveriesBranchFilterSelect = document.getElementById("deliveriesBranchFilterSelect");
   if (deliveriesBranchFilterSelect) {
     deliveriesBranchFilterSelect.addEventListener("change", () => {
+      state.deliveriesPage = 1;
+      renderDeliveriesTable();
+    });
+  }
+  const deliveriesDateFilterInput = document.getElementById("deliveriesDateFilterInput");
+  if (deliveriesDateFilterInput) {
+    deliveriesDateFilterInput.addEventListener("input", () => {
       state.deliveriesPage = 1;
       renderDeliveriesTable();
     });
