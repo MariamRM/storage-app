@@ -758,7 +758,7 @@
           <th data-i18n="th_from">From</th>
           <th data-i18n="th_to">To</th>
           <th data-i18n="th_status">Status</th>
-          <th data-i18n="th_ready">Ready</th>
+          <th data-i18n="th_transfer_progress">Transfer progress</th>
           <th data-i18n="th_by">By</th>
           <th data-i18n="th_driver">Driver</th>
           <th data-i18n="th_note">Note</th>
@@ -806,7 +806,7 @@
             <th data-i18n="th_qty">Qty</th>
             <th data-i18n="th_from">From</th>
             <th data-i18n="th_to">To</th>
-            <th data-i18n="th_ready">Ready</th>
+            <th data-i18n="th_transfer_progress">Transfer progress</th>
             <th data-i18n="th_driver">Driver</th>
             <th data-i18n="th_note">Note</th>
             <th data-i18n="th_image">Image</th>
@@ -1149,7 +1149,7 @@
           <th class="col-from" data-i18n="th_from">From</th>
           <th class="col-to" data-i18n="th_to">To</th>
           <th class="col-status" data-i18n="th_status">Status</th>
-          <th class="col-ready" data-i18n="th_ready">Ready</th>
+          <th class="col-ready" data-i18n="th_transfer_progress">Transfer progress</th>
           <th class="col-note" data-i18n="th_note">Note</th>
           <th class="col-image" data-i18n="th_image">Image</th>
           <th class="col-action" data-i18n="th_action">Action</th>
@@ -1932,6 +1932,11 @@
       create_transfer: "Create transfer",
       active_transfers: "Active transfers",
       transfer_history: "Transfer history",
+      th_transfer_progress: "Transfer progress",
+      transfer_progress_format: "Returned {returned} | Left {left} | Total {total}",
+      transfer_progress_with_ready: "Returned {returned} | Left {left} | Ready {ready} | Total {total}",
+      transfer_progress_with_return_trip: "Returned {returned} | Left {left} | Returning {returning} | Total {total}",
+      transfer_progress_done: "Returned {returned} | Left 0 | Total {total} | Closed",
       driver_transfers: "⇄ Driver transfers",
       deliveries_title: "Deliveries",
       deliveries_subtitle: "Create delivery requests from branches to customer addresses. Drivers deliver.",
@@ -2319,6 +2324,11 @@
       create_transfer: "إنشاء نقل",
       active_transfers: "عمليات النقل الحالية",
       transfer_history: "سجل نقل الأكياس",
+      th_transfer_progress: "حركة النقل",
+      transfer_progress_format: "الراجع {returned} | المتبقي {left} | الإجمالي {total}",
+      transfer_progress_with_ready: "الراجع {returned} | المتبقي {left} | الجاهز {ready} | الإجمالي {total}",
+      transfer_progress_with_return_trip: "الراجع {returned} | المتبقي {left} | راجع بالطريق {returning} | الإجمالي {total}",
+      transfer_progress_done: "الراجع {returned} | المتبقي 0 | الإجمالي {total} | مكتمل",
       driver_transfers: "⇄ نقل الأكياس للسائق",
       requests_history: "سجل الطلبات",
       filter_by_branch: "تصفية حسب الفرع",
@@ -3027,6 +3037,84 @@
       return { label: formatDateTime(custom.toISOString()), iso: custom.toISOString() };
     }
     return null;
+  }
+
+  function getTransferProgressParts(trf) {
+    const total = Number(trf && trf.qty) || 0;
+    const returned = Number(trf && trf.returnedQty) || 0;
+    const returning = Number(trf && trf.inTransitBackQty) || 0;
+    const ready = Number(trf && trf.readyQty) || 0;
+    const available = Math.max(0, total - returned - returning);
+    const left = Math.max(0, total - returned - returning - ready);
+    return { total, returned, returning, ready, left, available };
+  }
+
+  function getTransferProgressLabel(trf) {
+    const { total, returned, returning, ready, left } = getTransferProgressParts(trf);
+    const values = {
+      "{returned}": String(returned),
+      "{left}": String(left),
+      "{ready}": String(ready),
+      "{returning}": String(returning),
+      "{total}": String(total)
+    };
+    let template = "transfer_progress_format";
+    if (trf && trf.status === "delivered_back" && left === 0) template = "transfer_progress_done";
+    else if (returning > 0 || (trf && trf.status === "in_transit_back")) template = "transfer_progress_with_return_trip";
+    else if (ready > 0 || (trf && trf.status === "ready")) template = "transfer_progress_with_ready";
+    let out = t(template);
+    Object.entries(values).forEach(([token, value]) => {
+      out = out.replace(token, value);
+    });
+    return out;
+  }
+
+  function getDeliveryAppointmentTime(delivery) {
+    if (!delivery) return Number.POSITIVE_INFINITY;
+    if (delivery.readyTimeAt) {
+      const ts = new Date(delivery.readyTimeAt).getTime();
+      if (!Number.isNaN(ts)) return ts;
+    }
+    if (delivery.dueDate) {
+      const base = new Date(`${delivery.dueDate}T00:00:00`);
+      if (!Number.isNaN(base.getTime())) {
+        const label = String(delivery.readyTimeLabel || "").toLowerCase();
+        if (label.includes("morning") || label.includes("صباح")) base.setHours(9, 0, 0, 0);
+        else if (label.includes("noon") || label.includes("ظهر")) base.setHours(13, 0, 0, 0);
+        else if (label.includes("night") || label.includes("ليل")) base.setHours(19, 0, 0, 0);
+        return base.getTime();
+      }
+    }
+    return Number.POSITIVE_INFINITY;
+  }
+
+  function sortDeliveriesByNearestAppointment(list) {
+    return [...(list || [])].sort((a, b) => {
+      const at = getDeliveryAppointmentTime(a);
+      const bt = getDeliveryAppointmentTime(b);
+      if (at !== bt) return at - bt;
+      const ad = a && a.dueDate ? new Date(`${a.dueDate}T00:00:00`).getTime() : Number.POSITIVE_INFINITY;
+      const bd = b && b.dueDate ? new Date(`${b.dueDate}T00:00:00`).getTime() : Number.POSITIVE_INFINITY;
+      if (ad !== bd) return ad - bd;
+      return new Date(a && a.createdAt || 0) - new Date(b && b.createdAt || 0);
+    });
+  }
+
+  function downloadWorkbook(workbook, filename) {
+    if (!window.XLSX) throw new Error(t("price_import_xlsx_missing"));
+    XLSX.writeFile(workbook, filename);
+  }
+
+  function appendSheetRows(rows, title, headers, entries) {
+    rows.push([title]);
+    rows.push(headers);
+    if (!entries.length) {
+      rows.push([""]);
+      rows.push([]);
+      return;
+    }
+    entries.forEach((entry) => rows.push(entry));
+    rows.push([]);
   }
   function isActiveItem(item) {
     return !!(item && !item.deletedAt);
@@ -5166,7 +5254,7 @@
       return;
     }
 
-    visible.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+    visible = sortDeliveriesByNearestAppointment(visible);
     const paged = paginateRows(visible, "deliveriesPage", state.historyPageSize || 20);
     updatePageControls("deliveriesPageInfo", "deliveriesPrevBtn", "deliveriesNextBtn", paged.page, paged.totalPages, paged.totalCount);
 
@@ -5396,14 +5484,11 @@
         ? `<select data-transfer-assign="${escapeHtml(trf.id)}">${getBranchOptionsHtml(trf.toBranchId)}</select>`
         : `<span>${escapeHtml(getBranchName(trf.toBranchId))}</span>`;
 
-      const totalQty = Number(trf.qty) || 0;
-      const returnedQty = Number(trf.returnedQty) || 0;
-      const inTransitBackQty = Number(trf.inTransitBackQty) || 0;
-      const readyQty = (typeof trf.readyQty === "number" ? trf.readyQty : (trf.readyStatus === "ready" ? totalQty : 0));
-      const remainingQty = Math.max(0, totalQty - returnedQty - inTransitBackQty);
-      const readyLabel = `${readyQty}/${totalQty}`;
+      const { total, ready, available } = getTransferProgressParts(trf);
+      const remainingQty = available;
+      const readyLabel = getTransferProgressLabel(trf);
       const readyInput = canReady
-        ? `<input type="number" min="0" max="${escapeHtml(String(remainingQty))}" class="input-sm" style="width:80px;" data-ready-qty="${escapeHtml(trf.id)}" value="${escapeHtml(String(readyQty))}" />`
+        ? `<input type="number" min="0" max="${escapeHtml(String(remainingQty))}" class="input-sm" style="width:80px;" data-ready-qty="${escapeHtml(trf.id)}" value="${escapeHtml(String(ready))}" />`
         : "";
       const readyBtn = canReady
         ? `<button class="btn btn-secondary btn-sm" data-transfer-ready="${escapeHtml(trf.id)}">${t("ready")}</button>`
@@ -5431,7 +5516,7 @@
       tr.innerHTML = `
         <td>${escapeHtml(trf.id)}</td>
         <td>${escapeHtml(formatDateTime(trf.createdAt))}</td>
-        <td>${escapeHtml(trf.qty)}</td>
+        <td>${escapeHtml(total)}</td>
         <td>${escapeHtml(getBranchName(trf.fromBranchId))}</td>
         <td>${assignSelect}</td>
         <td><span class="pill pill-status ${escapeHtml(trf.status)}">${t(trf.status)}</span></td>
@@ -5487,7 +5572,7 @@
     }
 
     paged.forEach((trf) => {
-      const readyLabel = trf.readyStatus === "ready" ? t("ready") : t("not_ready");
+      const readyLabel = getTransferProgressLabel(trf);
       const imageBtn = getRequestImageButton(trf);
       const tr = document.createElement("tr");
       tr.innerHTML = `
@@ -5684,7 +5769,7 @@
     }
 
     list.forEach((trf) => {
-      const readyLabel = trf.readyStatus === "ready" ? t("ready") : t("not_ready");
+      const readyLabel = getTransferProgressLabel(trf);
       const imageBtn = getRequestImageButton(trf);
       const rowClass = (trf.status === "ready" || trf.status === "in_transit_back") ? "transfer-ready" : "transfer-row";
       const isMine = trf.driverUserId && state.user && trf.driverUserId === state.user.id;
@@ -5701,16 +5786,13 @@
       if (isMine && trf.status === "in_transit_back") {
         actionParts.push(`<button class="btn btn-primary btn-sm" data-transfer-deliver-back="${escapeHtml(trf.id)}">${t("deliver_back")}</button>`);
       }
-      const totalQty = Number(trf.qty) || 0;
-      const readyQty = (typeof trf.readyQty === "number" ? trf.readyQty : (trf.readyStatus === "ready" ? totalQty : 0));
-      const inTransitBackQty = Number(trf.inTransitBackQty) || 0;
-      const displayQty = trf.status === "in_transit_back" ? inTransitBackQty : (trf.status === "ready" ? readyQty : totalQty);
+      const { total } = getTransferProgressParts(trf);
       const tr = document.createElement("tr");
       tr.className = rowClass;
       tr.innerHTML = `
         <td class="col-id">${escapeHtml(trf.id)}</td>
         <td class="col-created">${escapeHtml(formatDateTime(trf.createdAt))}</td>
-        <td class="col-qty">${escapeHtml(displayQty)}</td>
+        <td class="col-qty">${escapeHtml(total)}</td>
         <td class="col-from">${escapeHtml(getBranchName(trf.fromBranchId))}</td>
         <td class="col-to">${escapeHtml(getBranchName(trf.toBranchId))}</td>
         <td class="col-status"><span class="pill pill-status ${escapeHtml(trf.status)}">${t(trf.status)}</span></td>
@@ -6232,6 +6314,10 @@
     const fromInput = document.getElementById("analyticsFromDate");
     const toInput = document.getElementById("analyticsToDate");
     const branchSel = document.getElementById("analyticsBranchSelect");
+    if (!window.XLSX) {
+      alert(t("price_import_xlsx_missing"));
+      return;
+    }
     if (!fromInput || !toInput || !fromInput.value || !toInput.value) {
       alert(t("report_date_required"));
       return;
@@ -6244,78 +6330,82 @@
       return;
     }
 
-    const storageId = getMainStorageId();
-    const branchId = branchSel ? branchSel.value : "ALL";
-    const allowedAnalyticsBranches = state.user && state.user.role === "supervisor"
-      ? new Set(getSupervisorAnalyticsBranches(state.user))
-      : null;
-    const filtered = (state.requests || []).filter((r) => {
-      if (r.status !== "delivered" || r.returnedAt) return false;
-      if (allowedAnalyticsBranches && !allowedAnalyticsBranches.has(r.toBranchId)) return false;
-      if (branchId !== "ALL" && r.toBranchId !== branchId) return false;
-      const deliveredAt = getRequestAnalyticsDate(r);
-      if (!deliveredAt) return false;
-      return deliveredAt >= fromDate && deliveredAt <= toDate;
-    });
+    const {
+      totalCost,
+      totalQty,
+      totalRequests,
+      returnedRequests,
+      returnedQty,
+      items,
+      topBranchItems,
+      forecastRows
+    } = computeAnalytics();
 
-    if (!filtered.length) {
+    if (!items.length && !topBranchItems.length && !forecastRows.length) {
       alert(t("no_orders_in_range"));
       return;
     }
 
-    const header = [
-      "Request ID",
-      "Created At",
-      "Delivered At",
-      "Branch",
-      "Item",
-      "Qty",
-      "Unit Cost",
-      "Total Cost",
-      "Driver",
-      "Note"
+    const branchValue = branchSel ? branchSel.value : "ALL";
+    const branchName = branchValue === "ALL" ? "All branches" : getBranchName(branchValue);
+    const workbook = XLSX.utils.book_new();
+
+    const summaryRows = [
+      ["Monthly Analytics Report"],
+      ["From", fromInput.value],
+      ["To", toInput.value],
+      ["Branch", branchName],
+      [],
+      ["Metric", "Value"],
+      ["Total requests", totalRequests],
+      ["Total qty", totalQty],
+      ["Total cost", totalCost.toFixed(3)],
+      ["Returned requests", returnedRequests],
+      ["Returned qty", returnedQty]
     ];
-    const rows = [header];
+    const summarySheet = XLSX.utils.aoa_to_sheet(summaryRows);
+    summarySheet["!cols"] = [{ wch: 22 }, { wch: 18 }];
+    XLSX.utils.book_append_sheet(workbook, summarySheet, "Summary");
 
-    let totalQty = 0;
-    let totalCost = 0;
+    const itemRows = [
+      [t("th_item"), t("th_total_qty"), t("th_total_cost")]
+    ];
+    items.forEach((entry) => {
+      itemRows.push([entry.name, entry.qty, Number(entry.cost || 0).toFixed(3)]);
+    });
+    const itemsSheet = XLSX.utils.aoa_to_sheet(itemRows);
+    itemsSheet["!cols"] = [{ wch: 48 }, { wch: 14 }, { wch: 16 }];
+    XLSX.utils.book_append_sheet(workbook, itemsSheet, "Items");
 
-    filtered.forEach((r) => {
-      const branchName = getBranchName(r.toBranchId);
-      const item = state.items.find((it) => it.id === r.itemId && it.branchId === storageId) || getItemById(r.itemId) || {};
-      const unitCost = Number(item.unitCost || 0);
-      const qty = Number(r.qty || 0);
-      const cost = unitCost * qty;
-      totalQty += qty;
-      totalCost += cost;
+    const topBranchRows = [
+      [t("th_branch"), t("th_item"), t("chart_measure_requests"), t("chart_measure_qty")]
+    ];
+    topBranchItems.forEach((entry) => {
+      topBranchRows.push([entry.branchName, entry.itemName, entry.requests, entry.qty]);
+    });
+    const topBranchSheet = XLSX.utils.aoa_to_sheet(topBranchRows);
+    topBranchSheet["!cols"] = [{ wch: 24 }, { wch: 48 }, { wch: 14 }, { wch: 14 }];
+    XLSX.utils.book_append_sheet(workbook, topBranchSheet, "Top By Branch");
 
-      rows.push([
-        r.id,
-        formatDateTime(r.createdAt),
-        r.deliveredAt ? formatDateTime(r.deliveredAt) : "",
-        branchName,
-        item.name || r.itemId,
-        qty,
-        unitCost.toFixed(3),
-        cost.toFixed(3),
-        r.driverUserId ? getUserName(r.driverUserId) : "",
-        r.note || ""
+    const forecastRowsData = [
+      [t("th_branch"), t("th_item"), t("three_months_ago"), t("two_months_ago"), t("last_month"), t("forecast_next_month")]
+    ];
+    forecastRows.forEach((entry) => {
+      forecastRowsData.push([
+        entry.branchName,
+        entry.itemName,
+        entry.month3,
+        entry.month2,
+        entry.month1,
+        Number(entry.forecastQty || 0).toFixed(2)
       ]);
     });
+    const forecastSheet = XLSX.utils.aoa_to_sheet(forecastRowsData);
+    forecastSheet["!cols"] = [{ wch: 24 }, { wch: 48 }, { wch: 14 }, { wch: 14 }, { wch: 14 }, { wch: 18 }];
+    XLSX.utils.book_append_sheet(workbook, forecastSheet, "Monthly Forecast");
 
-    rows.push([]);
-    rows.push(["Totals", "", "", "", "", totalQty, "", totalCost.toFixed(3), "", ""]);
-
-    const csvContent = rows.map((row) => row.map(csvEscape).join(",")).join("\n");
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `monthly-orders-${fromInput.value}-to-${toInput.value}.csv`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    const safeBranch = (branchName || "all").replace(/[^a-z0-9_-]+/gi, "-").toLowerCase();
+    downloadWorkbook(workbook, `analytics-${safeBranch}-${fromInput.value}-to-${toInput.value}.xlsx`);
   }
 
   function renderAnalytics() {
