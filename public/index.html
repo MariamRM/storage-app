@@ -1250,6 +1250,7 @@
     <div style="display:flex;gap:0.6rem;flex-wrap:wrap;margin-top:0.6rem;">
       <button id="analyticsApplyBtn" class="btn btn-primary" data-i18n="apply_filters">Apply filters</button>
       <button id="exportMonthlyReportBtn" class="btn btn-secondary" data-i18n="export_monthly_report">Export monthly report</button>
+      <button id="exportAnalyticsDetailsBtn" class="btn btn-secondary" data-i18n="export_analytics_details">Export full details</button>
     </div>
 
     <div class="summary-row mt-sm">
@@ -2049,6 +2050,7 @@
       th_rank: "Rank",
       no_chart_data: "No chart data for this filter.",
       export_monthly_report: "Export monthly report",
+      export_analytics_details: "Export full details",
       report_date_required: "Select both dates before exporting.",
       no_orders_in_range: "No delivered orders in this range.",
 
@@ -2385,6 +2387,11 @@
       top_requests_chart: "رسم أكثر الأصناف طلبًا",
       top_item_by_branch: "الصنف الأعلى طلبًا لكل فرع",
       no_chart_data: "لا توجد بيانات للرسم حسب الفلتر.",
+      export_monthly_report: "????? ??????? ??????",
+      export_analytics_details: "????? ???????? ???????",
+      report_date_required: "???? ????????? ??? ???????.",
+      no_orders_in_range: "?? ???? ????? ?????? ?? ??? ??????.",
+
 
       vehicle_reminders: "تنبيهات المركبات",
       vehicle_subtitle: "تغيير زيت، عداد، تجديد سنوي. المدير/المشرف يضيفون؛ السائق يعلّم منجز.",
@@ -5874,6 +5881,59 @@
     return [3, 2, 1].map((offset) => getMonthKey(new Date(anchorMonthStart.getFullYear(), anchorMonthStart.getMonth() - offset, 1)));
   }
 
+  function getAnalyticsFilterContext() {
+    const branchSel = document.getElementById("analyticsBranchSelect");
+    const fromInput = document.getElementById("analyticsFromDate");
+    const toInput = document.getElementById("analyticsToDate");
+    const branchId = branchSel ? branchSel.value : "ALL";
+    const fromDate = fromInput && fromInput.value ? new Date(fromInput.value + "T00:00:00") : null;
+    const toDate = toInput && toInput.value ? new Date(toInput.value + "T23:59:59") : null;
+    const storageId = getMainStorageId();
+    const allowedAnalyticsBranches = state.user && state.user.role === "supervisor"
+      ? new Set(getSupervisorAnalyticsBranches(state.user))
+      : null;
+    return {
+      branchSel,
+      fromInput,
+      toInput,
+      branchId,
+      fromDate,
+      toDate,
+      storageId,
+      allowedAnalyticsBranches
+    };
+  }
+
+  function getDeliveredAnalyticsRequests(ctx) {
+    return state.requests.filter((r) => {
+      if (r.status !== "delivered" || r.returnedAt) return false;
+      if (ctx.allowedAnalyticsBranches && !ctx.allowedAnalyticsBranches.has(r.toBranchId)) return false;
+      if (ctx.branchId !== "ALL" && r.toBranchId !== ctx.branchId) return false;
+      const d = getRequestAnalyticsDate(r);
+      if (!d) return false;
+      if (ctx.fromDate && d < ctx.fromDate) return false;
+      if (ctx.toDate && d > ctx.toDate) return false;
+      return true;
+    });
+  }
+
+  function getReturnedAnalyticsRequests(ctx) {
+    return state.requests.filter((r) => {
+      if (!r.returnedAt) return false;
+      if (ctx.allowedAnalyticsBranches && !ctx.allowedAnalyticsBranches.has(r.toBranchId)) return false;
+      if (ctx.branchId !== "ALL" && r.toBranchId !== ctx.branchId) return false;
+      const d = new Date(r.returnedAt);
+      if (Number.isNaN(d.getTime())) return false;
+      if (ctx.fromDate && d < ctx.fromDate) return false;
+      if (ctx.toDate && d > ctx.toDate) return false;
+      return true;
+    });
+  }
+
+  function getAnalyticsStorageItem(itemId, storageId) {
+    return state.items.find((it) => it.id === itemId && it.branchId === storageId) || getItemById(itemId) || {};
+  }
+
   function computeAnalytics() {
     const branchSel = document.getElementById("analyticsBranchSelect");
     const fromInput = document.getElementById("analyticsFromDate");
@@ -6428,6 +6488,106 @@
 
     const safeBranch = (branchName || "all").replace(/[^a-z0-9_-]+/gi, "-").toLowerCase();
     downloadWorkbook(workbook, `analytics-${safeBranch}-${fromInput.value}-to-${toInput.value}.xlsx`);
+  }
+
+function exportAnalyticsDetailsReport() {
+    const ctx = getAnalyticsFilterContext();
+    const { fromInput, toInput, branchSel, storageId } = ctx;
+    if (!window.XLSX) {
+      alert(t("price_import_xlsx_missing"));
+      return;
+    }
+    if (!fromInput || !toInput || !fromInput.value || !toInput.value) {
+      alert(t("report_date_required"));
+      return;
+    }
+    if (Number.isNaN(ctx.fromDate?.getTime?.()) || Number.isNaN(ctx.toDate?.getTime?.()) || ctx.fromDate > ctx.toDate) {
+      alert(t("report_date_required"));
+      return;
+    }
+
+    const analytics = computeAnalytics();
+    const delivered = getDeliveredAnalyticsRequests(ctx);
+    const returned = getReturnedAnalyticsRequests(ctx);
+    if (!delivered.length && !returned.length) {
+      alert(t("no_orders_in_range"));
+      return;
+    }
+
+    const branchValue = branchSel ? branchSel.value : "ALL";
+    const branchName = branchValue === "ALL" ? "All branches" : getBranchName(branchValue);
+    const workbook = XLSX.utils.book_new();
+
+    const summaryRows = [
+      ["Full Analytics Details"],
+      ["From", fromInput.value],
+      ["To", toInput.value],
+      ["Branch", branchName],
+      [],
+      ["Metric", "Value"],
+      ["Delivered requests", analytics.totalRequests],
+      ["Returned requests", analytics.returnedRequests],
+      ["Total qty", analytics.totalQty],
+      ["Returned qty", analytics.returnedQty],
+      ["Total cost", analytics.totalCost.toFixed(3)]
+    ];
+    const summarySheet = XLSX.utils.aoa_to_sheet(summaryRows);
+    summarySheet["!cols"] = [{ wch: 22 }, { wch: 18 }];
+    XLSX.utils.book_append_sheet(workbook, summarySheet, "Summary");
+
+    const deliveredRows = [["Request ID", "Created At", "Delivered At", "Branch", "Item ID", "Item", "Qty", "Unit Cost", "Total Cost", "Created By", "Driver", "Priority", "Urgent Note", "Note"]];
+    delivered.forEach((r) => {
+      const item = getAnalyticsStorageItem(r.itemId, storageId);
+      const unitCost = Number(item.unitCost || 0);
+      const qty = Number(r.qty || 0);
+      deliveredRows.push([
+        r.id || "",
+        r.createdAt ? formatDateTime(r.createdAt) : "",
+        r.deliveredAt ? formatDateTime(r.deliveredAt) : "",
+        getBranchName(r.toBranchId || "UNKNOWN"),
+        r.itemId || "",
+        item.name || r.itemId || "",
+        qty,
+        unitCost.toFixed(3),
+        (unitCost * qty).toFixed(3),
+        r.createdByUserId ? getUserName(r.createdByUserId) : "",
+        r.driverUserId ? getUserName(r.driverUserId) : "",
+        r.priority || "",
+        r.urgentNote || "",
+        r.note || ""
+      ]);
+    });
+    const deliveredSheet = XLSX.utils.aoa_to_sheet(deliveredRows);
+    deliveredSheet["!cols"] = [{ wch: 16 }, { wch: 22 }, { wch: 22 }, { wch: 22 }, { wch: 16 }, { wch: 44 }, { wch: 10 }, { wch: 12 }, { wch: 12 }, { wch: 20 }, { wch: 20 }, { wch: 12 }, { wch: 24 }, { wch: 36 }];
+    XLSX.utils.book_append_sheet(workbook, deliveredSheet, "Delivered Details");
+
+    const returnedRows = [["Request ID", "Created At", "Delivered At", "Returned At", "Branch", "Item ID", "Item", "Qty", "Unit Cost", "Total Cost", "Created By", "Driver", "Note"]];
+    returned.forEach((r) => {
+      const item = getAnalyticsStorageItem(r.itemId, storageId);
+      const unitCost = Number(item.unitCost || 0);
+      const qty = Number(r.qty || 0);
+      returnedRows.push([
+        r.id || "",
+        r.createdAt ? formatDateTime(r.createdAt) : "",
+        r.deliveredAt ? formatDateTime(r.deliveredAt) : "",
+        r.returnedAt ? formatDateTime(r.returnedAt) : "",
+        getBranchName(r.toBranchId || "UNKNOWN"),
+        r.itemId || "",
+        item.name || r.itemId || "",
+        qty,
+        unitCost.toFixed(3),
+        (unitCost * qty).toFixed(3),
+        r.createdByUserId ? getUserName(r.createdByUserId) : "",
+        r.driverUserId ? getUserName(r.driverUserId) : "",
+        r.note || ""
+      ]);
+    });
+    const returnedSheet = XLSX.utils.aoa_to_sheet(returnedRows);
+    returnedSheet["!cols"] = [{ wch: 16 }, { wch: 22 }, { wch: 22 }, { wch: 22 }, { wch: 22 }, { wch: 16 }, { wch: 44 }, { wch: 10 }, { wch: 12 }, { wch: 12 }, { wch: 20 }, { wch: 20 }, { wch: 36 }];
+    XLSX.utils.book_append_sheet(workbook, returnedSheet, "Returned Details");
+
+    const safeBranch = (branchName || "all").replace(/[^a-z0-9_-]+/gi, "-").toLowerCase();
+    downloadWorkbook(workbook, "analytics-details-" + safeBranch + "-" + fromInput.value + "-to-" + toInput.value + ".xlsx");
   }
 
   function renderAnalytics() {
@@ -8824,6 +8984,7 @@
     });
   });
   document.getElementById("exportMonthlyReportBtn").addEventListener("click", exportMonthlyReport);
+  document.getElementById("exportAnalyticsDetailsBtn").addEventListener("click", exportAnalyticsDetailsReport);
 
   document.getElementById("addVehicleBtn").addEventListener("click", async () => {
     const name = document.getElementById("vehNameInput").value.trim();
