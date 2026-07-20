@@ -3260,7 +3260,7 @@
     return priority === "urgent" ? t("priority_urgent") : t("priority_normal");
   }
   function getRequestImageButton(r) {
-    if (!r || !r.imageData) return "";
+    if (!r || (!r.imageData && !r.hasImage)) return "";
     const useIcons = state.phoneMode && state.user && state.user.role === "driver";
     const label = useIcons ? "🖼" : t("view_image");
     return `<button class="btn btn-secondary btn-sm" data-view-image="${escapeHtml(r.id)}">${label}</button>`;
@@ -3656,10 +3656,24 @@
     }
     return null;
   }
-  function openRequestImageById(id) {
+  async function openRequestImageById(id) {
     const req = (state.requests || []).find((r) => r.id === id);
     const trf = (state.transfers || []).find((t) => t.id === id);
-    const imageData = (req && req.imageData) || (trf && trf.imageData) || "";
+    let imageData = (req && req.imageData) || (trf && trf.imageData) || "";
+    if (!imageData) {
+      try {
+        if (req && req.hasImage) {
+          imageData = await apiGetRequestImage(id);
+          req.imageData = imageData;
+        } else if (trf && trf.hasImage) {
+          imageData = await apiGetTransferImage(id);
+          trf.imageData = imageData;
+        }
+      } catch (err) {
+        alert(err.message || t("no_image"));
+        return;
+      }
+    }
     if (!imageData) {
       alert(t("no_image"));
       return;
@@ -3952,6 +3966,20 @@
     const body = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(body.error || "Create transfer failed");
     return body;
+  }
+
+  async function apiGetRequestImage(id) {
+    const res = await fetch(`${API_BASE}/requests/${encodeURIComponent(id)}/image`);
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(body.error || "Failed to load image");
+    return String(body.imageData || "");
+  }
+
+  async function apiGetTransferImage(id) {
+    const res = await fetch(`${API_BASE}/transfers/${encodeURIComponent(id)}/image`);
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(body.error || "Failed to load image");
+    return String(body.imageData || "");
   }
 
   async function apiCreateDelivery(data) {

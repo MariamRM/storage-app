@@ -125,6 +125,23 @@ function requireRole(user, roles) {
   return user && roles.includes(user.role);
 }
 
+function hasEmbeddedImage(value) {
+  return typeof value === "string" && value.trim().length > 0;
+}
+
+function stripEmbeddedImage(record) {
+  if (!record || typeof record !== "object") return record;
+  const { imageData, ...rest } = record;
+  return {
+    ...rest,
+    hasImage: hasEmbeddedImage(imageData)
+  };
+}
+
+function stripEmbeddedImages(records) {
+  return Array.isArray(records) ? records.map(stripEmbeddedImage) : [];
+}
+
 function isActiveItem(item) {
   return item && !item.deletedAt;
 }
@@ -372,8 +389,8 @@ app.get("/api/state", async (req, res) => {
       items: data.items || [],
       movements: data.movements || [],
       budgets: data.budgets || [],
-      requests: data.requests || [],
-      transfers: data.transfers || [],
+      requests: stripEmbeddedImages(data.requests),
+      transfers: stripEmbeddedImages(data.transfers),
       deliveries: data.deliveries || [],
       deliveryAreas: data.deliveryAreas || [],
       trips: data.trips || [],
@@ -423,6 +440,36 @@ app.post("/api/branches", async (req, res) => {
   } catch (err) {
     console.error("Create branch error", err);
     res.status(500).json({ error: "Failed to create branch" });
+  }
+});
+
+app.get("/api/requests/:id/image", async (req, res) => {
+  try {
+    const data = await loadData();
+    const request = (data.requests || []).find((entry) => entry.id === req.params.id);
+    if (!request) return res.status(404).json({ error: "Request not found" });
+    if (!hasEmbeddedImage(request.imageData)) {
+      return res.status(404).json({ error: "Image not found" });
+    }
+    res.json({ imageData: request.imageData });
+  } catch (err) {
+    console.error("Request image error", err);
+    res.status(500).json({ error: "Failed to load image" });
+  }
+});
+
+app.get("/api/transfers/:id/image", async (req, res) => {
+  try {
+    const data = await loadData();
+    const transfer = (data.transfers || []).find((entry) => entry.id === req.params.id);
+    if (!transfer) return res.status(404).json({ error: "Transfer not found" });
+    if (!hasEmbeddedImage(transfer.imageData)) {
+      return res.status(404).json({ error: "Image not found" });
+    }
+    res.json({ imageData: transfer.imageData });
+  } catch (err) {
+    console.error("Transfer image error", err);
+    res.status(500).json({ error: "Failed to load image" });
   }
 });
 
@@ -968,7 +1015,7 @@ app.post("/api/requests", async (req, res) => {
 
     data.requests.push(request);
     await saveData(data);
-    res.status(201).json(request);
+    res.status(201).json(stripEmbeddedImage(request));
   } catch (err) {
     console.error("Create request error", err);
     res.status(500).json({ error: "Failed to create request" });
@@ -1375,7 +1422,7 @@ app.post("/api/transfers", async (req, res) => {
 
     data.transfers.push(transfer);
     await saveData(data);
-    res.status(201).json(transfer);
+    res.status(201).json(stripEmbeddedImage(transfer));
   } catch (err) {
     console.error("Create transfer error", err);
     res.status(500).json({ error: "Failed to create transfer" });
