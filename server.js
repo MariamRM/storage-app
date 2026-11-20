@@ -16,6 +16,10 @@ app.use(cors());
 app.use(express.json({ limit: "50mb" }));
 app.use(express.static(path.join(__dirname, "public"))); // serve frontend
 
+// Authenticated POS adapter; serializes JSON mutations with legacy writes.
+const { installPosIntegration, guardPosDelivery } = require("./pos-deliveries.cjs");
+installPosIntegration({ app, loadData, saveData, mainStorageBranchId: MAIN_STORAGE_BRANCH_ID });
+
 // ---------- Helpers ----------
 async function loadData() {
   let raw;
@@ -1784,6 +1788,9 @@ app.post("/api/deliveries/:id/status", async (req, res) => {
     const next = String(status || "").toLowerCase();
     const allStatuses = ["new", "ready", "in_transit", "delivered"];
     if (!allStatuses.includes(next)) return res.status(400).json({ error: "Invalid status" });
+    try { guardPosDelivery(delivery, next); } catch (error) {
+      return res.status(error.status || 409).json({ error: error.message });
+    }
 
     if (user.role === "driver") {
       if (!delivery.driverUserId) {
@@ -1828,7 +1835,7 @@ app.post("/api/deliveries/:id/assign-driver", async (req, res) => {
 
     const delivery = (data.deliveries || []).find((d) => d.id === id);
     if (!delivery) return res.status(404).json({ error: "Delivery not found" });
-    if (delivery.status === "delivered") return res.status(400).json({ error: "Delivery already delivered" });
+    if (["delivered", "cancelled"].includes(delivery.status)) return res.status(400).json({ error: "Delivery is already finished or cancelled" });
 
     const driver = findUserById(data, driverUserId);
     if (!driver || driver.role !== "driver") {
@@ -1888,6 +1895,7 @@ app.delete("/api/deliveries/:id", async (req, res) => {
 
     const idx = (data.deliveries || []).findIndex((d) => d.id === id);
     if (idx === -1) return res.status(404).json({ error: "Delivery not found" });
+    if (data.deliveries[idx].posRequestId) return res.status(409).json({ error: "Cancel linked deliveries from POS; their history must be retained." });
     data.deliveries.splice(idx, 1);
     await saveData(data);
     res.json({ ok: true });

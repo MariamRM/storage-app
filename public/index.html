@@ -2110,6 +2110,7 @@
       pending: "pending",
       assigned: "assigned",
       in_transit: "in transit",
+      cancelled: "cancelled",
       delivered_to_destination: "delivered to destination",
       ready: "ready",
       in_transit_back: "returning",
@@ -2450,6 +2451,7 @@
       pending: "قيد الانتظار",
       assigned: "تم التعيين",
       in_transit: "في الطريق",
+      cancelled: "ملغي",
       delivered_to_destination: "تم التسليم للفرع",
       ready: "جاهز",
       in_transit_back: "في طريق العودة",
@@ -5280,7 +5282,7 @@
     renderDeliveriesHistoryTable(orderMap);
     renderDeliveryDriverScopeTable();
     renderDeliveryAreasAdminTable();
-    const active = all.filter((d) => d.status !== "delivered");
+    const active = all.filter((d) => !["delivered", "cancelled"].includes(d.status));
     let visible = getVisibleDeliveriesForUser(active);
     const dateValue = document.getElementById("deliveriesDateFilterInput")?.value || "";
     const branchValue = document.getElementById("deliveriesBranchFilterSelect")?.value || "ALL";
@@ -5321,8 +5323,8 @@
         ? `<span title="${escapeHtml(d.id)}">${escapeHtml(orderLabel)}</span>`
         : escapeHtml(orderLabel);
       const driverName = d.driverUserId ? getUserName(d.driverUserId) : "";
-      const canDelete = state.user.role === "admin" || state.user.role === "manager";
-      const canSet = ["admin", "manager", "supervisor", "driver_supervisor", "staff"].includes(state.user.role);
+      const canDelete = !d.posRequestId && (state.user.role === "admin" || state.user.role === "manager");
+      const canSet = !d.posRequestId && ["admin", "manager", "supervisor", "driver_supervisor", "staff"].includes(state.user.role);
       const canAssignDriver = ["admin", "manager", "driver_supervisor"].includes(state.user.role);
       const canAdjust = canSet && (d.status === "new" || d.status === "ready");
       const zoneClass = getDeliveryZoneClass(d.areaZone);
@@ -5381,7 +5383,7 @@
     block.style.display = "block";
     tbody.innerHTML = "";
 
-    const delivered = (state.deliveries || []).filter((d) => d.status === "delivered");
+    const delivered = (state.deliveries || []).filter((d) => ["delivered", "cancelled"].includes(d.status));
     const visible = getVisibleDeliveriesForUser(delivered);
     const map = orderMap || buildDeliveryOrderMap(state.deliveries || []);
 
@@ -5741,7 +5743,7 @@
 
     const orderMap = buildDeliveryOrderMap(state.deliveries || []);
     const list = (state.deliveries || [])
-      .filter((d) => d.status !== "delivered")
+      .filter((d) => !["delivered", "cancelled"].includes(d.status))
       .filter((d) => state.user.role !== "driver" || state.user.deliveriesScope !== "assigned" || d.driverUserId === state.user.id)
       .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
 
@@ -5762,7 +5764,7 @@
       const zoneClass = getDeliveryZoneClass(d.areaZone);
       const actionParts = [];
       if (isMine) {
-        if (d.status === "new" || d.status === "ready") {
+        if ((!d.posRequestId && d.status === "new") || (d.status === "ready" && (!d.posRequestId || d.posReady))) {
           const label = useIcons ? "Go" : t("mark_in_transit");
           actionParts.push(`<button class="btn btn-primary btn-sm" data-driver-delivery-action="${escapeHtml(d.id)}" data-delivery-next="in_transit">${label}</button>`);
         } else if (d.status === "in_transit") {
